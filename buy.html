@@ -1,0 +1,110 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="">
+  <title>Su Squares, Blockchain Rentable Advertising</title>
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-52764-25"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-52764-25');
+  </script>
+  <link rel="stylesheet" href="assets/main.css?v2">
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+  <script src="assets/main.js?v2"></script>
+</head>
+<body>
+  <header>
+    <a id="logo" href="index.html">Su Squares&trade;</a>
+  </header>
+
+  <div class="image-list">
+    <div>As seen on</div>
+    <!-- https://github.com/MyEtherWallet/ethereum-lists/blob/master/contracts/contract-abi-eth.json -->
+    <img title="MyEtherWallet" alt="My Ether Wallet logo" src="/assets/logo-myetherwallet.svg" style="max-height:40px; filter: gray; -webkit-filter: grayscale(1); filter: grayscale(1); opacity: .7">
+    <!-- https://medium.com/coinmonks/a-nonfungible-token-stampede-is-coming-224fe44a9d3b -->
+    <img title="CoinMonks" alt="CoinMonks logo" src="/assets/logo-coinmonks.png" style="max-height:40px; filter: gray; -webkit-filter: grayscale(1); filter: grayscale(1); opacity: .7">
+    <!-- https://twitter.com/0xcert/status/1014983532542943234 -->
+    <img title="0xcert" alt="0xcert logo" src="/assets/logo-0xcert.svg" style="max-height:40px; filter: gray; -webkit-filter: grayscale(1); filter: grayscale(1); opacity: .7">
+    <!-- https://explore721.com/ -->
+    <img title="North Texas Blockchain Alliance" alt="North Texas Blockchain Alliance logo" src="/assets/logo-ntba.svg" style="max-height:40px; filter: gray; -webkit-filter: grayscale(1); filter: grayscale(1); opacity: .7">
+  </div>
+
+  <article class="lead">
+    <h1>Buy Su Squares</h1>
+    <p><em>If you have any questions, please mail <a href="mailto:Su@TenThousandSu.com?subject=Su%20Squares&body=Hi%20Su%2C%0A%0APlease%20help!%20I%20have%20a%20question%20about%20Su%20Squares.%0A%0A">Su@TenThousandSu.com</a>. The price for each square is 0.5 ether.</em></p>
+
+    <div class="step-1-not-done">
+      <h2>Step 1: Install MetaMask</h2>
+      <p>You purchase Su Squares using ether and MetaMask is a Chrome/Firefox/Opera browser extension that lets you transact with Ethereum without creating a login here.</p>
+      <p><a href="https://metamask.io/">Install MetaMask</a> to continue. Then reload this page.</p>
+    </div>
+    <div class="step-1-done" style="display:none">
+      <h2>&#x2705; Installed MetaMask</h2>
+    </div>
+
+    <div class="step-2-not-done">
+      <h2>Step 2: Login to mainnet</h2>
+      <p>Switch to <strong>Main Network</strong> and login to your MetaMask wallet. Then reload this page.</p>
+    </div>
+    <div class="step-2-done" style="display:none">
+      <h2>&#x2705; Using mainnet</h2>
+    </div>
+
+    <div class="step-2-done" style="display:none">
+      <div class="step-3-not-done">
+        <h2>Step 3: Pick a square</h2>
+        <form>
+          <p><strong>Square number</strong></p>
+          <input id="square-number" type=number min=1 max=10000 required style="width:7em">
+          <hr>
+          <p><em>If somebody already bought that square while you were reading this then the transaction will NOT go through and your ether will NOT be spent. Once you buy, nobody, even Su, can undo the transaction. Be sure it's correct.</em></p>
+          <hr>
+          <button id="buy" type="button">Buy Square</button>
+        </form>
+      </div>
+      <div class="step-3-done" style="display:none">
+        <h2>&#x2705; Picked square #<span class="square-number-plug"></span></h2>
+      </div>
+    </div>
+
+    <div class="step-3-done" style="display:none">
+      <h2>Step 4: Processing...</h2>
+      <p>Thank you for your purchase! You picked <strong>square #<span class="square-number-plug"></span></strong>.</p>
+      <p>Your purchase is processing, your transaction ID is <a target="_blank" id="txlink" href=""><strong id="transaction-id-plug"></strong></a></p>
+      <p>You can click that link about to check the progress. This should complete within one minute. (It will say "sorry, unable to locate" until then.)</p>
+      <p>After the transaction is complete you own the square! Your Ethereum wallet will show it to you if your wallet has built-in support for ERC-721. Otherwise, write down your square number and, and you can use that to <a id="nextlink" href="personalize.html">personalize</a>.</p>
+    </div>
+
+  </article>
+  <footer>
+    <small>
+      Ten Thousand Su&trade; website &copy; Su Entriken. All rights reserved. Not responsible for the content of linked sites. Images shown on homepage are &copy; their respective owners.
+    </small>
+  </footer>
+  <script>
+    $('#square-number').val(getSquareFromUrl());
+
+    $('#buy').on('click', function(){
+      var square_number = $('#square-number').val();
+      if (square_number < 1 || square_number > 10000) {
+        alert('Square number must between 1 and 10,000, inclusive');
+        return
+      }
+      contract.purchase(square_number, {value: web3js.toWei(500, 'finney')}, function(err, res){
+        console.log([err, res]);
+        if (!err) {
+          step3Done();
+          $("#transaction-id-plug").text(res);
+          $(".square-number-plug").text(square_number);
+          $("#txlink").attr('href',"https://etherscan.io/tx/"+res)
+          $("#nextlink").attr('href',"personalize.html?square="+square_number)
+        }
+      })
+    });
+  </script>
+</body>
+</html>

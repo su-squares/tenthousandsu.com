@@ -1,0 +1,115 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="description" content="">
+  <title>Su Squares, cute squares you own and personalize</title>
+  <!-- Global site tag (gtag.js) - Google Analytics -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=UA-52764-25"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'UA-52764-25');
+  </script>
+  <link rel="stylesheet" href="assets/main.css?v2">
+</head>
+<body id="homepage">
+  <p style="margin: 1em; padding: 0.5em; border: 1px solid #ccc; border-radius: 1em">
+    <strong>ANNOUNCEMENT 2018-09-18:</strong>
+    <a target="news" href="https://tenthousandsu.com/2018-09-18-operator-bug.html">OpenSea Identifies Operator Bug with Su Squares</a>. Please do not purchase or personalize any squares until this is fixed.
+  </p>
+  <header>
+    <a id="logo" href="index.html">Su Squares&trade;</a>
+    <span>
+      One Su Square = 10x10 pixels<br>
+      <span style="color: #0d0">Available: <span id="available-plug">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></span>
+    </span>
+    <span>
+      Resell on Ethereum blockchain<br>
+      <a href="white-paper.html"><img src="assets/file-pdf.svg" width=16 height=16></a> <a href="white-paper.html">Read The White Paper</a><br>
+    </span>
+    <a class="btn" href="buy.html">Buy</a>
+    <a class="btn" href="personalize.html">Personalize</a>
+    <a class="btn" target="twitter" href="https://twitter.com/susquares">
+      <img src="assets/twitter-logo.svg" width=18 height=18>
+    </a>
+  </header>
+
+  <div class="image-list">
+    <div>As seen on</div>
+    <!-- https://github.com/MyEtherWallet/ethereum-lists/blob/master/contracts/contract-abi-eth.json -->
+    <img title="MyEtherWallet" alt="My Ether Wallet logo" src="/assets/logo-myetherwallet.svg" style="max-height:40px; filter: gray; -webkit-filter: grayscale(1); filter: grayscale(1); opacity: .7">
+    <!-- https://medium.com/coinmonks/a-nonfungible-token-stampede-is-coming-224fe44a9d3b -->
+    <img title="CoinMonks" alt="CoinMonks logo" src="/assets/logo-coinmonks.png" style="max-height:40px; filter: gray; -webkit-filter: grayscale(1); filter: grayscale(1); opacity: .7">
+    <!-- https://twitter.com/0xcert/status/1014983532542943234 -->
+    <img title="0xcert" alt="0xcert logo" src="/assets/logo-0xcert.svg" style="max-height:40px; filter: gray; -webkit-filter: grayscale(1); filter: grayscale(1); opacity: .7">
+    <!-- https://explore721.com/ -->
+    <img title="North Texas Blockchain Alliance" alt="North Texas Blockchain Alliance logo" src="/assets/logo-ntba.svg" style="max-height:40px; filter: gray; -webkit-filter: grayscale(1); filter: grayscale(1); opacity: .7">
+  </div>
+
+  <article>
+    <p>Click below to purchase an available Su Square.</p>
+    <div style="border:2px solid #ccc;position:relative;height:1000px">
+      <a id="biga" style="width:1000px;height:1000px">
+        <img id="image" src="data/theImage.png?v2" width="1000" height="1000" alt="All Su Squares" style="margin:0">
+      </a>
+      <div id="position" style="background:pink;width:10px;height:10px;top:0;left:0;position:absolute;pointer-events:none;display:none"></div>
+    </div>
+  </article>
+  <footer>
+    <small>
+      Ten Thousand Su&trade; website &copy; Su Entriken. All rights reserved. Not responsible for the content of linked sites. Images shown on homepage are &copy; their respective owners.
+    </small>
+  </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+  <script>
+    var allData = []; // Each is [version, title, href] or
+    $.get('data/allData.json', function(data){
+      allData = [""].concat(data); // Data is zero-indexed
+      var reducer = (accumulator, currentValue) => accumulator + !!currentValue;
+      var sold = allData.slice(1).reduce(reducer, 0);
+      $("#available-plug").text((10000-sold).toLocaleString());
+    });
+
+    function getSquareNumber(e, element) {
+      var x = Math.floor((e.pageX - $(element).offset().left) / 10);
+      x = x <= 0 ? 0 : x >= 99 ? 99 : x;
+      var y = Math.floor((e.pageY - $(element).offset().top) / 10);
+      y = y <= 0 ? 0 : y >= 99 ? 99 : y;
+      //console.log([x,y]);
+      return x + y*100 + 1;
+    }
+    $('#image').click(function(e){
+      var squareNumber = getSquareNumber(e, this);
+      if (allData[squareNumber] == null) {
+        window.location = 'buy.html?square=' + (squareNumber);
+      }
+    });
+    $('#image').on('mouseover mousemove', function(e) {
+      var squareNumber = getSquareNumber(e, this);
+      //console.log("Entering square "+squareNumber);
+      if (allData[squareNumber] == null) {
+        $('#biga').css('cursor', 'pointer');
+        $('#biga').attr('title', "Square #" + (squareNumber) + " is available for sale, click to buy");
+        $('#biga').attr('href', null);
+        var left = 10 * ((squareNumber-1)%100);
+        var top = 10 * Math.floor((squareNumber-1)/100);
+        $('#position').css({left:left,top:top,display:"block"});
+      } else if (!allData[squareNumber][1] && !allData[squareNumber][2]) {
+        $('#biga').css('cursor', 'not-allowed');
+        $('#biga').attr('title', "Square #" + (squareNumber) + " WAS PURCHASED BUT NOT YET PERSONALIZED");
+        $('#biga').attr('href', null);
+      } else {
+        $('#biga').css('cursor', 'pointer');
+        $('#biga').attr('title', allData[squareNumber][1]);
+        $('#biga').attr('href', allData[squareNumber][2]);
+      }
+    });
+    $('#image').mouseout(function() {
+      $('#biga').attr('href', null);
+      $('#biga').attr('title', null);
+    });
+  </script>
+</body>
+</html>
