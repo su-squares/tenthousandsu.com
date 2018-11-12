@@ -52,7 +52,7 @@
     <p>Click below to purchase an available Su Square.</p>
     <div style="border:2px solid #ccc;position:relative;height:1000px">
       <a id="biga" style="width:1000px;height:1000px">
-        <img id="image" src="build/theImage.png" width="1000" height="1000" alt="All Su Squares" style="margin:0">
+        <img id="image" src="build/wholeSquare.png" width="1000" height="1000" alt="All Su Squares" style="margin:0">
       </a>
       <div id="position" style="background:pink;width:10px;height:10px;top:0;left:0;position:absolute;pointer-events:none;display:none"></div>
     </div>
@@ -65,7 +65,7 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
   <script>
     var allData = []; // Each is [version, title, href] or
-    $.get('build/allData.json', function(data){
+    $.get('build/squarePersonalizations.json', function(data){
       allData = [""].concat(data); // Data is zero-indexed
       var reducer = (accumulator, currentValue) => accumulator + !!currentValue;
       var sold = allData.slice(1).reduce(reducer, 0);
