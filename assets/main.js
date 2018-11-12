@@ -1,11 +1,13 @@
-// Requires jQuery
+// Requires jQuery ^3.3.1
 
 /* LOAD WEB3 ENVIRONMENT ******************************************************/
 var contract;
 var web3js;
 
-$(function(){
-  if (typeof web3 !== 'undefined') {
+$(async function(){
+  if (window.ethereum) {
+    web3js = new Web3(ethereum);
+  } else if (typeof web3 !== 'undefined') {
     // Use Mist/MetaMask's provider
     web3js = new Web3(web3.currentProvider);
   } else {
@@ -36,6 +38,13 @@ $(function(){
         console.log('This is an unknown network.')
     }
   });
+
+  try {
+    await ethereum.enable();
+  } catch (error) {
+    console.log("ERROR: Enable account access and reload.");
+    return;
+  }
 
   /* LOAD CONTRACT ************************************************************/
   var contractAddress = "0xE9e3F9cfc1A64DFca53614a0182CFAD56c10624F" //mainnet
