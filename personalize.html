@@ -46,11 +46,19 @@
       <h2>&#x2705; Using mainnet</h2>
     </div>
 
-    <div class="step-2-done" style="display:none">
-      <div class="step-3-not-done">
+    <div class="step-3-not-done">
+      <h2>Step 3: Enable your account</h2>
+      <p>Click "Enable" in the MetaMask pop-up to enable Ethereum.</p>
+    </div>
+    <div class="step-3-done" style="display:none">
+      <h2>&#x2705; Account enabled</h2>
+    </div>
+
+    <div class="step-3-done" style="display:none">
+      <div class="step-4-not-done">
         <h2>Step 3: Personalize</h2>
         <p>You are using wallet <strong class="wallet-plug">NONE</strong> and you own <strong class="square-count">...</strong> squares.</p>
-        <form class="step-3-not-done">
+        <form class="step-4-not-done">
           <p><strong>Square number</strong><br>Must be owned by the wallet you are currently using</p>
           <select id="square-number" style="width:10em">
           </select>
@@ -71,12 +79,12 @@
           <button id="personalize10" type="button">Personalize Square (10 finney)</button>
         </form>
       </div>
-      <div class="step-3-done" style="display:none">
+      <div class="step-4-done" style="display:none">
         <h2>&#x2705; Personalized square #<span class="square-number-plug"></span></h2>
       </div>
     </div>
 
-    <div class="step-3-done" style="display:none">
+    <div class="step-4-done" style="display:none">
       <h2>Step 4: Processing...</h2>
       <p>Thank you for personalizing!</p>
       <p>Your action is processing, your transaction ID is <a target="_blank" id="txlink" href=""><strong id="txid"></strong></a></p>
@@ -91,157 +99,192 @@
     </small>
   </footer>
   <script>
-    var pixelData = [];
-    var ownedCount = 0;
-    var loadedCount = 0;
+    let app = window.suSquaresApplication;
 
-    $(function(){
-      $('.wallet-plug').text(web3js.eth.defaultAccount);
-      contract.balanceOf(web3js.eth.defaultAccount, function(err, res){
+    /* The web3 workflow ******************************************************/
+    app.web3.then(()=>{
+      $('.step-1-done').show();
+      $('.step-1-not-done').hide();
+    });
+    app.networkId.then(()=>{
+      $('.step-2-done').show();
+      $('.step-2-not-done').hide();
+    });
+    app.accessEnabled.then(()=>{
+      $('.step-3-done').show();
+      $('.step-3-not-done').hide();
+    });
+
+    /* The application on this page *******************************************/
+    $(async ()=>{
+      try {
+        var contract = await app.contract;
+        var web3 = await app.web3;
+      } catch(error) {
+        alert(error);
+      }
+
+      /* Upfront stuff (non-interactive) **************************************/
+      var pixelData = []; // pixels from selected image
+      var ownedCount = 0; // balanceOf(owner)
+      var loadedCount = 0; // count of loaded squares
+
+      $('.wallet-plug').text(web3.eth.defaultAccount);
+      contract.balanceOf(web3.eth.defaultAccount, (err, res)=>{
         console.log(['count', err, res, res.toString()]);
         if (!err) {
           $('.square-count').text(res);
           ownedCount = res;
           loadOwnedSquare();
+        } else {
+          alert(err);
         }
       });
-    })
 
-    function loadOwnedSquare() {
-      if (loadedCount >= ownedCount) {
-        $('#square-number').val(getSquareFromUrl());
-        return;
-      }
-      contract.tokenOfOwnerByIndex(web3js.eth.defaultAccount, loadedCount, function(err, res){
-        console.log([err, res]);
-        if (!err) {
-          loadedCount++;
-          $('#square-number').append($('<option>', {
-            value: res,
-            text: 'Square #' + res
-          }));
-          loadOwnedSquare();
+      /* Helper functions *****************************************************/
+      function loadOwnedSquare() {
+        if (loadedCount >= ownedCount) {
+          $('#square-number').val(window.suSquaresApplication.getSquareFromUrl());
+          return;
         }
+        contract.tokenOfOwnerByIndex(web3.eth.defaultAccount, loadedCount, (err, res)=>{
+          console.log([err, res]);
+          if (!err) {
+            loadedCount++;
+            $('#square-number').append($('<option>', {
+              value: res,
+              text: 'Square #' + res
+            }));
+            loadOwnedSquare();
+          }
+        });
+      }
+
+      function readURL(input) {
+        if (input.files && input.files[0]) {
+          var reader = new FileReader();
+          reader.onload = function(e) {
+            // Loaded the image
+            $('#input-image').attr('src', e.target.result);
+          }
+          reader.readAsDataURL(input.files[0]);
+        }
+      }
+
+      /* Interactive behavior *************************************************/
+      $('#input-image').on('load',()=>{
+        pixelData = [];
+        var img = new Image();
+        img.src = $('#input-image').attr('src');
+        var inCanvas = document.createElement('canvas');
+        var inContext = inCanvas.getContext('2d');
+        inContext.drawImage(img, 0, 0);
+        var inContextPixels = inContext.getImageData(0,0,10,10);
+        for (var i = 0; i < inContextPixels.data.length; i += 4) {
+          pixelData.push(inContextPixels.data[i]);
+          pixelData.push(inContextPixels.data[i+1]);
+          pixelData.push(inContextPixels.data[i+2]);
+        }
+        var outCanvas = $('#output-image')[0];
+        var outContext = outCanvas.getContext('2d');
+        outContext.putImageData(inContextPixels,0,0)
       });
-    }
 
-    function readURL(input) {
-      if (input.files && input.files[0]) {
-        var reader = new FileReader();
-        reader.onload = function(e) {
-          // Loaded the image
-          $('#input-image').attr('src', e.target.result);
-        }
-        reader.readAsDataURL(input.files[0]);
-      }
-    }
+      $("#image").change(function() {
+        readURL(this);
+      });
 
-    $('#input-image').on('load',function(){
-      pixelData = [];
-      var img = new Image();
-      img.src = $('#input-image').attr('src');
-      var inCanvas = document.createElement('canvas');
-      var inContext = inCanvas.getContext('2d');
-      inContext.drawImage(img, 0, 0);
-      var inContextPixels = inContext.getImageData(0,0,10,10);
-      for (var i = 0; i < inContextPixels.data.length; i += 4) {
-        pixelData.push(inContextPixels.data[i]);
-        pixelData.push(inContextPixels.data[i+1]);
-        pixelData.push(inContextPixels.data[i+2]);
-      }
-      var outCanvas = $('#output-image')[0];
-      var outContext = outCanvas.getContext('2d');
-      outContext.putImageData(inContextPixels,0,0)
-    });
+      $('#personalizeFree').on('click', ()=>{
+        var squareNumber = $('#square-number').val();
+        if (squareNumber < 1 || squareNumber > 10000) {
+          alert('Square number must between 1 and 10,000, inclusive');
+          return
+        }
+        var title = $('#title').val();
+        if (title.length > 64) {
+          alert('Title must be less than 64 bytes');
+          return
+        }
+        var url = $('#url').val();
+        if (url.length > 96) {
+          alert('URL must be less than 96 bytes');
+          return
+        }
+        if (pixelData.length != 300) {
+          alert('There is a problem with your image');
+          return
+        }
+        var pixelDataWire = "0x";
+        for (var i = 0; i < pixelData.length; i++) {
+          var hex = pixelData[i].toString(16);
+          while (hex.length < 2) {
+            hex = "0" + hex;
+          }
+          pixelDataWire += hex;
+        }
+        if (pixelDataWire.length != 602) {
+          alert('There is a problem with encoding your image');
+          return
+        }
+        contract.personalizeSquare(squareNumber, pixelDataWire, title, url, (err, res)=>{
+          console.log([err, res]);
+          if (!err) {
+            $('.step-4-done').show();
+            $('.step-4-not-done').hide();
+            $(".square-number-plug").text(squareNumber);
+            $("#txid").text(res);
+            $("#txlink").attr('href',"https://etherscan.io/tx/"+res)
+          } else {
+            alert(err);
+          }
+        })
+      });
 
-    $("#image").change(function() {
-      readURL(this);
-    });
-
-    $('#personalizeFree').on('click', function(){
-      var squareNumber = $('#square-number').val();
-      if (squareNumber < 1 || squareNumber > 10000) {
-        alert('Square number must between 1 and 10,000, inclusive');
-        return
-      }
-      var title = $('#title').val();
-      if (title.length > 64) {
-        alert('Title must be less than 64 bytes');
-        return
-      }
-      var url = $('#url').val();
-      if (url.length > 96) {
-        alert('URL must be less than 96 bytes');
-        return
-      }
-      if (pixelData.length != 300) {
-        alert('There is a problem with your image');
-        return
-      }
-      var pixelDataWire = "0x";
-      for (var i = 0; i < pixelData.length; i++) {
-        var hex = pixelData[i].toString(16);
-        while (hex.length < 2) {
-          hex = "0" + hex;
+      $('#personalize10').on('click', ()=>{
+        var squareNumber = $('#square-number').val();
+        if (squareNumber < 1 || squareNumber > 10000) {
+          alert('Square number must between 1 and 10,000, inclusive');
+          return
         }
-        pixelDataWire += hex;
-      }
-      if (pixelDataWire.length != 602) {
-        alert('There is a problem with encoding your image');
-        return
-      }
-      contract.personalizeSquare(squareNumber, pixelDataWire, title, url, function(err, res){
-        console.log([err, res]);
-        if (!err) {
-          step3Done();
-          $(".square-number-plug").text(squareNumber);
-          $("#txid").text(res);
-          $("#txlink").attr('href',"https://etherscan.io/tx/"+res)
+        var title = $('#title').val();
+        if (title.length > 64) {
+          alert('Title must be less than 64 bytes');
+          return
         }
-      })
-    });
-
-    $('#personalize10').on('click', function(){
-      var squareNumber = $('#square-number').val();
-      if (squareNumber < 1 || squareNumber > 10000) {
-        alert('Square number must between 1 and 10,000, inclusive');
-        return
-      }
-      var title = $('#title').val();
-      if (title.length > 64) {
-        alert('Title must be less than 64 bytes');
-        return
-      }
-      var url = $('#url').val();
-      if (url.length > 96) {
-        alert('URL must be less than 96 bytes');
-        return
-      }
-      if (pixelData.length != 300) {
-        alert('There is a problem with your image');
-        return
-      }
-      var pixelDataWire = "0x";
-      for (var i = 0; i < pixelData.length; i++) {
-        var hex = pixelData[i].toString(16);
-        while (hex.length < 2) {
-          hex = "0" + hex;
+        var url = $('#url').val();
+        if (url.length > 96) {
+          alert('URL must be less than 96 bytes');
+          return
         }
-        pixelDataWire += hex;
-      }
-      if (pixelDataWire.length != 602) {
-        alert('There is a problem with encoding your image');
-        return
-      }
-      contract.personalizeSquare(squareNumber, pixelDataWire, title, url, {value: web3js.toWei(10, 'finney')}, function(err, res){
-        console.log([err, res]);
-        if (!err) {
-          step3Done();
-          $(".square-number-plug").text(squareNumber);
-          $("#txid").text(res);
-          $("#txlink").attr('href',"https://etherscan.io/tx/"+res)
+        if (pixelData.length != 300) {
+          alert('There is a problem with your image');
+          return
         }
-      })
+        var pixelDataWire = "0x";
+        for (var i = 0; i < pixelData.length; i++) {
+          var hex = pixelData[i].toString(16);
+          while (hex.length < 2) {
+            hex = "0" + hex;
+          }
+          pixelDataWire += hex;
+        }
+        if (pixelDataWire.length != 602) {
+          alert('There is a problem with encoding your image');
+          return
+        }
+        contract.personalizeSquare(squareNumber, pixelDataWire, title, url, {value: web3js.toWei(10, 'finney')}, (err, res)=>{
+          console.log([err, res]);
+          if (!err) {
+            $('.step-4-done').show();
+            $('.step-4-not-done').hide();
+            $(".square-number-plug").text(squareNumber);
+            $("#txid").text(res);
+            $("#txlink").attr('href',"https://etherscan.io/tx/"+res)
+          } else {
+            alert(err);
+          }
+        })
+      });
     });
   </script>
 </body>

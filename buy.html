@@ -54,24 +54,32 @@
       <h2>&#x2705; Using mainnet</h2>
     </div>
 
-    <div class="step-2-done" style="display:none">
-      <div class="step-3-not-done">
-        <h2>Step 3: Pick a square</h2>
+    <div class="step-3-not-done">
+      <h2>Step 3: Enable your account</h2>
+      <p>Click "Enable" in the MetaMask pop-up to enable Ethereum.</p>
+    </div>
+    <div class="step-3-done" style="display:none">
+      <h2>&#x2705; Account enabled</h2>
+    </div>
+
+    <div class="step-3-done" style="display:none">
+      <div class="step-4-not-done">
+        <h2>Step 4: Pick a square</h2>
         <form>
           <p><strong>Square number</strong></p>
           <input id="square-number" type=number min=1 max=10000 required style="width:7em">
           <hr>
-          <p><em>If somebody already bought that square while you were reading this then the transaction will NOT go through and your ether will NOT be spent. Once you buy, nobody, even Su, can undo the transaction. Be sure it's correct.</em></p>
+          <p><em>If somebody already bought that square while you were reading this then the transaction will NOT go through and your Ether will NOT be spent. Once you buy, nobody, even Su, can undo the transaction. Be sure it's correct.</em></p>
           <hr>
           <button id="buy" type="button">Buy Square</button>
         </form>
       </div>
-      <div class="step-3-done" style="display:none">
+      <div class="step-4-done" style="display:none">
         <h2>&#x2705; Picked square #<span class="square-number-plug"></span></h2>
       </div>
     </div>
 
-    <div class="step-3-done" style="display:none">
+    <div class="step-4-done" style="display:none">
       <h2>Step 4: Processing...</h2>
       <p>Thank you for your purchase! You picked <strong>square #<span class="square-number-plug"></span></strong>.</p>
       <p>Your purchase is processing, your transaction ID is <a target="_blank" id="txlink" href=""><strong id="transaction-id-plug"></strong></a></p>
@@ -86,24 +94,56 @@
     </small>
   </footer>
   <script>
-    $('#square-number').val(getSquareFromUrl());
+    let app = window.suSquaresApplication;
 
-    $('#buy').on('click', function(){
-      var square_number = $('#square-number').val();
-      if (square_number < 1 || square_number > 10000) {
-        alert('Square number must between 1 and 10,000, inclusive');
-        return
+    /* The web3 workflow ******************************************************/
+    app.web3.then(()=>{
+      $('.step-1-done').show();
+      $('.step-1-not-done').hide();
+    });
+    app.networkId.then(()=>{
+      $('.step-2-done').show();
+      $('.step-2-not-done').hide();
+    });
+    app.accessEnabled.then(()=>{
+      $('.step-3-done').show();
+      $('.step-3-not-done').hide();
+    });
+
+    /* The application on this page *******************************************/
+    $(async ()=>{
+      try {
+        var contract = await app.contract;
+        var web3 = await app.web3;
+      } catch(error) {
+        alert(error);
       }
-      contract.purchase(square_number, {value: web3js.toWei(500, 'finney')}, function(err, res){
-        console.log([err, res]);
-        if (!err) {
-          step3Done();
-          $("#transaction-id-plug").text(res);
-          $(".square-number-plug").text(square_number);
-          $("#txlink").attr('href',"https://etherscan.io/tx/"+res)
-          $("#nextlink").attr('href',"personalize.html?square="+square_number)
+
+      /* Upfront stuff (non-interactive) **************************************/
+      $('#square-number').val(window.suSquaresApplication.getSquareFromUrl());
+
+      /* Interactive behavior *************************************************/
+      $('#buy').on('click', ()=>{
+        let squareNumber = $('#square-number').val();
+        if (squareNumber < 1 || squareNumber > 10000) {
+          alert('Square number must between 1 and 10,000, inclusive');
+          return
         }
-      })
+
+        contract.purchase(squareNumber, {value: web3.toWei(500, 'finney')}, (err, res)=>{
+          console.log([err, res]);
+          if (!err) {
+            $('.step-4-done').show();
+            $('.step-4-not-done').hide();
+            $("#transaction-id-plug").text(res);
+            $(".square-number-plug").text(squareNumber);
+            $("#txlink").attr('href',"https://etherscan.io/tx/" + res)
+            $("#nextlink").attr('href',"personalize.html?square=" + squareNumber)
+          } else {
+            alert(err);
+          }
+        });
+      });
     });
   </script>
 </body>
