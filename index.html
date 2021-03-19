@@ -77,20 +77,20 @@
       return x + y*100 + 1;
     }
     $("#image").click(function(e){
-      var squareNumber = getSquareNumber(e, this);
+      const squareNumber = getSquareNumber(e, this);
       if (allData[squareNumber] == null) {
         window.location = "buy?square=" + (squareNumber);
       }
     });
     $("#image").on("mouseover mousemove", function(e) {
-      var squareNumber = getSquareNumber(e, this);
+      const squareNumber = getSquareNumber(e, this);
       //console.log("Entering square "+squareNumber);
       if (allData[squareNumber] == null) {
         $("#biga").css("cursor", "pointer");
         $("#biga").attr("title", "Square #" + (squareNumber) + " is available for sale, click to buy");
         $("#biga").attr("href", null);
-        var left = 10 * ((squareNumber-1)%100);
-        var top = 10 * Math.floor((squareNumber-1)/100);
+        const left = 10 * ((squareNumber-1)%100);
+        const top = 10 * Math.floor((squareNumber-1)/100);
         $("#position").css({left:left,top:top,display:"block"});
       } else if (!allData[squareNumber][1] && !allData[squareNumber][2]) {
         $("#biga").css("cursor", "not-allowed");

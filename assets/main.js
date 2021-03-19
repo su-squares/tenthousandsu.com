@@ -109,7 +109,7 @@ function SuSquaresApplication() {
     }
     
     // Encode pixel data for wire format, like 0x and then each channel/pixel
-    var pixelDataWire = "0x" + pixelData.map(i=>i.toString(16).padStart(2, "0")).join("");
+    const pixelDataWire = "0x" + pixelData.map(i=>i.toString(16).padStart(2, "0")).join("");
     if (pixelDataWire.length !== 602) {
       return Promise.reject(new Error("There is a problem with encoding your image"));
     }

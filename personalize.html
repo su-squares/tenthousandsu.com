@@ -129,7 +129,7 @@
 
       function readURL(input) {
         if (input.files && input.files[0]) {
-          var reader = new FileReader();
+          const reader = new FileReader();
           reader.onload = function(e) {
             // Loaded the image
             $("#input-image").attr("src", e.target.result);
@@ -147,7 +147,7 @@
         const inContext = inCanvas.getContext("2d");
         inContext.drawImage(img, 0, 0);
         const inContextPixels = inContext.getImageData(0, 0, 10, 10);
-        for (var i = 0; i < inContextPixels.data.length; i += 4) {
+        for (let i = 0; i < inContextPixels.data.length; i += 4) {
           pixelData.push(inContextPixels.data[i]);
           pixelData.push(inContextPixels.data[i+1]);
           pixelData.push(inContextPixels.data[i+2]);
