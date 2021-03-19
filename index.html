@@ -9,8 +9,8 @@
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'UA-52764-25');
+    gtag("js", new Date());
+    gtag("config", "UA-52764-25");
   </script>
   <link rel="stylesheet" href="assets/main.css">
 </head>
@@ -18,12 +18,12 @@
   <header>
     <a id="logo" href="index.html"><img src="assets/logo-su-squares.svg" style="width:348px;height:57px;object-fit: cover;"></div></a>
     <span>
-      One Su Square = 10x10 pixels<br>
+      One Su Square = 10&times;10 pixels<br>
       <span style="color: teal">Available: <span id="available-plug">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></span>
     </span>
     <span>
-      Resell on Ethereum blockchain<br>
-      <a href="white-paper.html"><img src="assets/file-pdf.svg" width=16 height=16></a> <a href="white-paper.html">Read The White Paper</a><br>
+      Resell on Ethereum<sup>&reg;</sup> blockchain<br>
+      <a href="white-paper.html"><img src="assets/file-pdf.svg" width=16 height=16></a> <a href="white-paper.html">Read the White Paper</a><br>
     </span>
     <a class="btn" href="buy.html">Buy</a>
     <a class="btn" href="personalize.html">Personalize</a>
@@ -61,10 +61,10 @@
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
   <script>
     var allData = []; // Each is [version, title, href] or
-    $.get('build/squarePersonalizations.json', function(data){
+    $.get("build/squarePersonalizations.json", function(data){
       allData = [""].concat(data); // Data is zero-indexed
-      var reducer = (accumulator, currentValue) => accumulator + !!currentValue;
-      var sold = allData.slice(1).reduce(reducer, 0);
+      const reducer = (accumulator, currentValue) => accumulator + !!currentValue;
+      const sold = allData.slice(1).reduce(reducer, 0);
       $("#available-plug").text((10000-sold).toLocaleString());
     });
 
@@ -76,35 +76,35 @@
       //console.log([x,y]);
       return x + y*100 + 1;
     }
-    $('#image').click(function(e){
+    $("#image").click(function(e){
       var squareNumber = getSquareNumber(e, this);
       if (allData[squareNumber] == null) {
-        window.location = 'buy.html?square=' + (squareNumber);
+        window.location = "buy.html?square=" + (squareNumber);
       }
     });
-    $('#image').on('mouseover mousemove', function(e) {
+    $("#image").on("mouseover mousemove", function(e) {
       var squareNumber = getSquareNumber(e, this);
       //console.log("Entering square "+squareNumber);
       if (allData[squareNumber] == null) {
-        $('#biga').css('cursor', 'pointer');
-        $('#biga').attr('title', "Square #" + (squareNumber) + " is available for sale, click to buy");
-        $('#biga').attr('href', null);
+        $("#biga").css("cursor", "pointer");
+        $("#biga").attr("title", "Square #" + (squareNumber) + " is available for sale, click to buy");
+        $("#biga").attr("href", null);
         var left = 10 * ((squareNumber-1)%100);
         var top = 10 * Math.floor((squareNumber-1)/100);
-        $('#position').css({left:left,top:top,display:"block"});
+        $("#position").css({left:left,top:top,display:"block"});
       } else if (!allData[squareNumber][1] && !allData[squareNumber][2]) {
-        $('#biga').css('cursor', 'not-allowed');
-        $('#biga').attr('title', "Square #" + (squareNumber) + " WAS PURCHASED BUT NOT YET PERSONALIZED");
-        $('#biga').attr('href', null);
+        $("#biga").css("cursor", "not-allowed");
+        $("#biga").attr("title", "Square #" + (squareNumber) + " WAS PURCHASED BUT NOT YET PERSONALIZED");
+        $("#biga").attr("href", null);
       } else {
-        $('#biga').css('cursor', 'pointer');
-        $('#biga').attr('title', allData[squareNumber][1]);
-        $('#biga').attr('href', allData[squareNumber][2]);
+        $("#biga").css("cursor", "pointer");
+        $("#biga").attr("title", allData[squareNumber][1]);
+        $("#biga").attr("href", allData[squareNumber][2]);
       }
     });
-    $('#image').mouseout(function() {
-      $('#biga').attr('href', null);
-      $('#biga').attr('title', null);
+    $("#image").mouseout(function() {
+      $("#biga").attr("href", null);
+      $("#biga").attr("title", null);
     });
   </script>
 </body>

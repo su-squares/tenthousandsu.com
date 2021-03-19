@@ -9,11 +9,12 @@
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'UA-52764-25');
+    gtag("js", new Date());
+    gtag("config", "UA-52764-25");
   </script>
   <link rel="stylesheet" href="assets/main.css">
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/web3@1.3.4/dist/web3.min.js" integrity="sha256-GQqI2JYavfgCtKq7m7vTVLWIudbQ76HvNgxy4n8V9dc=" crossorigin="anonymous"></script>
   <script src="assets/main.js"></script>
 </head>
 <body>
@@ -40,47 +41,38 @@
 
     <div class="step-1-not-done">
       <h2>Step 1: Install MetaMask</h2>
-      <p>You purchase Su Squares using ether and MetaMask is a Chrome/Firefox/Opera browser extension that lets you transact with Ethereum without creating a login here.</p>
-      <p><a href="https://metamask.io/">Install MetaMask</a> to continue. Then reload this page.</p>
+      <p>To purchase using ether use Edge/Chrome/Firefox/Opera and <a target="_blank" href="https://metamask.io/">Install MetaMask</a> or compatible software to continue. Then reload this page.</p>
     </div>
     <div class="step-1-done" style="display:none">
-      <h2>&#x2705; Installed MetaMask</h2>
+      <p>&#x2705; Step 1: Web3 environment enabled</p>
     </div>
 
     <div class="step-2-not-done">
       <h2>Step 2: Login to mainnet</h2>
-      <p>Switch to <strong>Main Network</strong> and login to your MetaMask wallet. Then reload this page.</p>
+      <p>Switch to <strong>Ethereum Mainnet</strong> and login to your MetaMask wallet. Then reload this page.</p>
     </div>
     <div class="step-2-done" style="display:none">
-      <h2>&#x2705; Using mainnet</h2>
+      <p>&#x2705; Step 2: Using Ethereum<sup>&reg;</sup> Mainnet</p>
     </div>
 
-    <div class="step-3-not-done">
-      <h2>Step 3: Enable your account</h2>
-      <p>Click "Enable" in the MetaMask pop-up to enable Ethereum.</p>
-    </div>
-    <div class="step-3-done" style="display:none">
-      <h2>&#x2705; Account enabled</h2>
-    </div>
-
-    <div class="step-3-done" style="display:none">
-      <div class="step-4-not-done">
-        <h2>Step 4: Pick a square</h2>
+    <div class="step-2-done" style="display:none">
+      <div class="step-3-not-done">
+        <h2>Step 3: Pick a square</h2>
         <form>
           <p><strong>Square number</strong></p>
           <input id="square-number" type=number min=1 max=10000 required style="width:7em">
           <hr>
-          <p><em>If somebody already bought that square while you were reading this then the transaction will NOT go through and your Ether will NOT be spent. Once you buy, nobody, even Su, can undo the transaction. Be sure it's correct.</em></p>
+          <p><em>If somebody else buys that square while you were reading this then your transaction will fail and your ether will NOT be spent. Once you buy, nobody, even Su, can undo the transaction. Be sure it's correct.</em></p>
           <hr>
           <button id="buy" type="button">Buy Square</button>
         </form>
       </div>
-      <div class="step-4-done" style="display:none">
-        <h2>&#x2705; Picked square #<span class="square-number-plug"></span></h2>
+      <div class="step-3-done" style="display:none">
+        <p>&#x2705; Step 3: Picked square #<span class="square-number-plug"></span></p>
       </div>
     </div>
 
-    <div class="step-4-done" style="display:none">
+    <div class="step-3-done" style="display:none">
       <h2>Step 4: Processing...</h2>
       <p>Thank you for your purchase! You picked <strong>square #<span class="square-number-plug"></span></strong>.</p>
       <p>Your purchase is processing, your transaction ID is <a target="_blank" id="txlink" href=""><strong id="transaction-id-plug"></strong></a></p>
@@ -94,58 +86,47 @@
       Ten Thousand Su&trade; website &copy; Su Entriken. All rights reserved. Not responsible for the content of linked sites. Images shown on homepage are &copy; their respective owners.
     </small>
   </footer>
+
   <script>
-    let app = window.suSquaresApplication;
+    const app = new SuSquaresApplication();
 
-    /* The web3 workflow ******************************************************/
-    app.web3.then(()=>{
-      $('.step-1-done').show();
-      $('.step-1-not-done').hide();
-    });
-    app.networkId.then(()=>{
-      $('.step-2-done').show();
-      $('.step-2-not-done').hide();
-    });
-    app.accessEnabled.then(()=>{
-      $('.step-3-done').show();
-      $('.step-3-not-done').hide();
+    /* The Web3 workflow ******************************************************/
+    app.isConnected.then(()=>{
+      $(".step-1-done").show();
+      $(".step-1-not-done").hide();
     });
 
-    /* The application on this page *******************************************/
-    $(async ()=>{
-      try {
-        var contract = await app.contract;
-        var web3 = await app.web3;
-      } catch(error) {
-        alert(error);
-      }
+    app.isNetworkCorrect.then(()=>{
+      $(".step-2-done").show();
+      $(".step-2-not-done").hide();
+    });
 
-      /* Upfront stuff (non-interactive) **************************************/
-      $('#square-number').val(window.suSquaresApplication.getSquareFromUrl());
+    /* Buy page interactivity *************************************************/
+    $(()=>{
+      // Show square from URL like /buy.html?square=328
+      $("#square-number").val(app.getSquareFromUrl());
 
-      /* Interactive behavior *************************************************/
-      $('#buy').on('click', ()=>{
-        let squareNumber = $('#square-number').val();
-        if (squareNumber < 1 || squareNumber > 10000) {
-          alert('Square number must between 1 and 10,000, inclusive');
-          return
-        }
+      // The BUY SQUARE button
+      $("#buy").on("click", async ()=>{
+        const squareNumber = $("#square-number").val();
+        $(".square-number-plug").text(squareNumber);
+        $("#nextlink").attr("href", "personalize.html?square=" + squareNumber)
 
-        contract.purchase(squareNumber, {value: web3.toWei(500, 'finney')}, (err, res)=>{
-          console.log([err, res]);
-          if (!err) {
-            $('.step-4-done').show();
-            $('.step-4-not-done').hide();
-            $("#transaction-id-plug").text(res);
-            $(".square-number-plug").text(squareNumber);
-            $("#txlink").attr('href',"https://etherscan.io/tx/" + res)
-            $("#nextlink").attr('href',"personalize.html?square=" + squareNumber)
-          } else {
-            alert(err);
-          }
+        app.sendBuy(squareNumber)
+        .then(receipt=>{
+          console.log(receipt);
+          $(".step-3-done").show();
+          $(".step-3-not-done").hide();
+          $("#transaction-id-plug").text(receipt);
+          $("#txlink").attr("href", "https://etherscan.io/tx/" + receipt)
+        })
+        .catch(error=>{
+          console.log(error.message);
+          alert(error.message);
         });
       });
     });
   </script>
+
 </body>
 </html>
