@@ -17,7 +17,8 @@ function EthereumApplication() {
   const isNetworkCorrect = web3.eth.net.getId().then(value => value === 1);
 
   /// This requires authorizing the app
-  const mainAccount = web3.eth.getAccounts().then(value => value[0]);
+  // https://github.com/ChainSafe/web3.js/issues/2091#issuecomment-787637817
+  const mainAccount = web3.eth.requestAccounts().then(value => value[0]);
 
   return {
     web3,
