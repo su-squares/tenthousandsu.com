@@ -2,8 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="description" content="">
-  <title>Su Squares, Blockchain Rentable Advertising</title>
+  <title>Su Squares, buy a square</title>
+  <link rel="canonical" href="https://tenthousandsu.com/buy" />
   <!-- Global site tag (gtag.js) - Google Analytics -->
   <script async src="https://www.googletagmanager.com/gtag/js?id=UA-52764-25"></script>
   <script>
@@ -19,7 +19,7 @@
 </head>
 <body>
   <header>
-    <a id="logo" href="index.html"><img src="assets/logo-su-squares.svg" style="width:348px;height:57px;object-fit: cover;"></div></a>
+    <a id="logo" href="/"><img src="assets/logo-su-squares.svg" style="width:348px;height:57px;object-fit: cover;"></div></a>
   </header>
 
   <div class="image-list">
@@ -77,7 +77,7 @@
       <p>Thank you for your purchase! You picked <strong>square #<span class="square-number-plug"></span></strong>.</p>
       <p>Your purchase is processing, your transaction ID is <a target="_blank" id="txlink" href=""><strong id="transaction-id-plug"></strong></a></p>
       <p>You can click that link about to check the progress. This should complete within one minute. (It will say "sorry, unable to locate" until then.)</p>
-      <p>After the transaction is complete you own the square! Your Ethereum wallet will show it to you if your wallet has built-in support for ERC-721. Otherwise, write down your square number and, and you can use that to <a id="nextlink" href="personalize.html">personalize</a>.</p>
+      <p>After the transaction is complete you own the square! Your Ethereum wallet will show it to you if your wallet has built-in support for ERC-721. Otherwise, write down your square number and, and you can use that to <a id="nextlink" href="personalize">personalize</a>.</p>
     </div>
 
   </article>
@@ -103,14 +103,14 @@
 
     /* Buy page interactivity *************************************************/
     $(()=>{
-      // Show square from URL like /buy.html?square=328
+      // Show square from URL like /buy?square=328
       $("#square-number").val(app.getSquareFromUrl());
 
       // The BUY SQUARE button
       $("#buy").on("click", async ()=>{
         const squareNumber = $("#square-number").val();
         $(".square-number-plug").text(squareNumber);
-        $("#nextlink").attr("href", "personalize.html?square=" + squareNumber)
+        $("#nextlink").attr("href", "personalize?square=" + squareNumber)
 
         app.sendBuy(squareNumber)
         .then(receipt=>{
