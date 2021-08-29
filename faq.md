@@ -20,3 +20,10 @@ In your PayPal note, please include:
 - What to do if your preferred Square is not available
 
 PayPal orders are processed manually. Please be patient and ask with any questions.
+
+After your order, you can expect:
+
+1. Will finishes sleeping (if he's sleeping)
+2. Will receives your order and personally processes it
+3. You receive an email to your PayPal account address with confirmation just like when you buy shoes online
+4. The Su Squares website is updated to reflect your order within 24 hours
