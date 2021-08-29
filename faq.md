@@ -27,3 +27,10 @@ After your order, you can expect:
 2. Will receives your order and personally processes it
 3. You receive an email to your PayPal account address with confirmation just like when you buy shoes online
 4. The Su Squares website is updated to reflect your order within 24 hours
+
+## How do I split a 30×30 image into 9 10×10 images?
+
+There's an online tool that does exactly this. Please see:
+
+[PineTools&mdash;Split image online](https://pinetools.com/split-image)
+
