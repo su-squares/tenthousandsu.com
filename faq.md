@@ -34,3 +34,8 @@ There's an online tool that does exactly this. Please see:
 
 [PineTools&mdash;Split image online](https://pinetools.com/split-image)
 
+## Why is gas cost ridonkulously high?
+
+Because that Square is not available. You are attempting to place an order that will revert. MetaMask could do a much better job of articulating this.
+
+![revert-tx](assets/revert-tx.png)
