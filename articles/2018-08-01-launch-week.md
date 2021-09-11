@@ -11,11 +11,11 @@ permalink: /articles/2018-08-01-launch-week
 
 ## What are Su Squares?
 
-Su Squares are cute little blocks which you can purchase and then attach a picture and website link to. It will show publicly on [the homepage](http://127.0.0.1:4000/). Once you own a Su Square, it is yours and your ownership is enforced by the Ethereum blockchain. You can sell or rent your Square to other people and trade as well.
+Su Squares are cute little blocks which you can purchase and then attach a picture and website link to. It will show publicly on [the homepage](/). Once you own a Su Square, it is yours and your ownership is enforced by the Ethereum blockchain. You can sell or rent your Square to other people and trade as well.
 
 We pay homage to [The Million Dollar Homepage](http://milliondollarhomepage.com/) and [CryptoKitties](https://www.cryptokitties.co/).
 
-Read more on [the white paper](http://127.0.0.1:4000/white-paper) to learn how it works.
+Read more on [the white paper](/white-paper) to learn how it works.
 
 ## Initial deed offering / special offer
 
