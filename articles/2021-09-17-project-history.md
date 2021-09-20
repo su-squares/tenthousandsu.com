@@ -17,6 +17,8 @@ Su Squares are cute squares you own and personalize, displayed on TenThousandSu.
 
 In the back of their minds while William was learning about Ethereum, Su and William decided to sell some digital collectable project or "some blockchain thing". At the time, most blockchain projects were "shitcoins" and this inspired the original name for this project, Su Coin. As the project took form, heavy inspiration came from the Million Dollar Homepage. The simple idea was finally published as Su Squares.
 
+In early 2018, Su went on a business trip to Manila. This gave William some free nights to play and learn about Ethereum.
+
 ## The ERC-721 standard
 
 William was introduced to the Ethereum community by childhood friend Robert Leshner (CEO, compound.finance, also Philadelphia region) in late 2017 and looked to find a fun place to start. With his [background in open source](https://github.com/fulldecent) and developer community building from working at Google, the US Department of Defense and on Linux/iOS projects, William looked to contribute to Ethereum by being a mentor for bringing new people into the project. He found the non-fungible tokens (NFT) initiative and immediately recognized this was the main value proposition for distributed ledgers. (A very unpopular value assessment at the time and maybe still so today.)
