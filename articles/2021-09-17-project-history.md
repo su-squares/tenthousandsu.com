@@ -62,10 +62,10 @@ Shortly after finalization of the standard, Su Squares was shown on stage at the
   * https://etherscan.io/tx/0x8db60af69f40b07a9f439a20bf4838f16aeb645712029680012ea339c2c15374
   * https://etherscan.io/tx/0xf4530da8db00d90b15c1158f797d22caa5a4b1b1e3ce9c56615ecf17d4266e3e
   * https://etherscan.io/tx/0xda360e16690d3b3eea4c9180540ccc99a7090ff26299b71705ea3729c1658c59
-  * https://etherscan.io/tx/0xecad62387037ff314b66e535aa6c1be0830d2b61a4fbdcbb280589b184890054
-  * https://etherscan.io/tx/0xe05b7f2f0796b98dad3bdba0a8998354caea9fcc3bb52b6127fb73de3636e33a
-  * https://etherscan.io/tx/0x3d22ffbb7fb13148062c94e4b1986e14b70d0981dbe71b40748b43c1f8274946
-  * https://etherscan.io/tx/0x07bb215de77674c272b3a0e3f336642879f926df52e79d9ff8b26fdcbc4acb1b
+  * https://etherscan.io/tx/0xecad62387037ff314b66e535aa6c1be0830d2b61a4fbdcbb280589b184890054 [ERC-721 Validator passed](https://erc721validator.org/?address=0x6731560e455537c9f088EA02A47a0ECFa28a9231)
+  * https://etherscan.io/tx/0xe05b7f2f0796b98dad3bdba0a8998354caea9fcc3bb52b6127fb73de3636e33a [ERC-721 Validator passed](https://erc721validator.org/?address=0xe264D16BCBA50925D0e1a90398596EC010306E14)
+  * https://etherscan.io/tx/0x3d22ffbb7fb13148062c94e4b1986e14b70d0981dbe71b40748b43c1f8274946 [ERC-721 Validator passed](https://erc721validator.org/?address=0x696c4dB4Dfb25b30a1C08f042e80172B2D34f4Bc)
+  * https://etherscan.io/tx/0x07bb215de77674c272b3a0e3f336642879f926df52e79d9ff8b26fdcbc4acb1b [ERC-721 Validator passed](https://erc721validator.org/?address=0xE9e3F9cfc1A64DFca53614a0182CFAD56c10624F)
 
 * 2018-03-19 First [commercial sale or grant](https://etherscan.io/tx/0xfb19b24a74ac540f3b13e27bb6a36f73bb1f3fc6e10d1cd671a0907d8d3ac04c) of a Square—every subsequent release of Su Squares maintained the ownership of this Square and other other Squares that were owned on superceded version of the contract
 
