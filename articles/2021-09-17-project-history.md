@@ -7,7 +7,7 @@ permalink: /articles/2021-09-17-project-history
 
 *If you have any questions, please mail [Su@TenThousandSu.com](mailto:Su@TenThousandSu.com?subject=Su Squares&body=Hi Su%2C Please help! I have a question about Su Squares. ).*
 
-Su Squares are cute squares you own and personalize, displayed on TenThousandSu.com and accounted for on Ethereum<sup>&reg;</sup> Mainnet. The article tells the authoritative history of the project.
+Su Squares are cute squares you own and personalize, displayed on TenThousandSu.com and accounted for on Ethereum<sup>&reg;</sup> Mainnet. This article tells why Su Squares are the first ERC-721 digital collectable for sale and the authoritative history of the project.
 
 ## Founders' background
 
@@ -15,19 +15,19 @@ Su Squares are cute squares you own and personalize, displayed on TenThousandSu.
 
 ## The idea
 
-In the back of their minds while William was learning about Ethereum, Su and William decided to sell some digital collectable project or "some blockchain thing". At the time, most blockchain projects were "shitcoins" and this inspired the original name for this project, Su Coin. As the project took form, heavy inspiration came from the Million Dollar Homepage. The simple idea was finally published as Su Squares.
+In the back of their minds while William was learning about Ethereum, Su and William decided to sell some digital collectable project or "some blockchain thing". At the time, most blockchain projects were "shitcoins" and this inspired the original name for this project, Su Coin. As the project took form, heavy inspiration came from the Million Dollar Homepage. The simple idea was finally published as **Su Squares**.
 
 In early 2018, Su went on a business trip to Manila. This gave William some free nights to play and learn about Ethereum.
 
 ## The ERC-721 standard
 
-William was introduced to the Ethereum community by childhood friend Robert Leshner (CEO, compound.finance, also Philadelphia region) in late 2017 and looked to find a fun place to start. With his [background in open source](https://github.com/fulldecent) and developer community building from working at Google, the US Department of Defense and on Linux/iOS projects, William looked to contribute to Ethereum by being a mentor for bringing new people into the project. He found the non-fungible tokens (NFT) initiative and immediately recognized this was the main value proposition for distributed ledgers. (A very unpopular value assessment at the time and maybe still so today.)
+William was introduced to the Ethereum community by childhood friend Robert Leshner (CEO, [compound.finance](https://compound.finance), also Philadelphia region) in late 2017 and looked to find a fun place to start. With his [background in open source](https://github.com/fulldecent) and developer community building from working at Google, the US Department of Defense and on Linux/iOS projects, William looked to contribute to Ethereum by being a mentor for bringing new people into the project. He found the non-fungible tokens (NFT) initiative and immediately recognized this was the main value proposition for distributed ledgers. (A very unpopular value assessment at the time and maybe still so today.)
 
 At the time, CryptoKitties was clearly the most active, liquid, and fun NFT project. These colorful pictures of cats, with breeding game mechanics, auctions and gene-splicing show a delightful, well-designed product that went on to achieve great commercial success. As many would-be copycats rushed to steal these ideas, developers with varying levels of experience needed guidance from mentors and specification authors to build their product. This is the time William joined the scene.
 
-Several competing standards worked to define an interoperable ecosystem of smart contracts, wallets and marketplaces for NFTs. Through sheer hard work, rewriting drafts daily and taking phone calls personally from anybody with an opinion, William earned the role of lead author of the standard ERC-841, later renamed ERC-721. With his coauthors, this standard passed with unanimous consent, all competing standards were withdrawn and for years no replacement or extension has been formally proposed.
+Several competing standards worked to define an interoperable ecosystem of smart contracts, wallets and marketplaces for NFTs. Through sheer hard work, rewriting drafts daily and taking phone calls personally from anybody with an opinion, **William earned the role of lead author of the standard ERC-841, later renamed ERC-721. With his coauthors**, this standard passed with unanimous consent, all competing standards were withdrawn and for years no replacement or extension has been formally proposed.
 
-The chosen approach for overcoming technical objections to ERC-721 has been to lead by example. Some people objected that because the CryptoKitties smart contract does not scale (see "blow past the block gas limit" note in KittyOwnership.sol) then EC-721 cannot be scalable. To verifiy scalability, a contract was deployed with more tokens than any practical application could ever want, (see "nanobots" devouring Earth in ERC-721). Complaints about Solidity (a smart contract language) were resolved by fixing Solidity. Complaints about the ERC standards process were solved by changing the ERC standards process.
+The chosen approach for overcoming technical objections to ERC-721 has been to lead by example. Some people objected that because the CryptoKitties smart contract does not scale (see "blow past the block gas limit" note in KittyOwnership.sol) then ERC-721 cannot be scalable. To verifiy scalability, a contract was deployed with more tokens than any practical application could ever want, (see "nanobots" devouring Earth in ERC-721). Complaints about Solidity (a smart contract language) were resolved by fixing Solidity. Complaints about the ERC standards process were solved by changing the ERC standards process.
 
 Every change also brought a specific and unreconsiled complaint:
 
@@ -43,7 +43,7 @@ The standard was finalized June 21, 2018 on Su's birthday.
 
 Su Squares, the 0xcert reference implementation and the nanobots scalable implementation are all referenced in the ERC-721 standard and recently the Su Squares source code [has been open sourced](./2021-08-29-open-source).
 
-Shortly after finalization of the standard, Su Squares was shown on stage at the July 2018 Hong Kong NIFTY GG event. Su Squares achieved an "all passed" green score from the ERC-721 validator. The 0xcert reference implementation and the Codex protocol also achieved full compliance and every other known NFT project at the time (including CryptoKitties) did not actually comply with the ERC-721 standard. After some time, awareness and tooling have improved and in modern day nearly all NFT projects are ERC-721 compliant.
+Shortly after finalization of the standard, Su Squares was shown on stage at the July 2018 Hong Kong NIFTY GG event. Su Squares achieved an "all passed" green score from the [ERC-721 validator](https://erc721validator.org/?address=0xE9e3F9cfc1A64DFca53614a0182CFAD56c10624F). The 0xcert reference implementation and the Codex protocol also achieved full compliance and every other known NFT project at the time (including CryptoKitties) did not actually comply with the ERC-721 standard. After some time, awareness and tooling have improved and in modern day nearly all NFT projects are ERC-721 compliant.
 
 > Su Squares was the first ERC-721 digital collectable for sale.
 
@@ -59,13 +59,13 @@ Shortly after finalization of the standard, Su Squares was shown on stage at the
 
 * 2018-03-19 [First Ethereum Mainnet deployment](https://etherscan.io/tx/0x13d6eb301014d141edcd9826027a873c825d403438e9065116287ea43aa7da8d) of Su Squares, ⚠️ do not use old versions, they are insecure, following are some of the deployments found, there are many more
 
-  * https://etherscan.io/tx/0x8db60af69f40b07a9f439a20bf4838f16aeb645712029680012ea339c2c15374
-  * https://etherscan.io/tx/0xf4530da8db00d90b15c1158f797d22caa5a4b1b1e3ce9c56615ecf17d4266e3e
-  * https://etherscan.io/tx/0xda360e16690d3b3eea4c9180540ccc99a7090ff26299b71705ea3729c1658c59
-  * https://etherscan.io/tx/0xecad62387037ff314b66e535aa6c1be0830d2b61a4fbdcbb280589b184890054 [ERC-721 Validator passed](https://erc721validator.org/?address=0x6731560e455537c9f088EA02A47a0ECFa28a9231)
-  * https://etherscan.io/tx/0xe05b7f2f0796b98dad3bdba0a8998354caea9fcc3bb52b6127fb73de3636e33a [ERC-721 Validator passed](https://erc721validator.org/?address=0xe264D16BCBA50925D0e1a90398596EC010306E14)
-  * https://etherscan.io/tx/0x3d22ffbb7fb13148062c94e4b1986e14b70d0981dbe71b40748b43c1f8274946 [ERC-721 Validator passed](https://erc721validator.org/?address=0x696c4dB4Dfb25b30a1C08f042e80172B2D34f4Bc)
-  * https://etherscan.io/tx/0x07bb215de77674c272b3a0e3f336642879f926df52e79d9ff8b26fdcbc4acb1b [ERC-721 Validator passed](https://erc721validator.org/?address=0xE9e3F9cfc1A64DFca53614a0182CFAD56c10624F)
+  * [Transaction 0x8db6...5374](https://etherscan.io/tx/0x8db60af69f40b07a9f439a20bf4838f16aeb645712029680012ea339c2c15374)
+  * [Transaction 0xf453...6e3e](https://etherscan.io/tx/0xf4530da8db00d90b15c1158f797d22caa5a4b1b1e3ce9c56615ecf17d4266e3e)
+  * [Transaction 0xda36...8c59](https://etherscan.io/tx/0xda360e16690d3b3eea4c9180540ccc99a7090ff26299b71705ea3729c1658c59)
+  * [Transaction 0xecad...0054](https://etherscan.io/tx/0xecad62387037ff314b66e535aa6c1be0830d2b61a4fbdcbb280589b184890054), [ERC-721 Validator passed](https://erc721validator.org/?address=0x6731560e455537c9f088EA02A47a0ECFa28a9231)
+  * [Transaction 0xe05b...e33a](https://etherscan.io/tx/0xe05b7f2f0796b98dad3bdba0a8998354caea9fcc3bb52b6127fb73de3636e33a), [ERC-721 Validator passed](https://erc721validator.org/?address=0xe264D16BCBA50925D0e1a90398596EC010306E14)
+  * [Transaction 0x3d22...4946](https://etherscan.io/tx/0x3d22ffbb7fb13148062c94e4b1986e14b70d0981dbe71b40748b43c1f8274946), [ERC-721 Validator passed](https://erc721validator.org/?address=0x696c4dB4Dfb25b30a1C08f042e80172B2D34f4Bc)
+  * [Transaction 0x07bb...cb1b](https://etherscan.io/tx/0x07bb215de77674c272b3a0e3f336642879f926df52e79d9ff8b26fdcbc4acb1b), [ERC-721 Validator passed](https://erc721validator.org/?address=0xE9e3F9cfc1A64DFca53614a0182CFAD56c10624F)
 
 * 2018-03-19 First [commercial sale or grant](https://etherscan.io/tx/0xfb19b24a74ac540f3b13e27bb6a36f73bb1f3fc6e10d1cd671a0907d8d3ac04c) of a Square—every subsequent release of Su Squares maintained the ownership of this Square and other other Squares that were owned on superceded version of the contract
 
