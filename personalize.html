@@ -171,8 +171,8 @@
           console.log(result);
           $(".step-4-done").show();
           $(".step-4-not-done").hide();
-          $("#txid").text(result);
-          $("#txlink").attr("href", "https://etherscan.io/tx/" + result);
+          $("#txid").text(result.transactionHash);
+          $("#txlink").attr("href", "https://etherscan.io/tx/" + result.transactionHash);
         })
         .catch(error=>{
           console.log(error.message);
@@ -189,11 +189,11 @@
 
         app.sendPersonalizeWithTenFinney(squareNumber, pixelData, title, url)
         .then(result=>{
-          console.log(result);
+          console.log(receipt);
           $(".step-4-done").show();
           $(".step-4-not-done").hide();
-          $("#txid").text(result);
-          $("#txlink").attr("href","https://etherscan.io/tx/" + result);
+          $("#txid").text(receipt.transactionHash);
+          $("#txlink").attr("href","https://etherscan.io/tx/" + receipt.transactionHash);
         })
         .catch(error=>{
           console.log(error.message);
