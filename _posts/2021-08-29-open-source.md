@@ -1,6 +1,7 @@
 ---
 layout: article
 permalink: /articles/2021-08-29-open-source
+title: Su Squares Open Sourced
 ---
 
 # Su Squares Open Sourced

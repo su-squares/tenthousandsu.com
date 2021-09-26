@@ -1,6 +1,7 @@
 ---
 layout: article
 permalink: /articles/2018-11-16-sale-on-opensea
+title: Su Squares For Sale on OpenSea
 ---
 
 # Su Squares For Sale on OpenSea

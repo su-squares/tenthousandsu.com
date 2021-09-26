@@ -1,6 +1,7 @@
 ---
 layout: article
 permalink: /articles/2018-09-18-operator-bug
+title: Operator Bug
 ---
 
 # OpenSea Identifies Operator Bug with Su Squares

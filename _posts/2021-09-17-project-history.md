@@ -1,6 +1,7 @@
 ---
 layout: article
 permalink: /articles/2021-09-17-project-history
+title: Project History
 ---
 
 # Project History
