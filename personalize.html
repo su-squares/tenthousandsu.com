@@ -19,8 +19,8 @@
 
   <article class="lead">
     <h1>Personalize Squares</h1>
-    <p><em>If you have any questions, please mail <a href="mailto:Su@TenThousandSu.com?subject=Su%20Squares&body=Hi%20Su%2C%0A%0APlease%20help!%20I%20have%20a%20question%20about%20Su%20Squares.%0A%0A">Su@TenThousandSu.com</a>. The price to personalize is 0.01 ether (10 finney), but the first three times are free.</em></p>
-    <p>After the third personalization, you must use the 10 finney button.</p>
+    <p><em>If you have any questions, please mail <a href="mailto:Su@TenThousandSu.com?subject=Su%20Squares&body=Hi%20Su%2C%0A%0APlease%20help!%20I%20have%20a%20question%20about%20Su%20Squares.%0A%0A">Su@TenThousandSu.com</a>. The price to personalize is 0.01 Ether (10 Finney), but the first three times are free.</em></p>
+    <p>After the third personalization, you must use the 10 Finney button.</p>
 
     <div class="step-1-not-done">
       <h2>Step 1: Install MetaMask</h2>
@@ -57,10 +57,10 @@
           <p><strong>Your square URL</strong><br>Maximum 96 bytes (some Unicode characters use multiple bytes)</p>
           <input id="url" type=text name="url" maxlength=96 required placeholder="https://...">
           <hr>
-          <p><em>If you broke any rule above then the transaction will fail and your ether will NOT be spent.</em></p>
+          <p><em>If you broke any rule above then the transaction will fail and your Ether will NOT be spent.</em></p>
           <hr>
           <button id="personalizeFree" type="button">Personalize Square (FREE)</button>
-          <button id="personalize10" type="button">Personalize Square (10 finney)</button>
+          <button id="personalize10" type="button">Personalize Square (10 Finney)</button>
         </form>
       </div>
       <div class="step-4-done" style="display:none">
@@ -109,12 +109,18 @@
         $(".square-count").text(ownedCount);
 
         // Populate the dropdown box
+        let mySquares = [];
         for (index = 0; index < ownedCount; index++) {
           app.callTokenByIndex(index).then(squareNumber=>{
-            $("#square-number").append($("<option>", {
-              value: squareNumber,
-              text: "Square #" + squareNumber
-            }));
+            mySquares.push(squareNumber);
+            mySquares.sort((a,b) => a-b);
+            $("#square-number").children().remove();
+            mySquares.forEach(squareNumberToRepaint => {
+              $("#square-number").append($("<option>", {
+                value: squareNumberToRepaint,
+                text: "Square #" + squareNumberToRepaint
+              }));
+            });
           });
         }
       });
