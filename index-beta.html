@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Su Squares, cute squares you own and personalize</title>
+  <link rel="canonical" href="https://tenthousandsu.com" />
+  <link rel="stylesheet" href="assets/main.css">
+</head>
+<body id="homepage">
+  <header>
+    <a id="logo" href="/"><img src="assets/logo-su-squares.svg" style="width:348px;height:57px;object-fit: cover;"></div></a>
+    <span>
+      One Su Square = 10&times;10 pixels<br>
+      <span style="color: teal">Available: <span id="available-plug">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></span>
+    </span>
+    <span>
+      Resell on Ethereum<sup>&reg;</sup> blockchain<br>
+      <a href="white-paper"><img src="assets/file-pdf.svg" width=16 height=16></a> <a href="white-paper">Read the White Paper</a><br>
+    </span>
+    <a class="btn" href="buy">Buy</a>
+    <a class="btn" href="personalize">Personalize</a>
+    <a class="btn" target="twitter" href="https://twitter.com/susquares">
+      <img src="assets/twitter-logo.svg" width=18 height=18>
+    </a>
+    <a class="btn" target="twitter" href="https://discord.gg/6nTGNdjQ3B">
+      <img src="assets/discord-logo.svg" width=18 height=18>
+    </a>
+  </header>
+
+  <article>
+    <p>Click below to purchase an available Su Square.</p>
+    <div style="border:2px solid #ccc;position:relative;height:1000px">
+      <img id="image" src="build/wholeSquare.png" alt="All Su Squares" style="margin:0; height:1000px; width:1000px">
+      <div id="position" style="background:pink;width:10px;height:10px;top:0;left:0;position:absolute;pointer-events:none;display:none"></div>
+      <div id="tooltip"></div>
+    </div>
+  </article>
+
+  <footer>
+    <small>
+      Ten Thousand Su&trade; website &copy; Su Entriken. All rights reserved. Not responsible for the content of linked sites. Images shown on homepage are &copy; their respective owners. This image refreshes daily, or contact Will to boost the refresh.
+    </small>
+  </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+  <script>
+    var allData = []; // Each is [version, title, href] or
+    $.get("build/squarePersonalizations.json", function(data){
+      allData = [""].concat(data); // Data is zero-indexed
+      const reducer = (accumulator, currentValue) => accumulator + !!currentValue;
+      const sold = allData.slice(1).reduce(reducer, 0);
+      $("#available-plug").text((10000-sold).toLocaleString());
+    });
+
+    function getSquareNumber(e, element) {
+      var x = Math.floor((e.pageX - $(element).offset().left) / 10);
+      x = x <= 0 ? 0 : x >= 99 ? 99 : x;
+      var y = Math.floor((e.pageY - $(element).offset().top) / 10);
+      y = y <= 0 ? 0 : y >= 99 ? 99 : y;
+      //console.log([x,y]);
+      return x + y*100 + 1;
+    }
+    $("#image").click(function(e){
+      const squareNumber = getSquareNumber(e, this);
+      if (allData[squareNumber] == null) {
+        window.location = "buy?square=" + (squareNumber);
+      } else if (allData[squareNumber][2]) {
+        window.location = allData[squareNumber][2];
+      }
+    });
+    $("#image").on("mouseover mousemove", function(e) {
+      const squareNumber = getSquareNumber(e, this);
+      const left = 10 * ((squareNumber-1)%100);
+      const top = 10 * Math.floor((squareNumber-1)/100);
+      let title = "Square #" + (squareNumber) + "\n";
+      //console.log("Entering square "+squareNumber);
+      if (allData[squareNumber] == null) {
+        $("#image").css("cursor", "pointer");
+        title = title + " is available for sale, click to buy";
+        $("#position").css({left:left,top:top,display:"block"});
+      } else if (!allData[squareNumber][1] && !allData[squareNumber][2]) {
+        $("#image").css("cursor", "not-allowed");
+        title = title + " WAS PURCHASED BUT NOT YET PERSONALIZED";
+      } else {
+        $("#image").css("cursor", "pointer");
+        title = title + allData[squareNumber][1];
+      }
+
+      const tooltip = $("#tooltip");
+      tooltip.text(title);
+      tooltip.css({left:left, top:top+30, display:"block"});
+    });
+    $("#image").mouseout(function() {
+      $("#biga").attr("href", null);
+      $("#biga").attr("title", null);
+    });
+  </script>
+</body>
+</html>
