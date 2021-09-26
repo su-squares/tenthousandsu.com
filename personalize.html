@@ -53,9 +53,11 @@
           <hr>
           <p><strong>Your square title (we prepend your square number automatically)</strong><br>Maximum 64 bytes (some Unicode characters use multiple bytes)</p>
           <input id="title" type=text name="title" maxlength=64 required>
+          <p id="titlebytescount"></p>
           <hr>
           <p><strong>Your square URL</strong><br>Maximum 96 bytes (some Unicode characters use multiple bytes)</p>
           <input id="url" type=text name="url" maxlength=96 required placeholder="https://...">
+          <p id="urlbytescount"></p>
           <hr>
           <p><em>If you broke any rule above then the transaction will fail and your Ether will NOT be spent.</em></p>
           <hr>
@@ -199,6 +201,14 @@
           console.log(error.message);
           alert(error.message);
         });
+      });
+
+      $("#title").on("input", function () {
+        $("#titlebytescount").text("Bytes: " + $("#title").val().length);
+      });
+
+      $("#url").on("input", function () {
+        $("#urlbytescount").text("Bytes: " + $("#url").val().length);
       });
     });
   </script>
