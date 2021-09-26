@@ -1,6 +1,7 @@
 ---
 layout: article
 permalink: /articles/2021-09-04-steganography
+title: Storing Text/Data in Your Square
 ---
 
 # Storing Text/Data in Your Square

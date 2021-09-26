@@ -1,6 +1,7 @@
 ---
 layout: article
 permalink: /articles/2018-11-11-operator-bug-fixed
+title: Operator Bug Fixed
 ---
 
 # Su Squares Relaunches With Fix for Operator Bug
