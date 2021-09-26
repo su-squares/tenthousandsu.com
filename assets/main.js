@@ -48,7 +48,7 @@ function SuSquaresApplication() {
   /* Transaction wrappers to blockchain ***************************************/
 
   /**
-   * Send to blockchain, with 500 finney cost
+   * Send to blockchain, with 500 Finney cost
    * @param {number} squareNumber 
    * @returns Promise wrapping the transaction
    */
@@ -136,7 +136,7 @@ function SuSquaresApplication() {
   };
 
   /**
-   * Send to blockchain, with 10 finney fee
+   * Send to blockchain, with 10 Finney fee
    * @param {number} squareNumber 
    * @param {Array.<number>} pixelData
    * @param {String} title 

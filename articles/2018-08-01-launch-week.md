@@ -27,4 +27,4 @@ During launch week, anybody who purchases one square can receive an adjacent squ
 4. Email Su ([Su@TenThousandSu.com](mailto:Su@TenThousandSu.com?subject=Su Squares Launch Week&body=Hi Su%2C I purchased squares XXX and XXX using my wallet address XXX. Please refund my money for the launch week deal. And happy anniversary!)) and provide details of your purchase.
 5. Do all of this before the end of launch week, Monday August 13th, 2018 at 23:59 GMT.
 
-If you do the above then Su will refund your purchase price (0.5 ether) to your wallet address. Su and Will's wedding anniversary is right after launch week.
+If you do the above then Su will refund your purchase price (0.5 Ether) to your wallet address. Su and Will's wedding anniversary is right after launch week.
