@@ -98,8 +98,8 @@
           console.log(receipt);
           $(".step-3-done").show();
           $(".step-3-not-done").hide();
-          $("#transaction-id-plug").text(receipt);
-          $("#txlink").attr("href", "https://etherscan.io/tx/" + receipt)
+          $("#transaction-id-plug").text(receipt.transactionHash);
+          $("#txlink").attr("href", "https://etherscan.io/tx/" + receipt.transactionHash)
         })
         .catch(error=>{
           console.log(error.message);

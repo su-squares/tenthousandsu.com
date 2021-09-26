@@ -48,23 +48,6 @@ function SuSquaresApplication() {
   /* Transaction wrappers to blockchain ***************************************/
 
   /**
-   * Send to blockchain, with 500 Finney cost
-   * @param {number} squareNumber 
-   * @returns Promise wrapping the transaction
-   */
-  app.sendBuy = async function(squareNumber) {
-    if (squareNumber < 1 || squareNumber > 10000) {
-      return Promise.reject(new Error("Square number must between 1 and 10,000, inclusive"));
-    }
-    const method = app.contract.methods.purchase(squareNumber);
-    const mainAccount = await app.mainAccount;
-    return method.send({
-      value: app.web3.utils.toWei("500", "finney"),
-      from: mainAccount
-    });
-  };
-
-  /**
    * Call to blockchain, get count
    * @returns Promise wrapping the transaction
    */
@@ -81,6 +64,23 @@ function SuSquaresApplication() {
   app.callTokenByIndex = async function(index) {
     const mainAccount = await app.mainAccount;
     return app.contract.methods.tokenOfOwnerByIndex(mainAccount, index).call()
+  };
+
+  /**
+   * Send to blockchain, with 500 Finney cost
+   * @param {number} squareNumber 
+   * @returns Promise wrapping the transaction
+   */
+   app.sendBuy = async function(squareNumber) {
+    if (squareNumber < 1 || squareNumber > 10000) {
+      return Promise.reject(new Error("Square number must between 1 and 10,000, inclusive"));
+    }
+    const method = app.contract.methods.purchase(squareNumber);
+    const mainAccount = await app.mainAccount;
+    return method.send({
+      value: app.web3.utils.toWei("500", "finney"),
+      from: mainAccount
+    });
   };
 
   /**
