@@ -4,8 +4,7 @@
   <meta charset="utf-8">
   <title>Su Squares, cute squares you own and personalize</title>
   <link rel="canonical" href="https://tenthousandsu.com" />
-  <link rel="stylesheet" href="assets/main.css">
-  <link rel="alternate" type="application/rss+xml" title="Su Squares" href="/feed.xml" />
+  <link rel="stylesheet" href="assets/main.css?20210926">
 </head>
 <body id="homepage">
   <header>
@@ -31,10 +30,9 @@
   <article>
     <p>Click below to purchase an available Su Square.</p>
     <div style="border:2px solid #ccc;position:relative;height:1000px">
-      <a id="biga" style="width:1000px;height:1000px">
-        <img id="image" src="build/wholeSquare.png" width="1000" height="1000" alt="All Su Squares" style="margin:0">
-      </a>
+      <img id="image" src="build/wholeSquare.png" alt="All Su Squares" style="margin:0; height:1000px; width:1000px">
       <div id="position" style="background:pink;width:10px;height:10px;top:0;left:0;position:absolute;pointer-events:none;display:none"></div>
+      <div id="tooltip"></div>
     </div>
   </article>
 
@@ -65,31 +63,34 @@
       const squareNumber = getSquareNumber(e, this);
       if (allData[squareNumber] == null) {
         window.location = "buy?square=" + (squareNumber);
+      } else if (allData[squareNumber][2]) {
+        window.location = allData[squareNumber][2];
       }
     });
     $("#image").on("mouseover mousemove", function(e) {
       const squareNumber = getSquareNumber(e, this);
+      const left = 10 * ((squareNumber-1)%100);
+      const top = 10 * Math.floor((squareNumber-1)/100);
+      let title = "Square #" + (squareNumber) + "\n";
       //console.log("Entering square "+squareNumber);
       if (allData[squareNumber] == null) {
-        $("#biga").css("cursor", "pointer");
-        $("#biga").attr("title", "Square #" + (squareNumber) + " is available for sale, click to buy");
-        $("#biga").attr("href", null);
-        const left = 10 * ((squareNumber-1)%100);
-        const top = 10 * Math.floor((squareNumber-1)/100);
+        $("#image").css("cursor", "pointer");
+        title = title + " is available for sale, click to buy";
         $("#position").css({left:left,top:top,display:"block"});
       } else if (!allData[squareNumber][1] && !allData[squareNumber][2]) {
-        $("#biga").css("cursor", "not-allowed");
-        $("#biga").attr("title", "Square #" + (squareNumber) + " WAS PURCHASED BUT NOT YET PERSONALIZED");
-        $("#biga").attr("href", null);
+        $("#image").css("cursor", "not-allowed");
+        title = title + " WAS PURCHASED BUT NOT YET PERSONALIZED";
       } else {
-        $("#biga").css("cursor", "pointer");
-        $("#biga").attr("title", allData[squareNumber][1]);
-        $("#biga").attr("href", allData[squareNumber][2]);
+        $("#image").css("cursor", "pointer");
+        title = title + allData[squareNumber][1];
       }
+
+      const tooltip = $("#tooltip");
+      tooltip.text(title);
+      tooltip.css({left:left, top:top+30, display:"block"});
     });
     $("#image").mouseout(function() {
-      $("#biga").attr("href", null);
-      $("#biga").attr("title", null);
+      $("#position, #tooltip").css({display:"none"});
     });
   </script>
 </body>
