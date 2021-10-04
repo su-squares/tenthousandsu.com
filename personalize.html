@@ -47,6 +47,7 @@
           <p><strong>Square number</strong><br>Must be owned by the wallet you are currently using</p>
           <select id="square-number" style="width:10em">
           </select>
+          <p id="square-number-stats"></p>
           <hr>
           <p><strong>Image</strong><br>Must be EXACTLY 10&times;10 pixels and no animation</p>
           <input id="image" type="file" name="image" maxlength=100 accept="image/png" required>
@@ -210,6 +211,15 @@
 
       $("#url").on("input", function () {
         $("#urlbytescount").text("Bytes: " + $("#url").val().length);
+      });
+
+      $("#square-number").on("input", function () {
+        // TODO: Do we need to attach to more events? https://github.com/mdn/content/issues/9548
+        const squareNumber = $("#square-number").val();
+        $('#square-number-stats').text("");
+        app.callSuSquares(squareNumber).then(result => {
+          $('#square-number-stats').text("Square #" + squareNumber + " already has " + result.version + " personalizations.");
+        })
       });
     });
   </script>
