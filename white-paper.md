@@ -49,7 +49,7 @@ It costs **0.01 Ether** to personalize the square. The first three times are fre
 
 ## Is this an investment?
 
-Your Su Square entitles you to advertise your image/text/hyperlink on TenThousandSu.com. The Ethereum network and the Su Squares ERC-721 smart contract ensure your access to the features. We believe this is an "advertising expense" for your company. But you should check with your lawyer, tax advisor and financial advisor before purchasing your Su Square.
+Your Su Square entitles you to advertise your image/text/hyperlink on TenThousandSu.com. The Ethereum network and the Su Squares ERC-721 smart contract ensure your access to the features. We believe this is an advertising expense for your company, not an investment. But you should check with your lawyer, tax advisor and financial advisor before purchasing your Su Square.
 
 ## What happens if I lose access to my Square, can you get it back for me?
 
