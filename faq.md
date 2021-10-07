@@ -2,7 +2,6 @@
 layout: article
 permalink: /faq
 ---
-
 [Edit this page](https://github.com/su-squares/tenthousandsu.com/blob/master/faq.md)
 
 # Frequently Asked Questions
