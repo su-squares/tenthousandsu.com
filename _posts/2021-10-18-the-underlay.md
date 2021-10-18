@@ -10,7 +10,7 @@ title: Introducing The Underlay
 
 You can now personalize your Su Squares at about 1/10th the cost. This article explains the new process and what has changed.
 
-To personalize, go to the [TenThousandSu.com](https:tenthousandsu.com) homepage and click PERSONALIZE.
+To personalize, go to the [TenThousandSu.com](/) homepage and click PERSONALIZE.
 
 ## The old way
 
