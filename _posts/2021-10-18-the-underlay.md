@@ -10,6 +10,8 @@ title: Introducing The Underlay
 
 You can now personalize your Su Squares at about 1/10th the cost. This article explains the new process and what has changed.
 
+To personalize, go to the [TenThousandSu.com](https:tenthousandsu.com) homepage and click PERSONALIZE.
+
 ## The old way
 
 The main Su Squares contract allows anybody to update their Squares by posting a transaction to the smart contract with their Square's updated image, title and URL. This can be done on the TenThousandSu.com website or using anything that interacts with smart contrats, such as Etherscan.
