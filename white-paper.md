@@ -29,7 +29,9 @@ We pay homage to [The Million Dollar Homepage](http://milliondollarhomepage.com/
 
 Su Squares is an [**ERC-721 Deed**](https://eips.ethereum.org/EIPS/eip-721) that trades on the Ethereum blockchain. A specially-crafted smart contract ensures exclusive and secure ownership of your squares. Nobody, even Su, can take back a square that you own. The Su Squares project [hosted multiple public bug bounties](https://github.com/su-squares/ethereum-contract) to pay anybody that could find any problem with the smart contract.
 
-The smart contract address is **[0xE9e3F9cfc1A64DFca53614a0182CFAD56c10624F](https://etherscan.io/address/0xE9e3F9cfc1A64DFca53614a0182CFAD56c10624F)**.
+The main smart contract address is **[0xE9e3F9cfc1A64DFca53614a0182CFAD56c10624F](https://etherscan.io/address/0xE9e3F9cfc1A64DFca53614a0182CFAD56c10624F)**.
+
+The underlay smart contract (BETA) address is **[0x992bDEC05cD423B73085586f7DcbbDaB953E0DCd](https://etherscan.io/address/0x992bDEC05cD423B73085586f7DcbbDaB953E0DCd)**.
 
 Old versions of the smart contract are archived at 0xe264D16BCBA50925D0e1a90398596EC010306E14 and 0x6731560e455537c9f088EA02A47a0ECFa28a9231.
 
