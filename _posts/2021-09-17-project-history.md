@@ -74,7 +74,7 @@ Shortly after finalization of the standard, Su Squares was shown on stage at the
 
   > HUGE thanks to @fulldecent for running this down a very long field. Glad to see this getting finalized!
 
-* 2018-07-24 [NIFTY Hong Kong](http://web.archive.org/web/20181226161553/https://www.nifty.gg/) kicks off, woah, just woah
+* 2018-07-24 [NIFTY Hong Kong](https://web.archive.org/web/20181226161553/https://www.nifty.gg/) kicks off, woah, just woah
 
 * 2018-07-27 Ethereum Foundation approved a grant to support William Entriken in ERC-721 work, this was a private program (not DevGrants), [transcation](https://etherscan.io/tx/0x3f5342da9b079d5ced289c367e1829eaef016f3eca49e1b33479c64f1286facf). Privacy note: that sending address has already elsewhere been published as owned by Ethereum Foundation and was published by people publicly associated with Ethereum Foundation.
 
@@ -92,8 +92,8 @@ Shortly after finalization of the standard, Su Squares was shown on stage at the
 
 These are some of the interview, notes and live events which mentioned Su Squares.
 
-- 2018-07-24 [NIFTY Hong Kong](http://web.archive.org/web/20181226161553/https://www.nifty.gg/) presentation on stage shows Su Squares passing the validator test.
-- 2018-11-13 John Gleeson. Farsight Podcast. "William Entriken – ERC-721 [Lead] Author and Su Squares Founder". http://web.archive.org/web/20200919050043/https://farsightpodcast.com/2018/11/19/william-entriken-erc-721-author-and-su-squares-founder/. (See also [Spotify episode](https://open.spotify.com/episode/3EWuR360XukbiCKAPW6Ah3))
+- 2018-07-24 [NIFTY Hong Kong](https://web.archive.org/web/20181226161553/https://www.nifty.gg/) presentation on stage shows Su Squares passing the validator test.
+- 2018-11-13 John Gleeson. Farsight Podcast. "William Entriken – ERC-721 [Lead] Author and Su Squares Founder". https://web.archive.org/web/20200919050043/https://farsightpodcast.com/2018/11/19/william-entriken-erc-721-author-and-su-squares-founder/. (See also [Spotify episode](https://open.spotify.com/episode/3EWuR360XukbiCKAPW6Ah3))
 - 2019-01-03 Karin Chang. CoinGecko Buzz. "William Entriken - The Catalyst Behind ERC-721". https://www.coingecko.com/buzz/spotlight-3-william-entriken
 - 2019-04-28 罗鸿达. 金色财 (Jinse). "ERC721主作者：撰写协议的过程是对用例更加深入的探讨".   https://www.jinse.com/news/blockchain/357441.html.
 
