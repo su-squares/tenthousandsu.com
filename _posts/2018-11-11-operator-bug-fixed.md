@@ -26,7 +26,7 @@ In addition to this succinct security fix, [a complete test suite](https://githu
 
 Su Squares includes code written by William Entriken. William works as an advisor for other related blockchain projects and [provides classes on blockchain and tokens](https://chain76.org), also he is an author of the ERC-721 standard. Therefore, responsible disclosure of this bug must take into account Su Square customers as well as the non-fungibles and blockchain community as a whole.
 
-Before publishing this announcement, we have worked at length to review other implementations of ERC-721 to find if any of them copied the erronous code from Su Squares and are themselves vulnerable to this security issue. The scope of this seach included only Ethereum mainnet. We have not found any other project that is vulnerable. Therefore we expect this announcement has no collateral damage on the community.
+Before publishing this announcement, we have worked at length to review other implementations of ERC-721 to find if any of them copied the erronous code from Su Squares and are themselves vulnerable to this security issue. The scope of this seach included only Ethereum Mainnet. We have not found any other project that is vulnerable. Therefore we expect this announcement has no collateral damage on the community.
 
 ## Lessons learned and best practices
 
