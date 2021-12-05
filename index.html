@@ -5,18 +5,32 @@
   <title>Su Squares, cute squares you own and personalize</title>
   <link rel="canonical" href="https://tenthousandsu.com" />
   <link rel="stylesheet" href="assets/main.css?20210926">
+  <style>
+    body {
+      background-image: linear-gradient(to bottom right, #2d3c96, #d53392);
+      color: #ffd700;
+      min-height: 100vh;
+      min-width: 100vw;
+    }
+    .btn {
+      text-decoration: none;
+      color: #ffd700;
+      border: 2px solid #ffd700;
+      padding: 10px;
+      background: none;
+      box-shadow: 4px 6px 4px rgba(255, 255, 255, 0.2);
+      border-radius: 0.5rem;
+    }
+  </style>
 </head>
-<body id="homepage">
+<body>
   <header>
     <a id="logo" href="/"><img src="assets/logo-su-squares.svg" style="width:348px;height:57px;object-fit: cover;"></div></a>
     <span>
       One Su Square = 10&times;10 pixels<br>
-      <span style="color: teal">Available: <span id="available-plug">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></span>
+      <strong>Available: <span id="available-plug">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></strong>
     </span>
-    <span>
-      On Ethereum<sup>&reg;</sup> blockchain<br>
-      <a href="white-paper"><img src="assets/file-pdf.svg" width=16 height=16></a> <a href="white-paper">Read the White Paper</a><br>
-    </span>
+    <a class="btn" href="white-paper">Why&nbsp;buy?</a>
     <a class="btn" href="buy">Buy</a>
     <a class="btn" href="https://tools.tenthousandsu.com/personalize-underlay">Personalize</a>
     <a class="btn" target="twitter" href="https://twitter.com/susquares">
@@ -33,16 +47,16 @@
 
   <article>
     <p>Click below to purchase an available Su Square.</p>
-    <div style="border:2px solid #ccc;position:relative;height:1000px">
+    <div style="position:relative;height:1000px">
       <img id="image" src="build/wholeSquare.png" alt="All Su Squares" style="margin:0; height:1000px; width:1000px">
       <div id="position" style="background:pink;width:10px;height:10px;top:0;left:0;position:absolute;pointer-events:none;display:none"></div>
-      <div id="tooltip"></div>
+      <div id="tooltip" style="color:black"></div>
     </div>
   </article>
 
   <footer>
     <small>
-       Not responsible for the content of linked sites. Images shown on homepage are &copy; their respective owners. This image refreshes daily, or contact Will to boost the refresh. To the extent possible under law, Su Entriken has waived all copyright and related or neighboring rights to the TenThousandSu.com website. This work is published from: United States.
+       Not responsible for the content of linked sites. Images shown on homepage are &copy; their respective owners. This image refreshes daily. To the extent possible under law, Su Entriken has waived all copyright and related or neighboring rights to the TenThousandSu.com website. This work is published from the United States.
     </small>
   </footer>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
