@@ -15,18 +15,19 @@
   </header>
 
   <article class="lead">
-    <h1>Buy Su Squares with PayPal</h1>
-    <p><em>For a limited time, and while supplies last, some Su Squares are available to purchase with PayPal.</em></p>
+    <h1>Buy with PayPal</h1>
+    <p><em>For a limited time, and while supplies last<!-- (<span id="how-many-left">~~~</span> left)-->, some Su Squares are available to purchase with PayPal.</em></p>
 
-    <p>When Su Squares launched in 2018, we offered PayPal to make NFTs more accessible to our customers. Now in 2021, Ether costs more and we are quickly adjusting the PayPal price up to match.</p>
+    <p>Please mail <a href="mailto:Su@TenThousandSu.com?subject=Buy%20with%20PayPal&body=Hi%20Su!%0A%0AI'd%20like%20to%20buy%20Su%20Squares%20using%20PayPal.%0A%0AMy%20wallet%20address%20is%20XXXXXXXXXXX%0A%0AI%20would%20like%20Squares%20XXXXXXXXXXX%0A%0AIf%20those%20are%20not%20available%2C%20send%20me%20XXXXXXXXXXX">Su@TenThousandSu.com</a> and we will prepare an invoice for you.</p>
 
-    <p>Current price is USD 1,200 per Square. This price increases to match the Ether price.</p>
+    <p>The current price is USD 1,200 per Square, which will increase to over 0.5 Ether.</p>
 
     <h2>Which Squares are eligible?</h2>
     <p>If a Square was already purchased, you can't buy it. Duh. See the homepage.</p>
     <p>The top-left Square, all the purchased Squares it is adjacent to (up/down/left/right), and all the Squares <em>they</em> are adjacent to, et cetera&hellip; these are called the <strong>electric fence</strong>. The Squares adjacent to the electric fence are only available for 0.5 Ether on the <a href="buy">buy with Ether</a> page. In other words, you cannot buy those with PayPal.</p>
     <p><img src="assets/electric-fence.png" style="width: 600px; max-width: 80%;"></p>
 
+    <!--
     <h2>How to buy?</h2>
     <p>Prepare a note with: your wallet address, which Square(s) you want, and what to do if your preferred Square(s) are not available.</p>
     
@@ -41,12 +42,28 @@
     <li>You receive an email to your PayPal account address with confirmation just like when you buy shoes online</li>
     <li>The Su Squares website is updated to reflect your order within 24 hours</li>
     </ol>
+    -->
   </article>
 
   <footer>
     <small>
-      Not responsible for the content of linked sites. Images shown on homepage are &copy; their respective owners. To the extent possible under law, Su Entriken has waived all copyright and related or neighboring rights to the TenThousandSu.com website. This work is published from the United States.
+      To the extent possible under law, Su Entriken has waived all copyright and related or neighboring rights to the TenThousandSu.com website. This work is published from the United States.
     </small>
   </footer>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
+  <script>
+    /*
+    $.get("build/squarePersonalizations.json", function(data){
+      const allData = [""].concat(data); // Data is zero-indexed
+      const reducer = (accumulator, currentValue) => accumulator + !!currentValue;
+      const sold = allData.slice(1).reduce(reducer, 0);
+      if (sold >= 3700) {
+        $("#how-many-left").text("NONE LEFT!");        
+      } else {
+        $("#how-many-left").text(3700 - sold);
+      }
+    });
+    */
+  </script>
 </body>
 </html>

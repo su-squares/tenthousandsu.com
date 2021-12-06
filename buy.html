@@ -15,56 +15,54 @@
   </header>
 
   <article class="lead">
-    <h1>Buy Su Squares</h1>
-    <p><em>Thank you for your interest. Squares are available for your choice of 0.5 Ether (see below) or USD 1,200 (<a href="buy-with-paypal">see PayPal instructions</a>, few left at this price).</em></p>
-    <p><em>Learn about what you are buying in <a href="/white-paper">our White Paper</a>. If you have any questions, please mail <a href="mailto:Su@TenThousandSu.com?subject=Su%20Squares&body=Hi%20Su%2C%0A%0APlease%20help!%20I%20have%20a%20question%20about%20Su%20Squares.%0A%0A">Su@TenThousandSu.com</a>.</em></p>
+    <h1>Buy Su Squares <span class="square-number-with-number-sign"></span></h1>
+    <p><em>If you have any questions, please mail <a href="mailto:Su@TenThousandSu.com?subject=Sales%20question&body=HiSu,%20Please%20help!%20I%20have%20a%20question%20about%20Su%20Squares.">Su@TenThousandSu.com</a>.</em></p>
+    <p><em>Some Squares are available for <a href="buy-with-paypal">purchase with PayPal</a>.</em></p>
 
-    <div class="step-1-not-done">
-      <h2>Step 1: Install MetaMask</h2>
-      <p>To purchase using Ether use Edge/Chrome/Firefox/Opera and <a target="_blank" href="https://metamask.io/">Install MetaMask</a> or compatible software to continue. Then reload this page.</p>
-    </div>
-    <div class="step-1-done" style="display:none">
-      <p>&#x2705; Step 1: Web3 environment enabled</p>
-    </div>
-
-    <div class="step-2-not-done">
-      <h2>Step 2: Login to Mainnet</h2>
-      <p>Switch to <strong>Ethereum Mainnet</strong> and login to your MetaMask wallet. Then reload this page.</p>
-    </div>
-    <div class="step-2-done" style="display:none">
-      <p>&#x2705; Step 2: Using Ethereum<sup>&reg;</sup> Mainnet</p>
+    <div id="pick-a-square" style="display:none">
+      <h2>Which Square would you like?</h2>
+      <form>
+        <p><strong>Square number</strong></p>
+        <input id="square-number" type=number min=1 max=10000 required style="width:7em">
+      </form>
+      <button id="continue" type="button">Continue</button>
     </div>
 
-    <div class="step-2-done" style="display:none">
-      <div class="step-3-not-done">
-        <h2>Step 3: Pick a square</h2>
-        <form>
-          <p><strong>Square number</strong></p>
-          <input id="square-number" type=number min=1 max=10000 required style="width:7em">
-          <hr>
-          <p><em>If somebody else buys that square while you were reading this then your transaction will fail and your Ether will NOT be spent. Once you buy, nobody, even Su, can undo the transaction. Be sure it's correct.</em></p>
-          <hr>
-          <button id="buy" type="button">Buy Square</button>
-        </form>
+    <div id="buy-selected-square" style="display:none">
+      <div class="step-1-not-done">
+        <h2>Step 1: Install MetaMask</h2>
+        <p>To purchase using Ether use Edge/Chrome/Firefox/Opera and <a target="_blank" href="https://metamask.io/">Install MetaMask</a> or compatible software to continue. Then reload this page.</p>
       </div>
+      <div class="step-1-done" style="display:none">
+        <p>&#x2705; Step 1: Web3 environment enabled</p>
+      </div>
+  
+      <div class="step-2-not-done">
+        <h2>Step 2: Login to Mainnet</h2>
+        <p>Switch to <strong>Ethereum Mainnet</strong> and login to your MetaMask wallet. Then reload this page.</p>
+      </div>
+      <div class="step-2-done" style="display:none">
+        <p>&#x2705; Step 2: Using Ethereum<sup>&reg;</sup> Mainnet</p>
+      </div>
+  
+      <div class="step-2-done" style="display:none">
+        <button id="buy" type="button">Buy Square</button>
+      </div>
+  
       <div class="step-3-done" style="display:none">
-        <p>&#x2705; Step 3: Picked square #<span class="square-number-plug"></span></p>
+        <h2>Step 4: Processing...</h2>
+        <p>Thank you for your purchase! You picked <strong>Square <span class="square-number-with-number-sign"></span></strong>.</p>
+        <p>Your purchase is processing, your transaction ID is <a target="_blank" id="txlink" href=""><strong id="transaction-id-plug"></strong></a></p>
+        <p>You can click that link about to check the progress. This should complete within one minute. (It will say "sorry, unable to locate" until then.)</p>
+        <p>After the transaction is complete you own the square! Your Ethereum wallet will show it to you if your wallet has built-in support for ERC-721. Otherwise, write down your square number and you can use that to personalize.</p>
       </div>
-    </div>
-
-    <div class="step-3-done" style="display:none">
-      <h2>Step 4: Processing...</h2>
-      <p>Thank you for your purchase! You picked <strong>square #<span class="square-number-plug"></span></strong>.</p>
-      <p>Your purchase is processing, your transaction ID is <a target="_blank" id="txlink" href=""><strong id="transaction-id-plug"></strong></a></p>
-      <p>You can click that link about to check the progress. This should complete within one minute. (It will say "sorry, unable to locate" until then.)</p>
-      <p>After the transaction is complete you own the square! Your Ethereum wallet will show it to you if your wallet has built-in support for ERC-721. Otherwise, write down your square number and, and you can use that to personalize.</p>
     </div>
 
   </article>
 
   <footer>
     <small>
-      Not responsible for the content of linked sites. Images shown on homepage are &copy; their respective owners. To the extent possible under law, Su Entriken has waived all copyright and related or neighboring rights to the TenThousandSu.com website. This work is published from the United States.
+      To the extent possible under law, Su Entriken has waived all copyright and related or neighboring rights to the TenThousandSu.com website. This work is published from the United States.
     </small>
   </footer>
 
@@ -73,24 +71,45 @@
 
     /* The Web3 workflow ******************************************************/
     app.isConnected.then(()=>{
-      $(".step-1-done").show();
       $(".step-1-not-done").hide();
+      $(".step-1-done").show();
     });
 
     app.isNetworkCorrect.then(()=>{
-      $(".step-2-done").show();
       $(".step-2-not-done").hide();
+      $(".step-2-done").show();
     });
 
     /* Buy page interactivity *************************************************/
     $(()=>{
-      // Show square from URL like /buy?square=328
-      $("#square-number").val(app.getSquareFromUrl());
+      let squareNumber = app.getSquareFromUrl();
+
+      if (squareNumber) {
+        $(".square-number-with-number-sign").text("#" + squareNumber);
+        $("#buy-selected-square").show();
+      } else {
+        $("#pick-a-square").show();
+      }
+
+      // The CONTINUE button
+      $("#continue").on("click", async ()=>{
+        let squareNumber = $("#square-number").val();
+        if (squareNumber != parseInt(squareNumber)) {
+          return alert("Please enter an available Square number between 1 and 10,000.");
+        }
+        if (squareNumber < 1) {
+          return alert("Please enter an available Square number between 1 and 10,000.");
+        }
+        if (squareNumber > 10000) {
+          return alert("Please enter an available Square number between 1 and 10,000.");
+        }
+        $(".square-number-with-number-sign").text("#" + squareNumber);
+        $("#pick-a-square").hide();
+        $("#buy-selected-square").show();
+      });
 
       // The BUY SQUARE button
       $("#buy").on("click", async ()=>{
-        const squareNumber = $("#square-number").val();
-        $(".square-number-plug").text(squareNumber);
         $("#nextlink").attr("href", "personalize?square=" + squareNumber)
 
         app.sendBuy(squareNumber)
