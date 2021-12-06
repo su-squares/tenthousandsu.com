@@ -49,7 +49,7 @@
     <p>Click below to purchase an available Su Square for 0.5 Ether.</p>
     <div style="position:relative;height:1000px">
       <img id="image" src="build/wholeSquare.png" alt="All Su Squares" style="margin:0; height:1000px; width:1000px">
-      <div id="position" style="background:pink;width:10px;height:10px;top:0;left:0;position:absolute;pointer-events:none;display:none"></div>
+      <div id="position" style="background:pink;opacity:0.8; width:10px;height:10px;top:0;left:0;position:absolute;pointer-events:none;display:none"></div>
       <div id="tooltip" style="color:black"></div>
     </div>
   </article>
@@ -61,9 +61,9 @@
   </footer>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
   <script>
-    var allData = []; // Each is [version, title, href] or
-    $.get("build/squarePersonalizations.json", function(data){
-      allData = [""].concat(data); // Data is zero-indexed
+    var allData = []; // Each is [version, title, href, blockNumber] or null
+    $.get("build/squarePersonalizations.json", function (data) {
+      allData = [""].concat(data); // JSON zero-indexed, allData is one-indexed
       const reducer = (accumulator, currentValue) => accumulator + !!currentValue;
       const sold = allData.slice(1).reduce(reducer, 0);
       $("#available-plug").text((10000-sold).toLocaleString());
@@ -98,9 +98,11 @@
       } else if (!allData[squareNumber][1] && !allData[squareNumber][2]) {
         $("#image").css("cursor", "not-allowed");
         title = title + " WAS PURCHASED BUT NOT YET PERSONALIZED";
+        $("#position").css({left:left,top:top,display:"block"});
       } else {
         $("#image").css("cursor", "pointer");
         title = title + allData[squareNumber][1];
+        $("#position").css({left:left,top:top,display:"block"});
       }
 
       const tooltip = $("#tooltip");
