@@ -47,11 +47,13 @@
 
   <article>
     <p>Click below to purchase an available Su Square for 0.5 Ether.</p>
-    <div style="position:relative;height:1000px">
-      <img id="image" src="build/wholeSquare.png" alt="All Su Squares" style="margin:0; height:1000px; width:1000px">
-      <div id="position" style="background:pink;opacity:0.8; width:10px;height:10px;top:0;left:0;position:absolute;pointer-events:none;display:none"></div>
-      <div id="tooltip" style="color:black"></div>
-    </div>
+    <a id="wheretogo" href="" target="_blank">
+      <div style="position:relative;height:1000px">
+        <img id="image" src="build/wholeSquare.png" alt="All Su Squares" style="margin:0; height:1000px; width:1000px">
+        <div id="position" style="background:pink;opacity:0.8; width:10px;height:10px;top:0;left:0;position:absolute;pointer-events:none;display:none"></div>
+        <div id="tooltip" style="color:black"></div>
+      </div>
+    </a>
   </article>
 
   <footer>
@@ -77,14 +79,6 @@
       //console.log([x,y]);
       return x + y*100 + 1;
     }
-    $("#image").click(function(e){
-      const squareNumber = getSquareNumber(e, this);
-      if (allData[squareNumber] == null) {
-        window.location = "buy?square=" + (squareNumber);
-      } else if (allData[squareNumber][2]) {
-        window.location = allData[squareNumber][2];
-      }
-    });
     $("#image").on("mouseover mousemove", function(e) {
       const squareNumber = getSquareNumber(e, this);
       const left = 10 * ((squareNumber-1)%100);
@@ -95,19 +89,21 @@
         $("#image").css("cursor", "pointer");
         title = title + " is available for sale, click to buy";
         $("#position").css({left:left,top:top,display:"block"});
+        $("#wheretogo").attr("href", "buy?square=" + (squareNumber));
       } else if (!allData[squareNumber][1] && !allData[squareNumber][2]) {
         $("#image").css("cursor", "not-allowed");
         title = title + " WAS PURCHASED BUT NOT YET PERSONALIZED";
         $("#position").css({left:left,top:top,display:"block"});
+        $("#wheretogo").removeAttr("href");
       } else {
         $("#image").css("cursor", "pointer");
         title = title + allData[squareNumber][1];
         $("#position").css({left:left,top:top,display:"block"});
+        $("#wheretogo").attr("href", allData[squareNumber][2]);
       }
 
-      const tooltip = $("#tooltip");
-      tooltip.text(title);
-      tooltip.css({left:left, top:top+30, display:"block"});
+      $("#tooltip").text(title);
+      $("#tooltip").css({left:left, top:top+30, display:"block"});
     });
     $("#image").mouseout(function() {
       $("#position, #tooltip").css({display:"none"});
