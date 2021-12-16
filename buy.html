@@ -23,7 +23,7 @@
       <h2>Which Square would you like?</h2>
       <form>
         <p><strong>Square number</strong></p>
-        <input id="square-number" type=number min=1 max=10000 required style="width:7em">
+        <select id="square-number"></select>
       </form>
       <button id="continue" type="button">Continue</button>
     </div>
@@ -68,6 +68,19 @@
 
   <script>
     const app = new SuSquaresApplication();
+
+    /* Dynamic data on page ***************************************************/
+    $.get("/build/squarePersonalizations.json", function(data){
+      const allData = [""].concat(data); // Data is zero-indexed
+      for (let squareNumber = 1; squareNumber<=10000; squareNumber++) {
+        const square = allData[squareNumber];
+        if (square !== null) { // Available
+          $("#square-number").append(
+            $("<option>").text(squareNumber)
+          );
+        }
+      }
+    });
 
     /* The Web3 workflow ******************************************************/
     app.isConnected.then(()=>{
