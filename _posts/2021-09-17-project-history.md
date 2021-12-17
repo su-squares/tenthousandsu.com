@@ -6,7 +6,7 @@ title: Project History
 
 # Project History
 
-*If you have any questions, please mail [Su@TenThousandSu.com](mailto:Su@TenThousandSu.com?subject=Su Squares&body=Hi Su%2C Please help! I have a question about Su Squares. ).*
+*If you have a question, please mail [Su@TenThousandSu.com](mailto:Su@TenThousandSu.com?subject=Su Squares&body=Hi Su%2C Please help! I have a question about Su Squares. ).*
 
 Su Squares are cute squares you own and personalize, displayed on TenThousandSu.com and accounted for on Ethereum<sup>&reg;</sup> Mainnet. This article tells why Su Squares are the first ERC-721 digital collectable for sale and the authoritative history of the project.
 

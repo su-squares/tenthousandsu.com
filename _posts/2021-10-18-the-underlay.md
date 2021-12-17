@@ -6,7 +6,7 @@ title: Introducing The Underlay
 
 # The Underlay
 
-*If you have any questions, please mail [Su@TenThousandSu.com](mailto:Su@TenThousandSu.com?subject=Su Squares&body=Hi Su%2C Please help! I have a question about Su Squares. ).*
+*If you have a question, please mail [Su@TenThousandSu.com](mailto:Su@TenThousandSu.com?subject=Su Squares&body=Hi Su%2C Please help! I have a question about Su Squares. ).*
 
 You can now personalize your Su Squares at about 1/10th the cost. This article explains the new process and what has changed.
 

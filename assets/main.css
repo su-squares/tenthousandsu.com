@@ -55,17 +55,6 @@ header > * {
   box-shadow: 1px 4px 10px #555;
 }
 
-button {
-  font-size: 115%;
-  border-radius: 10px;
-  padding: 0.25em;
-  background: #eee;
-}
-
-button:hover {
-  background: #eef;
-}
-
 input[type="text"] {
   font-size: 115%;
   width: 100%;

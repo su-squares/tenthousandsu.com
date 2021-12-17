@@ -8,7 +8,7 @@ title: Operator Bug Fixed
 
 ***After [a minor fix](https://github.com/su-squares/ethereum-contract/commit/30f305710706371326486ef14daf941c0276a9c5) and much due diligence, Su Squares is back online.** Best practices and lessons learned and reviewed here.*
 
-*If you have any questions, please mail [Su@TenThousandSu.com](mailto:Su@TenThousandSu.com?subject=Su Squares&body=Hi Su%2C Please help! I have a question about Su Squares. ).*
+*If you have a question, please mail [Su@TenThousandSu.com](mailto:Su@TenThousandSu.com?subject=Su Squares&body=Hi Su%2C Please help! I have a question about Su Squares. ).*
 
 ## What was the bug?
 

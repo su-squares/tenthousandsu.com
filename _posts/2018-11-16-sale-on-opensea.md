@@ -8,7 +8,7 @@ title: Su Squares For Sale on OpenSea
 
 ***Several squares in the middle are for sale at a discount [on OpenSea](https://opensea.io/assets/susquares).***
 
-*If you have any questions, please mail [Su@TenThousandSu.com](mailto:Su@TenThousandSu.com?subject=Su Squares&body=Hi Su%2C Please help! I have a question about Su Squares. ).*
+*If you have a question, please mail [Su@TenThousandSu.com](mailto:Su@TenThousandSu.com?subject=Su Squares&body=Hi Su%2C Please help! I have a question about Su Squares. ).*
 
 ## What is OpenSea?
 

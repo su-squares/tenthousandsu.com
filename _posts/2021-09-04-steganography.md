@@ -6,7 +6,7 @@ title: Storing Text/Data in Your Square
 
 # Storing Text/Data in Your Square
 
-*If you have any questions, please mail [Su@TenThousandSu.com](mailto:Su@TenThousandSu.com?subject=Su Squares&body=Hi Su%2C Please help! I have a question about Su Squares. ).*
+*If you have a question, please mail [Su@TenThousandSu.com](mailto:Su@TenThousandSu.com?subject=Su Squares&body=Hi Su%2C Please help! I have a question about Su Squares. ).*
 
 Your Square fits 10×10=100 pixels with three color channels at 8 bits each. That means you get 300 bytes to play with.
 

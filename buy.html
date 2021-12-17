@@ -5,9 +5,42 @@
   <title>Su Squares, buy a square</title>
   <link rel="canonical" href="https://tenthousandsu.com/buy" />
   <link rel="stylesheet" href="assets/main.css">
+  <style>
+    body {
+      background-color: #2d3c96;
+      background-image: linear-gradient(to bottom right, #2d3c96, #d53392);
+      color: #ffd700;
+      min-height: 100vh;
+      min-width: 100vw;
+    }
+    a:link, a:visited, a:active {
+      color: #ffd700;
+    }
+    .btn {
+      text-decoration: none;
+      color: #ffd700;
+      border: 2px solid #ffd700;
+      padding: 10px;
+      background: none;
+      box-shadow: 4px 6px 4px rgba(255, 255, 255, 0.2);
+      border-radius: 0.5rem;
+      cursor: pointer;
+    }
+    #square-number {
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+    .btn-lg {
+      font-size: 2rem;
+      margin-top: 0.5em;
+      margin-bottom: 0.5em;
+    }
+
+  </style>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/web3@1.3.4/dist/web3.min.js" integrity="sha256-GQqI2JYavfgCtKq7m7vTVLWIudbQ76HvNgxy4n8V9dc=" crossorigin="anonymous"></script>
   <script src="assets/main.js"></script>
+
 </head>
 <body>
   <header>
@@ -16,7 +49,7 @@
 
   <article class="lead">
     <h1>Buy Su Squares <span class="square-number-with-number-sign"></span></h1>
-    <p><em>If you have any questions, please mail <a href="mailto:Su@TenThousandSu.com?subject=Sales%20question&body=HiSu,%20Please%20help!%20I%20have%20a%20question%20about%20Su%20Squares.">Su@TenThousandSu.com</a>.</em></p>
+    <p><em>If you have a question, please mail <a href="mailto:Su@TenThousandSu.com?subject=Sales%20question&body=HiSu,%20Please%20help!%20I%20have%20a%20question%20about%20Su%20Squares.">Su@TenThousandSu.com</a>.</em></p>
     <p><em>Some Squares are available for <a href="buy-with-paypal">purchase with PayPal</a>.</em></p>
 
     <div id="pick-a-square" style="display:none">
@@ -25,7 +58,7 @@
         <p><strong>Square number</strong></p>
         <input id="square-number" type=number min=1 max=10000 required style="width:7em">
       </form>
-      <button id="continue" type="button">Continue</button>
+      <button id="continue" type="button" class="btn btn-lg">Continue</button>
     </div>
 
     <div id="buy-selected-square" style="display:none">
@@ -46,7 +79,7 @@
       </div>
   
       <div class="step-2-done" style="display:none">
-        <button id="buy" type="button">Buy Square</button>
+        <button class="btn btn-lg" id="buy" type="button">Buy Square</button>
       </div>
   
       <div class="step-3-done" style="display:none">

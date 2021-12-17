@@ -5,6 +5,20 @@
   <title>Su Squares, buy a square</title>
   <link rel="canonical" href="https://tenthousandsu.com/buy" />
   <link rel="stylesheet" href="assets/main.css">
+  <style>
+    body {
+      background-color: #2d3c96;
+      background-image: linear-gradient(to bottom right, #2d3c96, #d53392);
+      color: #ffd700;
+      min-height: 100vh;
+      min-width: 100vw;
+    }
+    a:link, a:visited, a:active {
+      color: #ffd700;
+    }
+  </style>
+
+
   <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js" integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
   <script src="https://cdn.jsdelivr.net/npm/web3@1.3.4/dist/web3.min.js" integrity="sha256-GQqI2JYavfgCtKq7m7vTVLWIudbQ76HvNgxy4n8V9dc=" crossorigin="anonymous"></script>
   <script src="assets/main.js"></script>
@@ -24,7 +38,7 @@
 
     <h2>Which Squares are eligible?</h2>
     <p>If a Square was already purchased, you can't buy it. Duh. See the homepage.</p>
-    <p>The top-left Square, all the purchased Squares it is adjacent to (up/down/left/right), and all the Squares <em>they</em> are adjacent to, et cetera&hellip; these are called the <strong>electric fence</strong>. The Squares adjacent to the electric fence are only available for 0.5 Ether on the <a href="buy">buy with Ether</a> page. In other words, you cannot buy those with PayPal.</p>
+    <p>The top-left Square and all adjacent (up/down/left/right) purchased Squares are called the <strong>electric fence</strong>. Squares adjacent to the electric fence are only available to <a href="buy">buy with Ether</a> page. In other words, you cannot buy those with PayPal.</p>
     <p><img src="assets/electric-fence.png" style="width: 600px; max-width: 80%;"></p>
 
     <!--

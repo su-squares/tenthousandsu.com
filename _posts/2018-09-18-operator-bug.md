@@ -8,7 +8,7 @@ title: Operator Bug
 
 ***OpenSea employee Devin Finzer identified a error with the Su Squares implementation**, announced in the [OpenSea Discord](https://discord.gg/ga8EJbv) #general channel on Tuesday at 2018-09-18 at 22:57 UTC.*
 
-*If you have any questions, please mail [Su@TenThousandSu.com](mailto:Su@TenThousandSu.com?subject=Su Squares&body=Hi Su%2C Please help! I have a question about Su Squares. ).*
+*If you have a question, please mail [Su@TenThousandSu.com](mailto:Su@TenThousandSu.com?subject=Su Squares&body=Hi Su%2C Please help! I have a question about Su Squares. ).*
 
 ## What is the bug?
 
