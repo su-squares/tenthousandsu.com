@@ -16,7 +16,7 @@ We pay homage to [The Million Dollar Homepage](http://milliondollarhomepage.com/
 
 ## Why buy a Su Square?
 
-**Su Squares is a two-dimensional metaverse** that connects you to neighboring projects based on the location you purchase.
+**Su Squares is a two-dimensional billboard** that connects you to neighboring projects based on the location you purchase. We have run the Su Squares image on display on Times Square (16 displays) and I-95.
 
 **The first ever ERC-721 NFT project for sale,** purchasing a square allows you to permanently own a unique piece of blockchain history. No other project can make this claim. Please see <a target="_blank" href="https://eips.ethereum.org/EIPS/eip-721">the ERC-721 paper</a> and find Su Squares listed. Su Squares was built by the lead author of ERC-721.
 
