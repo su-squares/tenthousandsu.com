@@ -16,13 +16,15 @@ We pay homage to [The Million Dollar Homepage](http://milliondollarhomepage.com/
 
 ## Why buy a Su Square?
 
-**Su Squares is a two-dimensional metaverse.** Your Square attaches to neighboring projects based on the location you purchase.
+**Su Squares is a two-dimensional metaverse** that connects you to neighboring projects based on the location you purchase.
 
-**Su Squares is the first ERC-721 NFT project for sale.** Please see <a target="_blank" href="https://eips.ethereum.org/EIPS/eip-721">the ERC-721 paper</a> and find Su Squares listed. Su Squares was built by the lead author of ERC-721.
+**The first ever ERC-721 NFT project for sale,** purchasing a square allows you to permanently own a unique piece of blockchain history. No other project can make this claim. Please see <a target="_blank" href="https://eips.ethereum.org/EIPS/eip-721">the ERC-721 paper</a> and find Su Squares listed. Su Squares was built by the lead author of ERC-721.
 
-**Anybody with a crypto-based business should advertise here.** Your Square will reach like-minded individuals that can become your customers.
+**For brands looking to connect** with highly engaged members of the Web3 community, owning  a Su Square gives you permanent exposure to this audience. Your Square is yours forever and will act as living proof of your “skin in the game”. Celebrate this historic moment in crypto and bring awareness to like-minded individuals that can become your customers.
 
-**People that collect crypto-assets should buy a Square.** This is a great vanity location where you can display your colorful crypto-assets.
+**Crypto-asset enthusiasts should buy a Square.** This is a great vanity location where you can display your colorful crypto-assets and link back to a website or social profile of your choosing.
+
+**Join a community** of individuals that lift each other up! Vibrant discussion in the Discord, billboards in Times Square featuring user art, conference workshops, and weekly Twitter features for owners are just some of the ways we’ve supported our square owners in the past few months.
 
 ## How does it work?
 
