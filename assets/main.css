@@ -13,6 +13,8 @@ html {
 
 body {
   background:#eee;
+  padding-left: 2px;
+  padding-right: 2px;
 }
 
 #biga #image {
