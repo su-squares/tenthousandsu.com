@@ -61,9 +61,13 @@ Your Su Square entitles you to advertise your image/text/hyperlink on TenThousan
 
 No. We do not have access to purchased Su Squares. This is enforced by the blockchain. We don't have any way to get it back. And the fact that we can't get it back is publicly knowable by inspecting our Su Squares smart contract on the blockchain.
 
-## Who Runs This Project?
+## Who runs this project?
 
 [Su Entriken](https://www.linkedin.com/in/suwang621/) and [William Entriken](https://www.linkedin.com/in/fulldecent/)
+
+## Mission statement
+
+Su Squares promote creativity, innovation and collaboration among the web 3.0 community by attracting, supporting and promoting businesses and individuals on our virtual billboard. We form a supportive and loving community of entrepreneurs, web 3.0 enthusiasts and artists and provide them with opportunities of continuous education from blockchain experts and platforms to have meaningful discussions and collaborate with each other.
 
 ## Articles
 
