@@ -24,7 +24,7 @@ We pay homage to [The Million Dollar Homepage](http://milliondollarhomepage.com/
 
 **Crypto-asset enthusiasts should buy a Square.** This is a great vanity location where you can display your colorful crypto-assets and link back to a website or social profile of your choosing.
 
-**Join a community** of individuals that lift each other up! Vibrant discussion in the Discord, billboards in Times Square featuring user art, conference workshops, and weekly Twitter features for owners are just some of the ways we’ve supported our square owners in the past few months.
+**Join a community** of individuals that lift each other up! Vibrant discussion in the Discord, and Square owners gain access to a special exclusive server role. We also host conference workshops, and weekly Twitter features for owners are just some of the ways we’ve supported our square owners in the past few months.
 
 ## How does it work?
 
