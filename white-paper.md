@@ -75,3 +75,7 @@ Su Squares promote creativity, innovation and collaboration among the web 3.0 co
 [{{ post.title }}]({{ post.url }})
 
 {% endfor %}
+
+See also:
+
+[Tools & Tricks](http://tools.tenthousandsu.com)
