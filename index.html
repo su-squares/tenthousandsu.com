@@ -58,6 +58,7 @@
         <img id="image" src="build/wholeSquare.png" alt="All Su Squares" style="margin:0; height:1000px; width:1000px">
         <div id="position" style="background:pink;opacity:0.8; width:10px;height:10px;top:0;left:0;position:absolute;pointer-events:none;display:none"></div>
         <div id="tooltip" style="color:black"></div>
+        <div id="electric-fence"></div>
       </div>
     </a>
   </article>
@@ -75,6 +76,7 @@
       const reducer = (accumulator, currentValue) => accumulator + !!currentValue;
       const sold = allData.slice(1).reduce(reducer, 0);
       $("#available-plug").text((10000-sold).toLocaleString());
+      stepFence();
     });
 
     function getSquareNumber(e, element) {
@@ -93,7 +95,10 @@
       //console.log("Entering square "+squareNumber);
       if (allData[squareNumber] == null) {
         $("#image").css("cursor", "pointer");
-        title = title + " is available for sale, click to buy";
+        title = title + " is available for sale, click to buy.";
+        if (theFence.has(squareNumber)) {
+          title = title + " On the electric fence. Only available for sale with Ether.";
+        }
         $("#position").css({left:left,top:top,display:"block"});
         $("#wheretogo").attr("href", "buy?square=" + (squareNumber));
       } else if (!allData[squareNumber][1] && !allData[squareNumber][2]) {
@@ -114,6 +119,49 @@
     $("#image").mouseout(function() {
       $("#position, #tooltip").css({display:"none"});
     });
+
+    const litUpEdge = new Set([1]);
+    const wasEverLitUp = new Set([1]);
+    const theFence = new Set();
+
+    function stepFence() {
+      if (litUpEdge.size == 0) {
+        return;
+      }
+      const nextLitUpEdge = new Set();
+      litUpEdge.forEach(function(square) {
+        if (square > 100) {
+          nextLitUpEdge.add(square-100);
+        }
+        if (square <= 100*99) {
+          nextLitUpEdge.add(square+100);
+        }
+        if (square%100 != 1) {
+          nextLitUpEdge.add(square-1);
+        }
+        if (square%100 != 0) {
+          nextLitUpEdge.add(square+1);
+        }
+        $('#electric-fence-'+square).remove();
+      });
+      litUpEdge.clear();
+      nextLitUpEdge.forEach((square) => {
+        if (wasEverLitUp.has(square)) {
+          return;
+        }
+        wasEverLitUp.add(square);
+        if (allData[square] == null) {
+          theFence.add(square);
+        } else {
+          litUpEdge.add(square);
+        }
+        $('#electric-fence').append('<div id="electric-fence-'+square+'" style="pointer-events:none;position:absolute;left:'+((square-1)%100*10)+'px;top:'+Math.floor((square-1)/100)*10+'px;width:10px;height:10px;background:#ffd700;opacity:0.25"></div>');
+      });
+      setTimeout(() => {stepFence()}, 25);
+      console.log("litUpEdge: ", litUpEdge);
+      console.log("wasEverLitUp: ", wasEverLitUp);
+      console.log("theFence: ", theFence);
+    }
   </script>
 </body>
 </html>
