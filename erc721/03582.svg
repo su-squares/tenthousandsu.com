@@ -6,5 +6,109 @@
       </linearGradient>
   </defs>
   <rect x="10" y="10" width="780" height="980" fill="url(#Gradient2)" rx="50" ry="50" stroke="#ffd700" stroke-width="20"/>
-  <text x="400" y="570" width="780" text-anchor="middle" style="font: bold 200px 'Helvetica Neue'; fill: #ffd700">03582</text>
+  <text x="400" y="920" width="780" text-anchor="middle" style="font: bold 200px 'Helvetica Neue'; fill: #ffd700">03582</text>
+
+  <g transform="translate(80 80) scale(64)">
+<rect x="0" y="0" width="1" height="1" fill="#a09e9f" />
+,<rect x="0" y="1" width="1" height="1" fill="#f9f7f8" />
+,<rect x="0" y="2" width="1" height="1" fill="#757374" />
+,<rect x="0" y="3" width="1" height="1" fill="#010000" />
+,<rect x="0" y="4" width="1" height="1" fill="#111111" />
+,<rect x="0" y="5" width="1" height="1" fill="#7b7b7b" />
+,<rect x="0" y="6" width="1" height="1" fill="#b1b3b2" />
+,<rect x="0" y="7" width="1" height="1" fill="#848685" />
+,<rect x="0" y="8" width="1" height="1" fill="#6a6c6b" />
+,<rect x="0" y="9" width="1" height="1" fill="#d7d9d8" />
+,<rect x="1" y="0" width="1" height="1" fill="#969495" />
+,<rect x="1" y="1" width="1" height="1" fill="#060405" />
+,<rect x="1" y="2" width="1" height="1" fill="#131112" />
+,<rect x="1" y="3" width="1" height="1" fill="#bfbdbe" />
+,<rect x="1" y="4" width="1" height="1" fill="#f4f4f4" />
+,<rect x="1" y="5" width="1" height="1" fill="#f2f2f2" />
+,<rect x="1" y="6" width="1" height="1" fill="#feffff" />
+,<rect x="1" y="7" width="1" height="1" fill="#feffff" />
+,<rect x="1" y="8" width="1" height="1" fill="#9d9f9e" />
+,<rect x="1" y="9" width="1" height="1" fill="#d0d2d1" />
+,<rect x="2" y="0" width="1" height="1" fill="#090708" />
+,<rect x="2" y="1" width="1" height="1" fill="#727071" />
+,<rect x="2" y="2" width="1" height="1" fill="#f9f7f8" />
+,<rect x="2" y="3" width="1" height="1" fill="#fffeff" />
+,<rect x="2" y="4" width="1" height="1" fill="#737373" />
+,<rect x="2" y="5" width="1" height="1" fill="#101010" />
+,<rect x="2" y="6" width="1" height="1" fill="#979998" />
+,<rect x="2" y="7" width="1" height="1" fill="#f2f4f3" />
+,<rect x="2" y="8" width="1" height="1" fill="#a7a9a8" />
+,<rect x="2" y="9" width="1" height="1" fill="#c7c9c8" />
+,<rect x="3" y="0" width="1" height="1" fill="#d7d5d6" />
+,<rect x="3" y="1" width="1" height="1" fill="#fffdfe" />
+,<rect x="3" y="2" width="1" height="1" fill="#9f9d9e" />
+,<rect x="3" y="3" width="1" height="1" fill="#070506" />
+,<rect x="3" y="4" width="1" height="1" fill="#111111" />
+,<rect x="3" y="5" width="1" height="1" fill="#2f2f2f" />
+,<rect x="3" y="6" width="1" height="1" fill="#b5b7b6" />
+,<rect x="3" y="7" width="1" height="1" fill="#f9fbfa" />
+,<rect x="3" y="8" width="1" height="1" fill="#b2b4b3" />
+,<rect x="3" y="9" width="1" height="1" fill="#dcdedd" />
+,<rect x="4" y="0" width="1" height="1" fill="#e9e7e8" />
+,<rect x="4" y="1" width="1" height="1" fill="#7b797a" />
+,<rect x="4" y="2" width="1" height="1" fill="#1e1c1d" />
+,<rect x="4" y="3" width="1" height="1" fill="#787677" />
+,<rect x="4" y="4" width="1" height="1" fill="#dedede" />
+,<rect x="4" y="5" width="1" height="1" fill="#838383" />
+,<rect x="4" y="6" width="1" height="1" fill="#f3f5f4" />
+,<rect x="4" y="7" width="1" height="1" fill="#f1f3f2" />
+,<rect x="4" y="8" width="1" height="1" fill="#bec0bf" />
+,<rect x="4" y="9" width="1" height="1" fill="#f4f6f5" />
+,<rect x="5" y="0" width="1" height="1" fill="#c3c1c2" />
+,<rect x="5" y="1" width="1" height="1" fill="#0f0d0e" />
+,<rect x="5" y="2" width="1" height="1" fill="#9d9b9c" />
+,<rect x="5" y="3" width="1" height="1" fill="#fffeff" />
+,<rect x="5" y="4" width="1" height="1" fill="#4d4d4d" />
+,<rect x="5" y="5" width="1" height="1" fill="#f5f5f5" />
+,<rect x="5" y="6" width="1" height="1" fill="#feffff" />
+,<rect x="5" y="7" width="1" height="1" fill="#d0d2d1" />
+,<rect x="5" y="8" width="1" height="1" fill="#cccecd" />
+,<rect x="5" y="9" width="1" height="1" fill="#fafcfb" />
+,<rect x="6" y="0" width="1" height="1" fill="#bebcbd" />
+,<rect x="6" y="1" width="1" height="1" fill="#f0eeef" />
+,<rect x="6" y="2" width="1" height="1" fill="#f8f6f7" />
+,<rect x="6" y="3" width="1" height="1" fill="#737172" />
+,<rect x="6" y="4" width="1" height="1" fill="#e6e6e6" />
+,<rect x="6" y="5" width="1" height="1" fill="#fafafa" />
+,<rect x="6" y="6" width="1" height="1" fill="#eef0ef" />
+,<rect x="6" y="7" width="1" height="1" fill="#edefee" />
+,<rect x="6" y="8" width="1" height="1" fill="#f0f2f1" />
+,<rect x="6" y="9" width="1" height="1" fill="#feffff" />
+,<rect x="7" y="0" width="1" height="1" fill="#d3d1d2" />
+,<rect x="7" y="1" width="1" height="1" fill="#010000" />
+,<rect x="7" y="2" width="1" height="1" fill="#070506" />
+,<rect x="7" y="3" width="1" height="1" fill="#100e0f" />
+,<rect x="7" y="4" width="1" height="1" fill="#b4b4b4" />
+,<rect x="7" y="5" width="1" height="1" fill="#ffffff" />
+,<rect x="7" y="6" width="1" height="1" fill="#f9fbfa" />
+,<rect x="7" y="7" width="1" height="1" fill="#feffff" />
+,<rect x="7" y="8" width="1" height="1" fill="#f4f6f5" />
+,<rect x="7" y="9" width="1" height="1" fill="#feffff" />
+,<rect x="8" y="0" width="1" height="1" fill="#b1afb0" />
+,<rect x="8" y="1" width="1" height="1" fill="#949293" />
+,<rect x="8" y="2" width="1" height="1" fill="#767475" />
+,<rect x="8" y="3" width="1" height="1" fill="#838182" />
+,<rect x="8" y="4" width="1" height="1" fill="#161616" />
+,<rect x="8" y="5" width="1" height="1" fill="#454545" />
+,<rect x="8" y="6" width="1" height="1" fill="#e5e7e6" />
+,<rect x="8" y="7" width="1" height="1" fill="#feffff" />
+,<rect x="8" y="8" width="1" height="1" fill="#f5f7f6" />
+,<rect x="8" y="9" width="1" height="1" fill="#f9fbfa" />
+,<rect x="9" y="0" width="1" height="1" fill="#fcfafb" />
+,<rect x="9" y="1" width="1" height="1" fill="#7a7879" />
+,<rect x="9" y="2" width="1" height="1" fill="#fffeff" />
+,<rect x="9" y="3" width="1" height="1" fill="#fdfbfc" />
+,<rect x="9" y="4" width="1" height="1" fill="#efefef" />
+,<rect x="9" y="5" width="1" height="1" fill="#828282" />
+,<rect x="9" y="6" width="1" height="1" fill="#6b6d6c" />
+,<rect x="9" y="7" width="1" height="1" fill="#eef0ef" />
+,<rect x="9" y="8" width="1" height="1" fill="#f9fbfa" />
+,<rect x="9" y="9" width="1" height="1" fill="#fdfffe" />
+
+  </g>
 </svg>
