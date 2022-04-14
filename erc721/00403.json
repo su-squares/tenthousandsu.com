@@ -1,1 +1,1 @@
-{"name":"Square #00403","description":"Available for sale","image":"https://tenthousandsu.com/erc721/00403.svg"}
+{"name":"Square #403","description":"Available for sale","image":"https://tenthousandsu.com/erc721/00403.png","external_url":"https://tenthousandsu.com/square#00403","attributes":[{"trait_type":"Row","value":5},{"trait_type":"Column","value":3},{"trait_type":"Manhattan distance to center","value":92},{"trait_type":"Prime divisors","value":2},{"trait_type":"Palindrome","value":"NOT A PALINDROME"}]}

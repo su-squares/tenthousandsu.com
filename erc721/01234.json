@@ -1,1 +1,1 @@
-{"name":"Square #01234","description":"{Brand_Name_Here} - James' NFT Gallery","image":"https://tenthousandsu.com/erc721/01234.png"}
+{"name":"Square #1234","description":"{Brand_Name_Here} - James' NFT Gallery","image":"https://tenthousandsu.com/erc721/01234.png","external_url":"https://tenthousandsu.com/square#01234","attributes":[{"trait_type":"Row","value":13},{"trait_type":"Column","value":34},{"trait_type":"Manhattan distance to center","value":53},{"trait_type":"Prime divisors","value":2},{"trait_type":"Palindrome","value":"NOT A PALINDROME"}]}

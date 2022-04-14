@@ -1,1 +1,1 @@
-{"name":"Square #00002","description":"","image":"https://tenthousandsu.com/erc721/00002.png"}
+{"name":"Square #2","description":"","image":"https://tenthousandsu.com/erc721/00002.png","external_url":"https://tenthousandsu.com/square#00002","attributes":[{"trait_type":"Row","value":1},{"trait_type":"Column","value":2},{"trait_type":"Manhattan distance to center","value":97},{"trait_type":"Prime divisors","value":1},{"trait_type":"Palindrome","value":"ALL SAME DIGIT"}]}
