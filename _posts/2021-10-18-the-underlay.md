@@ -14,7 +14,7 @@ To personalize, go to the [TenThousandSu.com](/) homepage and click PERSONALIZE.
 
 ## The old way
 
-The main Su Squares contract allows anybody to update their Squares by posting a transaction to the smart contract with their Square's updated image, title and URL. This can be done on the TenThousandSu.com website or using anything that interacts with smart contrats, such as Etherscan.
+The main Su Squares contract allows anybody to update their Squares by posting a transaction to the smart contract with their Square's updated image, title and URL. This can be done on the TenThousandSu.com website or using anything that interacts with smart contracts, such as Etherscan.
 
 ```solidity
 function personalizeSquare(uint squareId, bytes rgbData, string title, string href) external payable;

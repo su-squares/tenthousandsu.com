@@ -26,7 +26,7 @@ In addition to this succinct security fix, [a complete test suite](https://githu
 
 Su Squares includes code written by William Entriken. William works as an advisor for other related blockchain projects and [provides classes on blockchain and tokens](https://chain76.org), also he is an author of the ERC-721 standard. Therefore, responsible disclosure of this bug must take into account Su Square customers as well as the non-fungibles and blockchain community as a whole.
 
-Before publishing this announcement, we have worked at length to review other implementations of ERC-721 to find if any of them copied the erronous code from Su Squares and are themselves vulnerable to this security issue. The scope of this seach included only Ethereum Mainnet. We have not found any other project that is vulnerable. Therefore we expect this announcement has no collateral damage on the community.
+Before publishing this announcement, we have worked at length to review other implementations of ERC-721 to find if any of them copied the erroneous code from Su Squares and are themselves vulnerable to this security issue. The scope of this search included only Ethereum Mainnet. We have not found any other project that is vulnerable. Therefore we expect this announcement has no collateral damage on the community.
 
 ## Lessons learned and best practices
 
@@ -36,7 +36,7 @@ Have a bug bounty. If your project is selling to the public, or if your reputati
 
 Have test cases. Remember [TPS reports from Office Space](https://www.youtube.com/watch?v=Fy3rjQGc6lA)? Those are testing procedure specifications, and it is a best practice to document specific ways of testing your computer program.
 
-Su Squares had implemented all these best practices: peer review; multiple well-advertised bug bounties; test scenaries on Ropsten. So what could have stopped this bug?
+Su Squares had implemented all these best practices: peer review; multiple well-advertised bug bounties; test scenarios on Ropsten. So what could have stopped this bug?
 
 Automated testing. This allows scripted test processes to be run by a computer rather than relying on a human to complete the process. The benefit is that tests can be run more often and features that work today can be tested again before shipping in case something may have changed.
 
@@ -44,6 +44,6 @@ Automated testing in blockchain projects could be better. We started by using th
 
 Now we have a higher degree of confidence in the Su Squares smart contract and it should be easier for third parties to audit.
 
-Thank you for your extreme patience during this update, and we sincerely appologize for the inconvenience this caused you.
+Thank you for your extreme patience during this update, and we sincerely apologize for the inconvenience this caused you.
 
 Stay tuned for an upcoming announcement about our re-launch event. [See our Twitter](https://twitter.com/susquares). And happy singles day!

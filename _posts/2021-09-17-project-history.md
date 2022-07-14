@@ -28,13 +28,13 @@ At the time, CryptoKitties was clearly the most active, liquid, and fun NFT proj
 
 Several competing standards worked to define an interoperable ecosystem of smart contracts, wallets and marketplaces for NFTs. Through sheer hard work, rewriting drafts daily and taking phone calls personally from anybody with an opinion, **William earned the role of lead author of the standard ERC-841, later renamed ERC-721. With his coauthors**, this standard passed with unanimous consent, all competing standards were withdrawn and for years no replacement or extension has been formally proposed.
 
-The chosen approach for overcoming technical objections to ERC-721 has been to lead by example. Some people objected that because the CryptoKitties smart contract does not scale (see "blow past the block gas limit" note in KittyOwnership.sol) then ERC-721 cannot be scalable. To verifiy scalability, a contract was deployed with more tokens than any practical application could ever want, (see "nanobots" devouring Earth in ERC-721). Complaints about Solidity (a smart contract language) were resolved by fixing Solidity. Complaints about the ERC standards process were solved by changing the ERC standards process.
+The chosen approach for overcoming technical objections to ERC-721 has been to lead by example. Some people objected that because the CryptoKitties smart contract does not scale (see "blow past the block gas limit" note in KittyOwnership.sol) then ERC-721 cannot be scalable. To verify scalability, a contract was deployed with more tokens than any practical application could ever want, (see "nanobots" devouring Earth in ERC-721). Complaints about Solidity (a smart contract language) were resolved by fixing Solidity. Complaints about the ERC standards process were solved by changing the ERC standards process.
 
-Every change also brought a specific and unreconsiled complaint:
+Every change also brought a specific and unreconciled complaint:
 
 > :angry: William keeps approving changes to the draft standard, it's easy for him to talk but difficult for everybody else to implement these changes, he has no skin in the game.
 
-Addressing this is the birth of Su Squares. During the draft process for ERC-721, William deployed Su Squares to Ethereum Mainnet and began selling squares commercially. Every time an incompatible change to the standard was proposed, William needed to pay to redeploy the Su Squares smart contract, appologize to customers, and then migrate each customers' purchase onto the new smart contract. He was now firmly in the same circumstance as others using the standard.
+Addressing this is the birth of Su Squares. During the draft process for ERC-721, William deployed Su Squares to Ethereum Mainnet and began selling squares commercially. Every time an incompatible change to the standard was proposed, William needed to pay to redeploy the Su Squares smart contract, apologize to customers, and then migrate each customers' purchase onto the new smart contract. He was now firmly in the same circumstance as others using the standard.
 
 Redeploying sucks. As William and coauthors considered the last major normative change to the standard—adding the `operator` parameter to the `onERC721Received` callback—William weighed the cost of yet again redeploying Su Squares and everyone else's time to make changes versus the value of this new feature. The change was accepted, again with community support.
 
@@ -68,7 +68,7 @@ Shortly after finalization of the standard, Su Squares was shown on stage at the
   * [Transaction 0x3d22...4946](https://etherscan.io/tx/0x3d22ffbb7fb13148062c94e4b1986e14b70d0981dbe71b40748b43c1f8274946), [ERC-721 Validator passed](https://erc721validator.org/?address=0x696c4dB4Dfb25b30a1C08f042e80172B2D34f4Bc)
   * [Transaction 0x07bb...cb1b](https://etherscan.io/tx/0x07bb215de77674c272b3a0e3f336642879f926df52e79d9ff8b26fdcbc4acb1b), [ERC-721 Validator passed](https://erc721validator.org/?address=0xE9e3F9cfc1A64DFca53614a0182CFAD56c10624F)
 
-* 2018-03-19 First [commercial sale or grant](https://etherscan.io/tx/0xfb19b24a74ac540f3b13e27bb6a36f73bb1f3fc6e10d1cd671a0907d8d3ac04c) of a Square—every subsequent release of Su Squares maintained the ownership of this Square and other other Squares that were owned on superceded version of the contract
+* 2018-03-19 First [commercial sale or grant](https://etherscan.io/tx/0xfb19b24a74ac540f3b13e27bb6a36f73bb1f3fc6e10d1cd671a0907d8d3ac04c) of a Square—every subsequent release of Su Squares maintained the ownership of this Square and other other Squares that were owned on superseded version of the contract
 
 * 2018-06-21 ERC-721 was [promoted to final status](https://github.com/ethereum/EIPs/pull/1170) with congratulation from Dieter Shirley, the originator of ERC-721:
 
@@ -76,7 +76,7 @@ Shortly after finalization of the standard, Su Squares was shown on stage at the
 
 * 2018-07-24 [NIFTY Hong Kong](https://web.archive.org/web/20181226161553/https://www.nifty.gg/) kicks off, woah, just woah
 
-* 2018-07-27 Ethereum Foundation approved a grant to support William Entriken in ERC-721 work, this was a private program (not DevGrants), [transcation](https://etherscan.io/tx/0x3f5342da9b079d5ced289c367e1829eaef016f3eca49e1b33479c64f1286facf). Privacy note: that sending address has already elsewhere been published as owned by Ethereum Foundation and was published by people publicly associated with Ethereum Foundation.
+* 2018-07-27 Ethereum Foundation approved a grant to support William Entriken in ERC-721 work, this was a private program (not DevGrants), [transaction](https://etherscan.io/tx/0x3f5342da9b079d5ced289c367e1829eaef016f3eca49e1b33479c64f1286facf). Privacy note: that sending address has already elsewhere been published as owned by Ethereum Foundation and was published by people publicly associated with Ethereum Foundation.
 
 * 2018-08-05 Initial Deed Offering for Su Squares (i.e. first marketing push) https://twitter.com/fulldecent/status/1026316100378812416
 

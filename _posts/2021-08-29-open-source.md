@@ -20,7 +20,7 @@ It can be helpful to study these if you are building your own blockchain project
 
 A promise was made in the [Su Squares white paper](/white-paper) to open source all parts of the Su Squares project after 1,000 Squares were sold.
 
-That milestone was just achieved today and we are immediately following through on our committment.
+That milestone was just achieved today and we are immediately following through on our commitment.
 
 Starting today, all our software is entirely open source.
 

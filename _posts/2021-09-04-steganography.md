@@ -10,7 +10,7 @@ title: Storing Text/Data in Your Square
 
 Your Square fits 10×10=100 pixels with three color channels at 8 bits each. That means you get 300 bytes to play with.
 
-Typically you are putting visual stuff in there to make something pretty. But if you are a Soviet era spy, you might want to use this as an inconspicuous and very public way of diseminating subversion messages. This is a guide for those people...
+Typically you are putting visual stuff in there to make something pretty. But if you are a Soviet era spy, you might want to use this as an inconspicuous and very public way of disseminating subversion messages. This is a guide for those people...
 
 All subversives us Linux or macOS, and the command line. So this guide assumes you are familiar with both of these. On macOS, please install [Homebrew](https://brew.sh) and run `brew install imagemagick`. For Linux you should probably already have ImageMagick installed and instructions vary to get it.
 
@@ -95,7 +95,7 @@ Let's find out! First, download the main image with all the Squares.
 wget https://tenthousandsu.com/build/wholeSquare.png
 ```
 
-Use one command to split that out into 10,000 constitutent images:
+Use one command to split that out into 10,000 constituent images:
 
 ```sh
 convert wholeSquare.png -crop 10x10 square.png
