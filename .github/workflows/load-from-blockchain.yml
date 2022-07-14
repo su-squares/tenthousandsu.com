@@ -1,0 +1,54 @@
+# This is a basic workflow to help you get started with Actions
+
+name: Load from blockchain
+
+# Controls when the workflow will run
+on:
+  # Triggers the workflow every hour on the 21st minute
+  schedule:
+    - cron: '21 * * * *'
+
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+
+# A workflow run is made up of one or more jobs that can run sequentially or in parallel
+jobs:
+  check_for_updates:
+    name: Check for updates on-chain since last committed to repository
+    runs-on: ubuntu-latest
+
+    # Steps represent a sequence of tasks that will be executed as part of the job
+    steps:
+      - name: Check-out tenthousandsu.com website repository
+        uses: actions/checkout@v3
+        
+      - name: Check-out update-script repository
+        uses: actions/checkout@v3
+        with:
+          repository: 'su-squares/update-script'
+          path: 'update-script'
+          
+      - name: Wire up the update-script
+        env:
+          UPDATE_SCRIPT_CONFIG_JSON: ${{ secrets.UPDATE_SCRIPT_CONFIG_JSON }}
+        run: |
+          mv build update-script/build
+          mv erc721 update-script/build/metadata
+          echo $UPDATE_SCRIPT_CONFIG_JSON > update-script/config.json
+        
+      - name: Set up Node 16
+        uses: setup-node@v3
+        with:
+          node-version: '16'
+          cache: 'yarn'
+          
+      - name: Install package dependencies with yarn
+        run: |
+          cd update-script
+          yarn install --immutable
+          
+      - name: Run have-there-been-updates.mjs
+        timeout-minutes: 5
+        run: |
+          cd update-script
+          node have-there-been-updates.mjs
