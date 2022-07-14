@@ -28,7 +28,7 @@ jobs:
           repository: 'su-squares/update-script'
           path: 'update-script'
           
-      - name: Wire up the update-script
+      - name: Wire up update-script
         env:
           UPDATE_SCRIPT_CONFIG_JSON: ${{ secrets.UPDATE_SCRIPT_CONFIG_JSON }}
         run: |
@@ -52,4 +52,26 @@ jobs:
         timeout-minutes: 5
         run: |
           cd update-script
-          node have-there-been-updates.mjs
+          node have-there-been-updates.mjs && echo "::set-env name=LOAD::yes"
+          
+      - name: Run load-blockchain.mjs
+        if: env.LOAD == 'yes'
+        timeout-minutes: 5
+        run: |
+          cd update-script
+          node load-blockchain.mjs
+
+      - name: Export build from update-script
+        if: env.LOAD == 'yes'
+        run: |
+          mv update-script/build/metadata erc721
+          mv update-script/build build
+
+      - name: Commit back to this repository (IN TESTING)
+        if: env.LOAD == 'yes'
+        run: |
+          git add build erc721
+          git config user.name "update-script/load-blockchain.mjs"
+          git config user.email "<>"
+          git commit -m 'Load from blockchain'
+          git push -u origin main:workflow-test
