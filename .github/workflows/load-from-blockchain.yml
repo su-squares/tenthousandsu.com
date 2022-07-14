@@ -74,4 +74,5 @@ jobs:
           git config user.name "update-script/load-blockchain.mjs"
           git config user.email "<>"
           git commit -m 'Load from blockchain'
-          git push -u origin main:workflow-test
+          #git push -u origin main:workflow-test
+          git push
