@@ -52,7 +52,7 @@ jobs:
         timeout-minutes: 5
         run: |
           cd update-script
-          node have-there-been-updates.mjs && echo "::set-env name=LOAD::yes"
+          node have-there-been-updates.mjs && echo "LOAD=yes" >> $GITHUB_ENV
           
       - name: Run load-blockchain.mjs
         if: env.LOAD == 'yes'
