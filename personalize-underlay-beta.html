@@ -1,0 +1,263 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Su Squares, personalize underlay</title>
+  <link rel="canonical" href="https://tenthousandsu.com/personalize" />
+  <style>
+    #image-preview tr td {
+      width:10px;
+      height:10px;
+      background:red;
+    }
+  </style>
+
+  <script src="https://cdn.jsdelivr.net/npm/ethers@5.4.6/dist/ethers.umd.min.js" integrity="sha256-hhyZwmdi3z8gOlk+hH86uTyHPFbQQ4j9JGWW/pE+kks=" crossorigin="anonymous"></script>
+  <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+  <link rel="stylesheet" href="assets/main.css">
+</head>
+<body>
+  <header>
+    <a id="logo" href="/"><img src="assets/logo-su-squares.svg" style="width:348px;height:57px;object-fit: cover;"></div></a>
+  </header>
+
+  <div class="image-list">
+  </div>
+
+  <article class="lead">
+    <h1>Personalize underlay // BETA</h1>
+    <p class="lead">
+      <em>If you have any questions, please mail <a href="mailto:Su@TenThousandSu.com?subject=Personalize+underlay">Su@TenThousandSu.com</a>. The price to personalize is 0.001 Ether.</em>
+    </p>
+    <p class="lead">
+      Use this page to personalize Su Squares you own on TenThousandSu.com. 
+      If your Square was previously personalized using the old, more expensive method you will need to <a href="/unpersonalize">unpersonalize</a> it first.
+      For expert usage <a href="https://tenthousandsu.com/articles/2021-10-18-the-underlay">see the documentation</a> or use our <a href="/personalize-underlay-batch">batch personalization tool</a>.
+    </p>
+    
+    <div class="step-1-not-done">
+      <h2>Step 1: Install MetaMask</h2>
+      <p>To personalize use Edge/Chrome/Firefox/Opera and <a target="_blank" href="https://metamask.io/">Install MetaMask</a> or compatible software to continue. Then reload this page.</p>
+    </div>
+    <div class="step-1-done" style="display:none">
+      <p>&#x2705; Step 1: Web3 environment enabled</p>
+    </div>
+    
+    <div class="step-2-not-done">
+      <h2>Step 2: Login to Mainnet</h2>
+      <p>Switch to <strong>Ethereum Mainnet</strong> and login to your MetaMask wallet. Then reload this page.</p>
+    </div>
+    <div class="step-2-done" style="display:none">
+      <p>&#x2705; Step 2: Using Ethereum<sup>&reg;</sup> Mainnet</p>
+    </div>
+    
+    <div class="step-2-done" style="display:none">
+      <h2>Step 3: Personalize</h2>
+      <p>
+        <strong>Square number</strong>
+        <br>Must be owned by the wallet you are currently using
+      </p>
+      <input type="number" min="1" max="10000" required id="square-number">
+      <br><span id="square-number-status"></span>
+      <hr>
+
+      <p>
+        <strong>Image</strong>
+        <br>Must be exactly 10&times;10 pixels and no animation or transparency
+      </p>
+      <input id="image" type="file" accept="image/png, image/jpeg, image/gif">
+      <hr>
+
+      <p>
+        <strong>Preview</strong>
+        <br>Enlarged to show detail
+      </p>
+      <table id="image-preview" style="border-spacing: 2px; border-collapse: separate;">
+        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+        <tr><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td><td></td></tr>
+      </table>
+      <hr>
+
+      <p>
+        <strong>Title</strong>
+        <br>Maximum 64 bytes (some Unicode characters use multiple bytes)
+      </p>
+      <input id="title" type="text">
+      <span id="title-count">0</span>
+      <hr>
+
+      <p>
+        <strong>URL</strong>
+        <br>Maximum 96 bytes (some Unicode characters use multiple bytes)
+      </p>
+      <input id="url" type="text">
+      <span id="url-count">0</span>
+      <hr>
+
+      <button id="personalize" class="btn btn-lg">
+        Personalize (0.001 Ether + gas)
+      </button>
+    </div>
+    
+    <div id="receipts">
+    </div>    
+  </article>
+
+  <script>
+    'use strict';
+
+    $(document).ready(function() {
+      // Configuration and state /////////////////////////////////////////////////////////////////////////////////////////
+      const provider = new ethers.providers.Web3Provider(window.ethereum);
+      const contractAddress = '0x992bDEC05cD423B73085586f7DcbbDaB953E0DCd';
+      const contractABI = [
+        "function personalizeSquareUnderlay(uint256 squareId,bytes rgbData,string title,string href) payable",
+        "function personalizeSquareUnderlayBatch((uint256 squareId,bytes rgbData,string title,string href)[]) payable",
+        "function ownerOf(uint256 squareId) view returns (address)",
+      ];
+      const priceEach = ethers.utils.parseEther('0.001');
+      let pixelData = []; // pixels from selected image
+      let didEditTitle = false;
+      let didEditUrl = false;
+      let underlayIsVisible = [];
+
+      // Underlay visibility ///////////////////////////////////////////////////////////////////////////////////////////
+      $.get("build/underlayIsVisible.json", function (data) {
+        underlayIsVisible = [""].concat(data); // JSON zero-indexed, allData is one-indexed
+      });
+
+      // The web3 workflow ///////////////////////////////////////////////////////////////////////////////////////////////
+      provider.getBlockNumber().then(() => {
+        $(".step-1-done").show();
+        $(".step-1-not-done").hide();
+        provider.getNetwork().then(network => {
+          if (network.chainId === 1) {
+            $(".step-2-done").show();
+            $(".step-2-not-done").hide();
+          }
+        });
+      });
+
+      // Interactivity ///////////////////////////////////////////////////////////////////////////////////////////////////
+      $("#image").change(function() {
+        pixelData = [];
+        for (let x = 0; x < 10; x++) {
+          for (let y = 0; y < 10; y++) {
+            $("#image-preview tr").eq(y).find("td").eq(x).css({"background-color": "rgb(255,0,0)"});
+          }
+        }
+
+        if (!this.files || !this.files[0]) {
+          return alert("Unable to read file");
+        }
+        const img = new Image();
+        img.addEventListener("load", () => {
+          if (img.width !== 10 || img.height !== 10) {
+            return alert("IMAGE ERROR: Image must be 10×10 pixels. Please try again.");
+          }
+          const canvas = document.createElement("canvas");
+          const context = canvas.getContext("2d");
+          context.drawImage(img, 0, 0);
+          const contextImageData = context.getImageData(0, 0, 10, 10);
+          let alphaWarning = false;
+          for (let i = 0; i < contextImageData.data.length; i += 4) {
+            const [red, green, blue, alpha] = contextImageData.data.slice(i, i+4);
+            // Mix color to a white background (255) if there is transparency
+            const mixedRed = Math.floor((red * alpha + 255 * (255-alpha)) / 255);
+            const mixedGreen = Math.floor((green * alpha + 255 * (255-alpha)) / 255);
+            const mixedBlue = Math.floor((blue * alpha + 255 * (255-alpha)) / 255);
+            if (alpha != 255) alphaWarning = true;
+            pixelData.push(mixedRed, mixedGreen, mixedBlue);
+            const x = (i/4) % 10;
+            const y = Math.floor((i/4) / 10);
+            $("#image-preview tr").eq(y).find("td").eq(x).css({"background-color": "rgb("+mixedRed+","+mixedGreen+","+mixedBlue+")"});
+          }
+          if (alphaWarning) {
+            alert("WARNING: Your image included transparency. Since Su Squares does not support transparency, we have mixed down this color on top of a white background. Proceed at your own risk.");
+          }
+        });
+        img.src = window.URL.createObjectURL(this.files[0]);
+      });
+
+      $("#square-number").on("change", function () {
+        $("#square-number")
+          .removeClass("is-valid is-invalid")
+          .addClass($("#square-number").val() >= 1 && $("#square-number").val() <= 10000 ? "is-valid" : "is-invalid");
+        if (underlayIsVisible[$("#square-number").val()]) {
+          $("#square-number-status").html("Square <strong>" + ($("#square-number").val()) + "</strong> can be personalized using the underlay.");
+        } else {
+          $("#square-number-status").html("Square <strong>" + ($("#square-number").val()) + "</strong> is occluded by the main contract. <a target=\"_blank\" href=\"https://tenthousandsu.com/articles/2021-10-18-the-underlay\">Learn more.</a> You can proceed by <a target=\"_blank\" href=\"https://tools.tenthousandsu.com/unpersonalize.html\">unpersonalizing</a> your Square on the main contract and then proceeding here to personalize; alternatively, you can <a target=\"_blank\" href=\"https://tenthousandsu.com/personalize\">use the older, more expensive main contract</a> to personalize your Square.</a>");
+        }
+      });
+
+      $("#title").on("input", function () {
+        $("#title-count").text($("#title").val().length)
+        $("#title")
+          .removeClass("is-valid is-invalid")
+          .addClass($("#title").val().length <= 64 ? "is-valid" : "is-invalid");
+        didEditTitle = true;
+      });
+
+      $("#url").on("input", function () {
+        $("#url-count").text($("#url").val().length);
+        $("#url")
+          .removeClass("is-valid is-invalid")
+          .addClass($("#url").val().length <= 96 ? "is-valid" : "is-invalid");
+        didEditUrl = true;
+      });
+
+      $("#personalize").click(async function () {
+        const squareNumber = $("#square-number").val();
+        const title = $("#title").val();
+        const url = $("#url").val();
+
+        if (!(squareNumber >= 1 && squareNumber <= 10000)) {
+          return alert("Invalid Square number, please try again.");
+        }
+        if (title.length > 64) {
+          return alert("Title is too long, please try again.");
+        }
+        if (!didEditTitle) {
+          return alert("Your title is empty. If you want to personalize with an empty title that is okay, please just type something in there until you get a green checkmark and delete it.");
+        }
+        if (url.length > 96) {
+          return alert("URL is too long, please try again.");
+        }
+        if (!didEditUrl) {
+          return alert("Your URL is empty. If you want to personalize with an empty title that is okay, please just type something in there until you get a green checkmark and delete it.");
+        }
+        if (pixelData.length !== 300) {
+          return alert("Did not select an image, please try again.");
+        }
+
+        await ethereum.request({ method: 'eth_requestAccounts' });
+        const signer = provider.getSigner();
+        const contract = new ethers.Contract(contractAddress, contractABI, provider);
+        const contractWithSigner = contract.connect(signer);
+        const args = [squareNumber, pixelData, title, url];
+        const overrides = {
+          value: priceEach,
+          // gasLimit: XXXX, // IT WOULD BE NICE TO FIND THE ACTUAL MAXIMUM GAS PRICE AND PUT HERE
+        };
+        const tx = await contractWithSigner.personalizeSquareUnderlay(...args, overrides)
+        .then(receipt => {
+          console.log(receipt);
+          $("#receipts").innerText += squareNumber + " https://etherscan.io/tx/" + receipt.hash + "\n";
+        })
+        .catch(error => {
+          console.log(error.message);
+          alert(error.message);
+        });
+      });
+    });
+  </script>
+</body>
+</html>
