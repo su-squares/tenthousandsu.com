@@ -12,7 +12,11 @@ html {
 /* Application ****************************************************************/
 
 body {
-  background:#eee;
+  background-color: #2d3c96;
+  background-image: linear-gradient(to bottom right, #2d3c96, #d53392);
+  color: #ffd700;
+  min-height: 100vh;
+  min-width: 100vw;
   padding-left: 2px;
   padding-right: 2px;
 }
@@ -37,13 +41,14 @@ header > * {
 }
 
 .btn {
-  text-decoration: none;
-  color: teal;
-  border: 2px solid teal;
-  padding: 10px;
-  background: rgba(255,255,255,0.8);
-  box-shadow: 3px 6px 10px #ccc;
+  background: none;
   border-radius: 0.5rem;
+  border: 2px solid #ffd700;
+  box-shadow: 4px 6px 4px rgba(255, 255, 255, 0.2);
+  color: #ffd700;
+  cursor: pointer;
+  padding: 10px;
+  text-decoration: none;
 }
 
 .btn:hover {
@@ -55,6 +60,12 @@ header > * {
   left: 2px;
   top: 2px;
   box-shadow: 1px 4px 10px #555;
+}
+
+.btn-lg {
+  font-size: 2rem;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
 }
 
 input[type="text"] {
@@ -104,4 +115,20 @@ footer {
   font-size: 12px;
   border-radius: 10px;
   padding:10px;
+}
+
+a:link, a:visited, a:active {
+  color: #ffd700;
+}
+
+hr {
+  border: 2px solid #ffd700;
+}
+
+.is-valid {
+  border: 3px solid green;
+}
+
+.is-invalid {
+  border: 3px solid red;
 }
