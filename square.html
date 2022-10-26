@@ -57,6 +57,11 @@
       <img id="image" src="build/wholeSquare.png" alt="All Su Squares" style="height:1000px; width:1000px">
       <img id="arrow" src="assets/dr.png" alt="Location" style="height:100px; width:100px; position:absolute">
     </div>
+
+    <hr>
+
+    <h2>Emojified</h2>
+    <pre id="emojified"></pre>
   </article>
 
   <footer>
@@ -94,9 +99,6 @@
         };
       }));
 
-      console.log("SUP", squareNumber);
-      console.log(squares[squareNumber]);
-
       const elSquareNumber = document.getElementById("square-number");
       elSquareNumber.innerText = squareNumber;
 
@@ -111,6 +113,8 @@
 
       const elLink = document.getElementById('link');
       elLink.innerText = squares[squareNumber].href;
+
+      const elEmojified = document.getElementById('emojified');
       
       // Set image
       const row = Math.floor((squareNumber - 1) / 100); // 0 indexed
@@ -146,6 +150,64 @@
           elArrow.style.top = `${row * 10 - 100}px`;
           elArrow.style.left = `${col * 10 - 100}px`;
         }
+      }
+
+      // Emoji squares and RGB values for ⬛⬜🟥🟧🟨🟩🟦🟪🟫
+      const emojis = [
+        {"emoji": "⬛", "red": 0, "green": 0, "blue": 0},
+        {"emoji": "⬜", "red": 255, "green": 255, "blue": 255},
+        {"emoji": "🟥", "red": 255, "green": 0, "blue": 0},
+        {"emoji": "🟧", "red": 255, "green": 165, "blue": 0},
+        {"emoji": "🟨", "red": 255, "green": 255, "blue": 0},
+        {"emoji": "🟩", "red": 0, "green": 128, "blue": 0},
+        {"emoji": "🟦", "red": 0, "green": 0, "blue": 255},
+        {"emoji": "🟪", "red": 128, "green": 0, "blue": 128},
+        {"emoji": "🟫", "red": 139, "green": 69, "blue": 19},
+      ]
+
+      // Create canvas
+      const canvas = document.createElement('canvas');
+      canvas.width = 10;
+      canvas.height = 10;
+      // Add wholeSquare to canvas
+      const context = canvas.getContext('2d');
+      const image = new Image();
+      image.src = 'build/wholeSquare.png';
+      image.onload = function(){
+        context.drawImage(image, col * 10, row * 10, 10, 10, 0, 0, 10, 10);
+        // Get pixels
+        const imageData = context.getImageData(0, 0, 10, 10);
+        const pixels = imageData.data;
+        // Loop pixels
+        let emojiString = '';
+        for (let i = 0; i < pixels.length; i += 4) {
+          // Get pixel color
+          const red = pixels[i];
+          const green = pixels[i + 1];
+          const blue = pixels[i + 2];
+          // Find closest emoji
+          let closestEmoji = emojis[0];
+          let closestDistance = 195075;
+          for (let j = 0; j < emojis.length; j++) {
+            const emoji = emojis[j];
+            const distance = Math.sqrt(
+              Math.pow(emoji.red - red, 2) +
+              Math.pow(emoji.green - green, 2) +
+              Math.pow(emoji.blue - blue, 2)
+            );
+            if (distance < closestDistance) {
+              closestEmoji = emoji;
+              closestDistance = distance;
+            }
+          }
+          emojiString += closestEmoji.emoji;
+          // Add line break
+          if (i % 40 === 36) {
+            emojiString += "<br>";
+          }
+        }
+        // Set emoji string
+        elEmojified.innerHTML = emojiString;
       }
     });
   </script>
