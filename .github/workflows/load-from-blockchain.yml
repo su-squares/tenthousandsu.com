@@ -67,7 +67,7 @@ jobs:
           mv update-script/build/metadata erc721
           mv update-script/build build
 
-      - name: Commit back to this repository (IN TESTING)
+      - name: Commit back to this repository
         if: env.LOAD == 'yes'
         run: |
           git add build erc721
