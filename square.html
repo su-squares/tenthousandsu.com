@@ -10,8 +10,7 @@
 
 <body>
   <header>
-    <a id="logo" href="/"><img src="assets/logo-su-squares.svg" style="width:348px;height:57px;object-fit: cover;">
-      </div></a>
+    <a id="logo" href="/"><img src="assets/logo-su-squares.svg" style="width:348px;height:57px;object-fit: cover;" alt="Su Squares logo"></a>
     <span>
       The first ERC-721 NFT<br>
       <strong>Available: <span id="available-plug">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></strong>
@@ -52,7 +51,7 @@
 
     <h2>Location</h2>
     <div style="position:relative;height:1000px; zoom: 0.5">
-      <img id="image" src="build/wholeSquare.png" alt="All Su Squares" style="height:1000px; width:1000px">
+      <img id="theImage" src="build/wholeSquare.png" alt="All Su Squares" style="height:1000px; width:1000px">
       <img id="arrow" src="assets/dr.png" alt="Location" style="height:100px; width:100px; position:absolute">
     </div>
 
@@ -65,13 +64,11 @@
   <footer>
     <small>
       No cookies. No analytics. Not responsible for content of linked sites. Images shown on homepage are &copy; their
-      respective owners. This image refreshes <a target="_blank" href="https://github.com/su-squares/tenthousandsu.com/actions/workflows/load-from-blockchain.yml">approx. hourly</a>. To the extent possible under law, Su Entriken has waived
+      respective owners. This image <a target="_blank" href="https://github.com/su-squares/tenthousandsu.com/actions/workflows/load-from-blockchain.yml">refreshes hourly</a>. To the extent possible under law, Su Entriken has waived
       all copyright and related or neighboring rights to the TenThousandSu.com website. This work is published from the
       United States.
     </small>
   </footer>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"
-    integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
   <script>
     // Get URL fragment
     const squareNumber = parseInt(window.location.hash.substring(1));

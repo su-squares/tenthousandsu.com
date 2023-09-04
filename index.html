@@ -11,15 +11,14 @@
 
 <body>
   <header>
-    <a id="logo" href="/"><img src="assets/logo-su-squares.svg" style="width:348px;height:57px;object-fit: cover;">
-      </div></a>
+    <a id="logo" href="/"><img src="assets/logo-su-squares.svg" style="width:348px;height:57px;object-fit: cover;" alt="Su Squares logo"></a>
     <span>
       The first ERC-721 NFT<br>
-      <strong>Available: <span id="available-plug">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></strong>
+      <strong>Available: <span id="available-count">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></strong>
     </span>
     <a class="btn" href="white-paper">About us</a>
     <a class="btn" href="buy">Buy</a>
-    <a class="btn" href="https://tools.tenthousandsu.com/personalize-underlay">Personalize</a>
+    <a class="btn" href="personalize">Personalize</a>
     <a class="btn" target="twitter" href="https://twitter.com/susquares">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-twitter-x" viewBox="0 0 16 16">
         <path d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.601.75Zm-.86 13.028h1.36L4.323 2.145H2.865l8.875 11.633Z"/>
@@ -40,16 +39,16 @@
       <span>Or <a style="color:#ffd700"
           href="mailto:Su@TenThousandSu.com?subject=Buy%20a%20random%20Square&body=Hi%20Su!%0A%0AI'd%20like%20to%20buy%20%20a%20random%20Su%20Squares%20at%20a%20cheaper%20price.%0A%0AMy%20wallet%20address%20is%20XXXXXXXXXXX%0A%0A">buy
           a
-          <img
+          <img alt="random block"
             src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAMAAAC6V+0/AAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAADZQTFRF9sxg2ZYl1ZI67sAy3aNk9sAMYE8ZFBAA2ZY6yIE++sQIwHk62ZI69sQI8sAI9sQM1ZpkbGRb8/GKXwAAAGVJREFUeJyFkFkOgDAIBevCK3X3/pe1tFatYJwfwgRCeM41b9rO9aRAlPCV8d9S4CDwtT4kB+G0t5Qu5PIvuZYEpFtjJSNTOqbl/VGRbEmCOfkIZLbWlxJIrjmQ1UhpIwXcDoU/ANslCMY1JLSSAAAAAElFTkSuQmCC"
             style="height:20px; width:20px; image-rendering: pixelated;">
           random 2×2 Square</a> at a discount.</span>
     </p>
     <a id="wheretogo" href="" target="_blank">
       <div style="position:relative;height:1000px">
-        <img id="image" src="build/wholeSquare.png" alt="All Su Squares" style="margin:0; height:1000px; width:1000px">
+        <img id="theImage" src="build/wholeSquare.png" alt="All Su Squares" style="margin:0; height:1000px; width:1000px">
         <div id="position"
-          style="background:pink;opacity:0.8; width:10px;height:10px;top:0;left:0;position:absolute;pointer-events:none;display:none">
+          style="background:pink;opacity:0.8;width:10px;height:10px;top:0;left:0;position:absolute;pointer-events:none">
         </div>
         <div id="tooltip" style="color:black"></div>
         <div id="electric-fence"></div>
@@ -69,191 +68,152 @@
   <footer>
     <small>
       No cookies. No analytics. Not responsible for content of linked sites. Images shown on homepage are &copy; their
-      respective owners. This image refreshes <a target="_blank" href="https://github.com/su-squares/tenthousandsu.com/actions/workflows/load-from-blockchain.yml">approx. hourly</a>. To the extent possible under law, Su Entriken has waived
+      respective owners. This image refreshes <a target="_blank" href="https://github.com/su-squares/tenthousandsu.com/actions/workflows/load-from-blockchain.yml">hourly</a>. To the extent possible under law, Su Entriken has waived
       all copyright and related or neighboring rights to the TenThousandSu.com website. This work is published from the
       United States.
     </small>
   </footer>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"
-    integrity="sha256-FgpCb/KJQlLNfOu91ta32o/NMZxltwRo8QtmkMRdAu8=" crossorigin="anonymous"></script>
   <script>
-    var allData = []; // Each is [version, title, href, blockNumber] or null
-    $.get("build/squarePersonalizations.json", function (data) {
-      allData = [""].concat(data); // JSON zero-indexed, allData is one-indexed
-      const reducer = (accumulator, currentValue) => accumulator + !!currentValue;
-      const sold = allData.slice(1).reduce(reducer, 0);
-      $("#available-plug").text((10000 - sold).toLocaleString());
-      stepFence();
+    var squarePersonalizations = []; // Index 0 is for Square 1
+    var squareExtra = []; // Index 0 is for Square 1
 
-      let mintedSquares = [];
-      let personalizedSquares = [];
-      $.get("build/squareExtra.json", function (data) {
-        allExtraData = [""].concat(data); // Data is zero-indexed
-        for (let squareNumber = 1; squareNumber <= 10000; squareNumber++) {
-          const square = allData[squareNumber];
-          if (square === null) {
-            // Square is not yet minted
-            continue;
-          }
-          const squareExtra = allExtraData[squareNumber];
-          mintedSquares.push([squareNumber, square, squareExtra]);
-          if (square[0] === 0 && square[1] === "" && square[2] === "") {
-            // Square is minted but not personalized
-            continue;
-          }
-          personalizedSquares.push([squareNumber, square, squareExtra]);
-        }
+    const squarePersonalizationsPromise = fetch("build/squarePersonalizations.json").then(response => response.json());
+    const squareExtraPromise = fetch("build/squareExtra.json").then(response => response.json());
 
-        // 5 most recent minted Squares
-        const mostRecentMintedSquares = mintedSquares.sort((a, b) => b[2][0] - a[2][0]).slice(0, 5);
-        mostRecentMintedSquares.forEach(square => {
-          [squareNumber, squareData, extraData] = square;
-          [version, title, href, blockNumber] = squareData;
-          [mintedBlock, updatedBlock, underlayVisible] = extraData;
+    Promise.all([squarePersonalizationsPromise, squareExtraPromise])
+      .then(([personalizations, extra]) => {
+        squarePersonalizations = personalizations;
+        squareExtra = extra;
 
-          const row = Math.floor((squareNumber - 1) / 100);
-          const col = (squareNumber - 1) % 100;
+        // Start fence animation
+        lightUpFence(new Set([1]));
 
-          $("#newly-minted")
-            .append(
-              // Flex orient vertical
-              $("<a style='display:flex; flex-direction: column; align-items: center; justify-content: center; flex: 1 1 0'>")
-                .attr("href", "https://tenthousandsu.com/square#" + squareNumber)
-                .append($("<div>")
-                  .css({
-                    background: 'url("https://tenthousandsu.com/build/wholeSquare.png")',
-                    height: '10px',
-                    width: '10px',
-                    "background-position-x": -col * 10,
-                    "background-position-y": -row * 10,
-                    display: "inline-block",
-                    "zoom": "5",
-                    "image-rendering": "pixelated",
-                  })
-                )
-                .append($('<p>')
-                  .text("#" + squareNumber)
-                )
-            );
+        // Count how many sold
+        const availableCountSpan = document.getElementById("available-count");
+        const sold = squarePersonalizations.filter(value => value !== null).length;
+        availableCountSpan.textContent = (10000 - sold).toLocaleString();
+
+        // Show newly minted and personalized Squares
+        const newlyMintedSection = document.getElementById("newly-minted");
+        const newlyPersonalizedSection = document.getElementById("newly-personalized");
+        const mostRecentMintedSquares = squareExtra
+          .map((extraData, index) => [index, extraData])
+          .filter(([index, extraData]) => extraData !== null)
+          .sort((a, b) => b[1][0] - a[1][0])
+          .slice(0, 5);
+        mostRecentMintedSquares.forEach(([index, extraData]) => {
+          const row = Math.floor((index - 1) / 100);
+          const col = (index - 1) % 100;
+          const squareNumber = index + 1;
+          const [mintedBlock, updatedBlock, underlayVisible] = extraData;
+          newlyMintedSection.insertAdjacentHTML("beforeend",
+            `<a style="display:flex; flex-direction: column; align-items: center; justify-content: center; flex: 1 1 0" href="https://tenthousandsu.com/square#${squareNumber}">
+              <div style="background: url('https://tenthousandsu.com/build/wholeSquare.png'); height: 10px; width: 10px; background-position-x: ${-col * 10}px; background-position-y: ${-row * 10}px; display: inline-block; zoom: 5; image-rendering: pixelated;"></div>
+              <p>#${squareNumber}</p>
+            </a>`
+          );
         });
-
-        // 5 most recent personalized Squares
-        const mostRecentPersonalizedSquares = personalizedSquares.sort((a, b) => b[1][3] - a[1][3]).slice(0, 5);
-        mostRecentPersonalizedSquares.forEach(square => {
-          [squareNumber, squareData, extraData] = square;
-          [version, title, href, blockNumber] = squareData;
-          [mintedBlock, updatedBlock, underlayVisible] = extraData;
-
-          const row = Math.floor((squareNumber - 1) / 100);
-          const col = (squareNumber - 1) % 100;
-
-          $("#newly-personalized")
-            .append(
-              // Flex orient vertical
-              $("<a style='display:flex; flex-direction: column; align-items: center; justify-content: center; flex: 1 1 0'>")
-                .attr("href", "https://tenthousandsu.com/square#" + squareNumber)
-                .append($("<div>")
-                  .css({
-                    background: 'url("https://tenthousandsu.com/build/wholeSquare.png")',
-                    height: '10px',
-                    width: '10px',
-                    "background-position-x": -col * 10,
-                    "background-position-y": -row * 10,
-                    display: "inline-block",
-                    "zoom": "5",
-                    "image-rendering": "pixelated",
-                  })
-                )
-                .append($('<p>')
-                  .text("#" + squareNumber)
-                )
-            );
+        const mostRecentPersonalizedSquares = squareExtra
+          .map((extraData, index) => [index, extraData])
+          .filter(([index, extraData]) => extraData !== null)
+          .filter(([index, extraData]) => extraData[1] !== extraData[0]) // minted but not personalized
+          .sort((a, b) => b[1][1] - a[1][1])
+          .slice(0, 5);
+        mostRecentPersonalizedSquares.forEach(([index, extraData]) => {
+          const row = Math.floor((index) / 100);
+          const col = (index) % 100;
+          const squareNumber = index + 1;
+          newlyPersonalizedSection.insertAdjacentHTML("beforeend",
+            `<a style="display:flex; flex-direction: column; align-items: center; justify-content: center; flex: 1 1 0" href="https://tenthousandsu.com/square#${squareNumber}">
+              <div style="background: url('https://tenthousandsu.com/build/wholeSquare.png'); height: 10px; width: 10px; background-position-x: ${-col * 10}px; background-position-y: ${-row * 10}px; display: inline-block; zoom: 5; image-rendering: pixelated;"></div>
+              <p>#${squareNumber}</p>
+            </a>`
+          );
         });
       });
-    });
 
-    function getSquareNumber(e, element) {
-      var x = Math.floor((e.pageX - $(element).offset().left) / 10);
-      x = x <= 0 ? 0 : x >= 99 ? 99 : x;
-      var y = Math.floor((e.pageY - $(element).offset().top) / 10);
-      y = y <= 0 ? 0 : y >= 99 ? 99 : y;
-      //console.log([x,y]);
-      return x + y * 100 + 1;
-    }
-    $("#image").on("mouseover mousemove", function (e) {
-      const squareNumber = getSquareNumber(e, this);
-      const left = 10 * ((squareNumber - 1) % 100);
-      const top = 10 * Math.floor((squareNumber - 1) / 100);
+    // Hover over Squares
+    theImage.addEventListener("mousemove", (e) => {
+      const theImage = document.getElementById("theImage");
+      const positionDiv = document.getElementById("position");
+      const tooltipDiv = document.getElementById("tooltip");
+      const whereToGoAnchor = document.getElementById("wheretogo");
+      const x = Math.min(Math.max(Math.floor((e.clientX - theImage.x) / 10), 0), 99);
+      const y = Math.min(Math.max(Math.floor((e.clientY - theImage.y) / 10), 0), 99);
+      const squareNumber = x + y * 100 + 1;
+      positionDiv.style.left = x * 10 + "px";
+      positionDiv.style.top = y * 10 + "px";
       let title = "Square #" + (squareNumber) + "\n";
-      //console.log("Entering square "+squareNumber);
-      if (allData[squareNumber] == null) {
-        $("#image").css("cursor", "pointer");
+      if (squarePersonalizations[squareNumber - 1] == null) {
+        theImage.style.cursor = "pointer";
         title = title + " is available for sale, click to buy.";
-        if (theFence.has(squareNumber)) {
-          title = title + " On the electric fence. Only available for sale with Ether.";
-        }
-        $("#position").css({ left: left, top: top, display: "block" });
-        $("#wheretogo").attr("href", "buy?square=" + (squareNumber));
-      } else if (!allData[squareNumber][1] && !allData[squareNumber][2]) {
-        $("#image").css("cursor", "not-allowed");
+        whereToGoAnchor.href = "buy?square=" + (squareNumber);
+      } else if (!squarePersonalizations[squareNumber - 1][1] && !squarePersonalizations[squareNumber - 1][2]) {
+        theImage.style.cursor = "not-allowed";
         title = title + " WAS PURCHASED BUT NOT YET PERSONALIZED";
-        $("#position").css({ left: left, top: top, display: "block" });
-        $("#wheretogo").removeAttr("href");
+        whereToGoAnchor.removeAttribute("href");
       } else {
-        $("#image").css("cursor", "pointer");
-        title = title + allData[squareNumber][1];
-        $("#position").css({ left: left, top: top, display: "block" });
-        $("#wheretogo").attr("href", allData[squareNumber][2]);
+        theImage.style.cursor = "pointer";
+        title = title + squarePersonalizations[squareNumber - 1][1];
+        whereToGoAnchor.href = squarePersonalizations[squareNumber - 1][2];
       }
-
-      $("#tooltip").text(title);
-      $("#tooltip").css({ left: left, top: top + 30, display: "block" });
-    });
-    $("#image").mouseout(function () {
-      $("#position, #tooltip").css({ display: "none" });
+      tooltipDiv.textContent = title;
+      tooltipDiv.style.left = x * 10 + "px";
+      tooltipDiv.style.top = y * 10 + 30 + "px";
+      tooltipDiv.style.display = "block";
     });
 
-    const litUpEdge = new Set([1]);
-    const wasEverLitUp = new Set([1]);
-    const theFence = new Set();
+    // Animate the electric fence
+    let fence = new Set();
+    let litUpEdge = new Set();
+    let wasEverLitUp = new Set([1]);
 
-    function stepFence() {
-      if (litUpEdge.size == 0) {
-        return;
-      }
-      const nextLitUpEdge = new Set();
-      litUpEdge.forEach(function (square) {
-        if (square > 100) {
-          nextLitUpEdge.add(square - 100);
-        }
-        if (square <= 100 * 99) {
-          nextLitUpEdge.add(square + 100);
-        }
-        if (square % 100 != 1) {
-          nextLitUpEdge.add(square - 1);
-        }
-        if (square % 100 != 0) {
-          nextLitUpEdge.add(square + 1);
-        }
-        $('#electric-fence-' + square).remove();
+    function lightUpFence(edge) {
+      // Unlight old
+      litUpEdge.forEach(s => {
+        const element = document.getElementById("electric-fence-" + s);
+        element.parentNode.removeChild(element);
       });
       litUpEdge.clear();
-      nextLitUpEdge.forEach((square) => {
-        if (wasEverLitUp.has(square)) {
-          return;
-        }
+      // Light up new
+      let nextEdge = new Set();
+      edge.forEach((square) => {
         wasEverLitUp.add(square);
-        if (allData[square] == null) {
-          theFence.add(square);
-        } else {
+        // create element
+        const element = document.createElement("div");
+        element.id = "electric-fence-" + square;
+        element.style.pointerEvents = "none";
+        element.style.position = "absolute";
+        element.style.left = ((square - 1) % 100 * 10) + "px";
+        element.style.top = Math.floor((square - 1) / 100) * 10 + "px";
+        element.style.width = "10px";
+        element.style.height = "10px";
+        element.style.background = "#ffd700";
+        element.style.opacity = "0.25";
+        document.getElementById("electric-fence").appendChild(element);
+        // if minted then step it, if not then add to fence
+        if (squarePersonalizations[square - 1] !== null) {
           litUpEdge.add(square);
+          // Span to next edge
+          if (square > 100 && !wasEverLitUp.has(square - 100)) {
+            nextEdge.add(square - 100);
+          }
+          if (square <= 100 * 99 && !wasEverLitUp.has(square + 100)) {
+            nextEdge.add(square + 100);
+          }
+          if (square % 100 != 1 && !wasEverLitUp.has(square - 1)) {
+            nextEdge.add(square - 1);
+          }
+          if (square % 100 != 0 && !wasEverLitUp.has(square + 1)) {
+            nextEdge.add(square + 1);
+          }
+        } else {
+          fence.add(square);
         }
-        $('#electric-fence').append('<div id="electric-fence-' + square + '" style="pointer-events:none;position:absolute;left:' + ((square - 1) % 100 * 10) + 'px;top:' + Math.floor((square - 1) / 100) * 10 + 'px;width:10px;height:10px;background:#ffd700;opacity:0.25"></div>');
       });
-      setTimeout(() => { stepFence() }, 25);
-      console.log("litUpEdge: ", litUpEdge);
-      console.log("wasEverLitUp: ", wasEverLitUp);
-      console.log("theFence: ", theFence);
+      if (nextEdge.size > 0) {
+        setTimeout(() => { lightUpFence(nextEdge) }, 25);
+      }
     }
   </script>
 </body>

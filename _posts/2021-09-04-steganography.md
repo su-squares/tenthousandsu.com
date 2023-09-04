@@ -12,7 +12,7 @@ Your Square fits 10×10=100 pixels with three color channels at 8 bits each. Tha
 
 Typically you are putting visual stuff in there to make something pretty. But if you are a Soviet era spy, you might want to use this as an inconspicuous and very public way of disseminating subversion messages. This is a guide for those people...
 
-All subversives us Linux or macOS, and the command line. So this guide assumes you are familiar with both of these. On macOS, please install [Homebrew](https://brew.sh) and run `brew install imagemagick`. For Linux you should probably already have ImageMagick installed and instructions vary to get it.
+All subversives use Linux or macOS, and the command line. So this guide assumes you are familiar with both of these. On macOS, please install [Homebrew](https://brew.sh) and run `brew install imagemagick`. For Linux you should probably already have ImageMagick installed and instructions vary to get it.
 
 ## Convert a tweet-sized poem into a 10×10 pixel PNG file
 
@@ -61,7 +61,7 @@ Output:
 
 ## Why so black
 
-You Square is black, and there's nothing wrong with that.
+Your Square is black, and there's nothing wrong with that.
 
 But we can use this same process to put a secret message in a colorful picture by only mangling the beginning of it.
 
