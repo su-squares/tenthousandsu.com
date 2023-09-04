@@ -41,17 +41,17 @@ Old versions of the smart contract are archived at 0xe264D16BCBA50925D0e1a903985
 
 The source code for the Su Squares smart contract is [publicly accessible on GitHub](https://github.com/su-squares/ethereum-contract).
 
-## Will this website stay online?
-
-We commit to keep this website online for at least ten years from our 2018 launch. We expect extreme interest in Su Squares and we will work hard to keep the website online. This website is published under the jurisdiction of the United States of America. If for some reason it becomes impossible for us to continue hosting the site here we will move to a different jurisdiction or make any other temporary modification necessary to comply with local laws.
-
-We have [released the project](/articles/2021-08-29-open-source) under a permissive open source license. This also includes all website code, backend code and image processing.
-
 ## What is the cost?
 
 The cost for each Su Square is **0.5 Ether**. You can buy any available Square for this price, and the price won't change. Choose the best location on the page before it is gone!
 
 It costs **0.001 Ether** to personalize your Square using our underlay contract.
+
+## Will this website stay online?
+
+We commit to keep this website online for at least ten years from our 2018 launch. We expect extreme interest in Su Squares and we will work hard to keep the website online. This website is published under the jurisdiction of the United States of America. If for some reason it becomes impossible for us to continue hosting the site here we will move to a different jurisdiction or make any other temporary modification necessary to comply with local laws.
+
+We have [released the project](/articles/2021-08-29-open-source) under a permissive open source license. This also includes all website code, backend code and image processing.
 
 ## Is this an investment?
 
