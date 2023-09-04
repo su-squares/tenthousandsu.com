@@ -1,10 +1,10 @@
 ---
 layout: article
 permalink: /articles/2018-09-18-operator-bug
-title: Operator Bug
+title: Operator bug
 ---
 
-# OpenSea Identifies Operator Bug with Su Squares
+# OpenSea identifies operator bug with Su Squares
 
 ***OpenSea employee Devin Finzer identified a error with the Su Squares implementation**, announced in the [OpenSea Discord](https://discord.gg/ga8EJbv) #general channel on Tuesday at 2018-09-18 at 22:57 UTC.*
 

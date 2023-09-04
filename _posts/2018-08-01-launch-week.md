@@ -1,10 +1,10 @@
 ---
 layout: article
 permalink: /articles/2018-08-01-launch-week
-title: Launch Week
+title: Launch week
 ---
 
-# Launch Week
+# Launch week
 
 ***Initial deed offering** starts Monday August 6th, 2018 and lasts one week until Monday August 13th, 2018. A special offer applies for people buying squares during launch week.*
 

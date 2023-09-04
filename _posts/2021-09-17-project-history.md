@@ -1,10 +1,10 @@
 ---
 layout: article
 permalink: /articles/2021-09-17-project-history
-title: Project History
+title: Project history
 ---
 
-# Project History
+# Project history
 
 *If you have a question, please mail [Su@TenThousandSu.com](mailto:Su@TenThousandSu.com?subject=Su Squares&body=Hi Su%2C Please help! I have a question about Su Squares. ).*
 

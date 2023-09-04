@@ -1,10 +1,10 @@
 ---
 layout: article
 permalink: /articles/2018-11-11-operator-bug-fixed
-title: Operator Bug Fixed
+title: Operator bug fixed
 ---
 
-# Su Squares Relaunches With Fix for Operator Bug
+# Su Squares relaunches with fix for operator bug
 
 ***After [a minor fix](https://github.com/su-squares/ethereum-contract/commit/30f305710706371326486ef14daf941c0276a9c5) and much due diligence, Su Squares is back online.** Best practices and lessons learned and reviewed here.*
 

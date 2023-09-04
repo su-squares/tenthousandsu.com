@@ -1,10 +1,10 @@
 ---
 layout: article
 permalink: /articles/2021-10-18-the-underlay
-title: Introducing The Underlay
+title: Introducing the underlay
 ---
 
-# The Underlay
+# The underlay
 
 *If you have a question, please mail [Su@TenThousandSu.com](mailto:Su@TenThousandSu.com?subject=Su Squares&body=Hi Su%2C Please help! I have a question about Su Squares. ).*
 

@@ -1,10 +1,10 @@
 ---
 layout: article
 permalink: /articles/2021-09-04-steganography
-title: Storing Text/Data in Your Square
+title: Storing text/data in your square
 ---
 
-# Storing Text/Data in Your Square
+# Storing text/data in your square 
 
 *If you have a question, please mail [Su@TenThousandSu.com](mailto:Su@TenThousandSu.com?subject=Su Squares&body=Hi Su%2C Please help! I have a question about Su Squares. ).*
 

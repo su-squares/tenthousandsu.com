@@ -1,10 +1,10 @@
 ---
 layout: article
 permalink: /articles/2021-08-29-open-source
-title: Su Squares Open Sourced
+title: Su Squares open sourced
 ---
 
-# Su Squares Open Sourced
+# Su Squares open sourced
 
 *If you have a question, please mail [Su@TenThousandSu.com](mailto:Su@TenThousandSu.com?subject=Su Squares&body=Hi Su%2C Please help! I have a question about Su Squares. ).*
 

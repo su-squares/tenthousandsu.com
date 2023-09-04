@@ -5,7 +5,7 @@ permalink: /faq
 
 [Edit this page](https://github.com/su-squares/tenthousandsu.com/blob/master/faq.md)
 
-# Frequently Asked Questions
+# Frequently asked questions
 
 *If you have a question, please mail [Su@TenThousandSu.com](mailto:Su@TenThousandSu.com?subject=Su Squares&body=Hi Su%2C Please help! I have a question about Su Squares. ).*
 

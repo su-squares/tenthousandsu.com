@@ -369,7 +369,7 @@
     // todo: remove WalletConnect as the huge default option
     const web3modal = new Web3Modal({ projectId: walletConnectProjectId }, ethereumClient);
 
-    // Handle Connect Wallet button and its animation //////////////////////////////////////////////////////////////////
+    // Handle connect wallet button and its animation //////////////////////////////////////////////////////////////////
     ethereumClient.watchAccount((account) => {
       connectWalletButton.innerText = account.isConnected
         ? "Connected: " + account.address.slice(0, 6) + "\u2026" + account.address.slice(-4)
@@ -379,7 +379,7 @@
       web3modal.openModal()
     });
 
-    // Handle Personalize button ///////////////////////////////////////////////////////////////////////////////////////
+    // Handle personalize button ///////////////////////////////////////////////////////////////////////////////////////
     personalizeButton.addEventListener("click", async function () {
       if (!personalizationArgs) {
         return alert("ERROR: Please perform preflight, or manually edit the preflight box and pass validation, then try again.");
