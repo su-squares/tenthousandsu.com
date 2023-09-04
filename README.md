@@ -1,4 +1,4 @@
-# Su Squares Website
+# Su Squares website
 
 This source code runs the Su Squares website at https://tenthousandsu.com
 
