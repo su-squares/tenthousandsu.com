@@ -1,0 +1,429 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <title>Su Squares, personalize batch</title>
+  <link rel="canonical" href="https://tenthousandsu.com/personalize-batch" />
+  <link rel="stylesheet" href="assets/main.css">
+</head>
+
+<body>
+  <header>
+    <a id="logo" href="/"><img src="assets/logo-su-squares.svg" style="width:348px;height:57px;object-fit: cover;" alt="Su Squares logo"></a>
+    <button id="connect-wallet" class="btn">Connect wallet</button>
+  </header>
+
+  <article class="lead">
+    <h1>Batch personalize</h1>
+    <p>
+      <em>If you have any questions, please mail <a
+          href="mailto:Su@TenThousandSu.com?subject=Personalize+underlay+batch">Su@TenThousandSu.com</a>. The price to personalize is 0.001 Ether per Square.</em>
+    </p>
+    <p>
+      Use this page to personalize Su Squares you own on TenThousandSu.com. If your Square was previously personalized using the old, more expensive method you will need to <a href="https://tools.tenthousandsu.com/unpersonalize.html">unpersonalize</a> it first.
+    </p>
+
+    <h2>Select top-left Square</h2>
+    <p>Which Square will be the topmost and leftmost Square you will personalize?</p>
+    <p>
+      <input id="top-left-square-number" type=number min=1 max=10000 required style="width:7em">
+    </p>
+
+    <h2>Enter title</h2>
+    <p>Enter a title for your Squares. Later you can change the title of each Square individually.</p>
+    <p>
+      <input id="title" type="text" maxlength="64">
+    </p>
+    <p><span id="title-count">0</span> of 64 bytes</p>
+
+    <h2>Enter URL</h2>
+    <p>Enter a URL for your Squares. Later you can change the URL of each Square individually. Typically this will start with <code>https://</code>.</p>
+    <p>
+      <input id="url" type="text" maxlength="96">
+    </p>
+    <p><span id="url-count">0</span> of 96 bytes</p>
+
+    <h2>Upload image</h2>
+    <p>Design your image carefully.</p>
+    <p>Do not use animation or transparency. PNG and some other formats can be used here.</p>
+    <p>Each Square is 10&times;10 pixels. For example, if the area you want to personalize is 3 Squares wide and 2 Squares tall, your image must be 30&times;20 pixels.</p>
+    <p>
+      <input id="image" type="file" accept="image/png, image/jpeg, image/gif">
+    </p>
+    <p>
+      Image status: <span id="image-status">no image selected</span>
+    </p>
+    <p>
+      <canvas id="image-preview" width="0" height="0"></canvas>
+    </p>
+
+    <h2>Preflight</h2>
+    <p>Click this button to prepare your batch personalization, no transaction or payment is made in this step. This
+      will overwrite anything already in the box.</p>
+    <p>
+      <button id="preflight" class="btn">Preflight</button>
+    </p>
+    <textarea id="preflight-output" style="width:100%;height:10em"></textarea>
+    <p>
+      To manually edit individual Squares, copy/paste to a spreadsheet, edit, and then copy/paste back here. If you
+      would like to personalize a non-rectangular area, delete any rows that are not needed.
+    </p>
+    <p>
+      Preflight status: <span id="preflight-status">preflight was not yet performed</span>
+    </p>
+
+    <h2>Personalize</h2>
+    <p>Click this button to personalize your Squares.</p>
+    <p>
+      <button id="personalize" class="btn btn-lg">Personalize</button>
+    </p>
+
+    <div id="receipts">
+    </div>
+  </article>
+
+  <footer>
+    <small>
+      No cookies. No analytics. To the extent possible under law, Su Entriken has waived all copyright and related or neighboring rights to the TenThousandSu.com website. This work is published from the United States.
+    </small>
+  </footer>
+
+  <script type="module">
+    // Elements and state //////////////////////////////////////////////////////////////////////////////////////////////
+    const connectWalletButton = document.getElementById("connect-wallet");
+    const topLeftSquareNumberInput = document.getElementById("top-left-square-number");
+    const titleInput = document.getElementById("title");
+    const titleCountSpan = document.getElementById("title-count");
+    const urlInput = document.getElementById("url");
+    const urlCountSpan = document.getElementById("url-count");
+    const imageInput = document.getElementById("image");
+    const imageStatusSpan = document.getElementById("image-status");
+    const imagePreviewCanvas = document.getElementById("image-preview");
+    const preflightButton = document.getElementById("preflight");
+    const preflightOutputTextArea = document.getElementById("preflight-output");
+    const preflightStatusSpan = document.getElementById("preflight-status");
+    const personalizeButton = document.getElementById("personalize");
+    const receiptsDiv = document.getElementById("receipts");
+    const underlayContractAddress = "0x992bDEC05cD423B73085586f7DcbbDaB953E0DCd";
+    const underlayContractABI = [
+      {
+        "inputs": [
+          {
+            "components": [
+              {"internalType": "uint256", "name": "squareId", "type": "uint256"},
+              {"internalType": "bytes", "name": "rgbData", "type": "bytes"},
+              {"internalType": "string", "name": "title", "type": "string"},
+              {"internalType": "string", "name": "href", "type": "string"}
+            ],
+            "internalType": "struct SuSquaresUnderlay.Personalization[]", "name": "personalizations", "type": "tuple[]"
+          }
+        ],
+        "name": "personalizeSquareUnderlayBatch",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+      }
+    ];
+    let topLeftSquareNumber;
+    let title;
+    let url;
+    let imageWidth;
+    let imageHeight;
+    let imagePixelData; // R of top-left pixel, its G, its B, R of pixel to its right, its G, its B, ...
+    let personalizationArgs;
+
+    // Validate changes to #square-number //////////////////////////////////////////////////////////////////////////////
+    topLeftSquareNumberInput.addEventListener("input", (event)=>{
+      topLeftSquareNumber = null;
+      const value = parseInt(event.target.value);
+      if (isNaN(value) || value < 1 || value > 10000) {
+        return alert("Invalid Square number, please enter a number between 1 and 10000.");
+      }
+      topLeftSquareNumber = value;
+    });
+
+    // Validate changes to #title //////////////////////////////////////////////////////////////////////////////////////
+    titleInput.addEventListener("input", (event)=>{
+      title = null;
+      const length = new TextEncoder().encode(event.target.value).length; // UTF-8 byte length
+      titleCountSpan.innerText = length;
+      if (length > 64) {
+        return alert("Title is too long, please try again.");
+      }
+      if (length < 1) {
+        return alert("Title is too short, please try again.");
+      }
+      title = event.target.value;
+    });
+
+    // Validate changes to #url ////////////////////////////////////////////////////////////////////////////////////////
+    urlInput.addEventListener("input", (event)=>{
+      url = null;
+      const length = new TextEncoder().encode(event.target.value).length; // UTF-8 byte length
+      urlCountSpan.innerText = length;
+      if (length > 96) {
+        return alert("URL is too long, please try again.");
+      }
+      if (length < 1) {
+        return alert("URL is too short, please try again.");
+      }
+      url = event.target.value;
+    });
+
+    // Validate changes to #image //////////////////////////////////////////////////////////////////////////////////////
+    imageInput.addEventListener("change", (event)=>{
+      imageWidth = null;
+      imageHeight = null;
+      imagePixelData = null;
+      imageStatusSpan.innerText = "Loading image…";
+      imagePreviewCanvas.width = 0;
+      imagePreviewCanvas.height = 0;
+      if (!event.target.files || !event.target.files[0]) {
+        imageStatusSpan.innerText = "No image selected";
+        imageInput.value = "";
+        return alert("Unable to read file");
+      }
+      const image = new Image();
+      image.addEventListener("load", () => {
+        if (image.width % 10 !== 0 || image.height % 10 !== 0) {
+          imageStatusSpan.innerText = "No image selected";
+          imageInput.value = "";
+          return alert("IMAGE ERROR: Image must be a multiple of 10 pixels. Please try again.");
+        }
+        if (image.width < 10 || image.height < 10) {
+          imageStatusSpan.innerText = "No image selected";
+          imageInput.value = "";
+          return alert("IMAGE ERROR: Image must be at least 10 pixels. Please try again.");
+        }
+        if (image.width > 1000 || image.height > 1000) {
+          imageStatusSpan.innerText = "No image selected";
+          imageInput.value = "";
+          return alert("IMAGE ERROR: Image must be at most 1000 pixels (assuming you own the whole row or column). Please try again.");
+        }
+        if (image.naturalWidth !== image.width || image.naturalHeight !== image.height) {
+          imageStatusSpan.innerText = "No image selected";
+          imageInput.value = "";
+          return alert("IMAGE ERROR: Image must not be animated. Please try again.");
+        }
+        imagePreviewCanvas.width = image.width;
+        imagePreviewCanvas.height = image.height;
+        const context = imagePreviewCanvas.getContext("2d");
+        context.drawImage(image, 0, 0);
+        const contextImageData = context.getImageData(0, 0, image.width, image.height);
+        let alphaWarning = false;
+        imagePixelData = [];
+        for (let i = 0; i < contextImageData.data.length; i += 4) {
+          const [red, green, blue, alpha] = contextImageData.data.slice(i, i + 4);
+          // Mix color to a white background (255) if there is transparency
+          const mixedRed = Math.floor((red * alpha + 255 * (255-alpha)) / 255);
+          const mixedGreen = Math.floor((green * alpha + 255 * (255-alpha)) / 255);
+          const mixedBlue = Math.floor((blue * alpha + 255 * (255-alpha)) / 255);
+          if (alpha != 255) alphaWarning = true;
+          imagePixelData.push(mixedRed, mixedGreen, mixedBlue);
+        }
+        if (alphaWarning) {
+          alert("WARNING: Your image included transparency. Since Su Squares does not support transparency, we have mixed down this color on top of a white background. Proceed at your own risk.");
+        }
+        imageStatusSpan.innerText = "Image is " + image.width + "×" + image.height + " pixels, which is " + (image.width / 10) + "×" + (image.height / 10) + " Squares";
+        imageWidth = image.width;
+        imageHeight = image.height;
+      });
+      image.src = window.URL.createObjectURL(event.target.files[0]);
+    });
+
+    // Validate changes to #preflight //////////////////////////////////////////////////////////////////////////////////
+    preflightOutputTextArea.addEventListener("input", (event)=>{
+      personalizationArgs = null;
+      preflightStatusSpan.innerText = "Contents are not valid.";
+      // check that each line has a valid square number, title, url, and pixel data
+      const lines = event.target.value.trim().split(/\r\n|\n|\r/);
+      let newPersonalizationArgs = [];
+      for (let i = 0; i < lines.length; i++) {
+        const line = lines[i];
+        const cols = line.split(/\t/);
+        if (cols.length !== 4) {
+          preflightStatusSpan.innerText = "ERROR: Row " + (i + 1) + " has " + cols.length + " columns, expecting 4.";
+          return;
+        }
+        const [squareNumberText, title, url, pixelHexData] = cols;
+        const squareNumber = parseInt(squareNumberText);
+        if (isNaN(squareNumber) || squareNumber < 1 || squareNumber > 10000) {
+          preflightStatusSpan.innerText = "ERROR: Row " + (i + 1) + " has invalid square number.";
+          return;
+        }
+        const titleLength = new TextEncoder().encode(title).length; // UTF-8 byte length
+        if (titleLength > 64) {
+          preflightStatusSpan.innerText = "ERROR: Row " + (i + 1) + " has title that is too long.";
+          return;
+        }
+        if (titleLength < 1) {
+          preflightStatusSpan.innerText = "ERROR: Row " + (i + 1) + " has title that is too short.";
+          return;
+        }
+        const urlLength = new TextEncoder().encode(url).length; // UTF-8 byte length
+        if (urlLength > 96) {
+          preflightStatusSpan.innerText = "ERROR: Row " + (i + 1) + " has URL that is too long.";
+          return;
+        }
+        if (urlLength < 1) {
+          preflightStatusSpan.innerText = "ERROR: Row " + (i + 1) + " has URL that is too short.";
+          return;
+        }
+        if (pixelHexData.length !== 602) {
+          preflightStatusSpan.innerText = "ERROR: Row " + (i + 1) + " has pixel data that is not 602 characters.";
+          return;
+        }
+        // regexp
+        if (!pixelHexData.match(/^0x[0-9a-f]{600}$/i)) {
+          preflightStatusSpan.innerText = "ERROR: Row " + (i + 1) + " has pixel data that is not valid hex.";
+          return;
+        }
+        newPersonalizationArgs.push({
+          squareId: squareNumber,
+          rgbData: pixelHexData,
+          title,
+          href: url
+        });
+      }
+      personalizationArgs = newPersonalizationArgs;
+      preflightStatusSpan.innerText = "successful, ready to personalize " + lines.length + " Squares.";
+    });
+
+    // Perform #preflight //////////////////////////////////////////////////////////////////////////////////////////////
+    // todo: look up and show warnings if Square is personalized on main contract (which occludes)
+    preflightButton.addEventListener("click", async function () {
+      preflightOutputTextArea.value = "";
+      if (!topLeftSquareNumber) {
+        return alert("ERROR: Please enter a Square number and try again.");
+      }
+      if (!title) {
+        return alert("ERROR: Please enter a title and try again.");
+      }
+      if (!url) {
+        return alert("ERROR: Please enter a URL and try again.");
+      }
+      if (!imageWidth) {
+        return alert("ERROR: Please select an image and try again.");
+      }
+      if (!imageHeight) {
+        return alert("ERROR: Please select an image and try again.");
+      }
+      if (!imagePixelData) {
+        return alert("ERROR: Please select an image and try again.");
+      }
+      // check if the image goes off the right or bottom edge of the website
+      const topLeftColumn = (topLeftSquareNumber - 1) % 100 + 1;
+      const topLeftRow = Math.floor((topLeftSquareNumber - 1) / 100) + 1;
+      if (topLeftColumn + imageWidth / 10 > 101) {
+        return alert("ERROR: Image goes off the right edge of the website. Please try again.");
+      }
+      if (topLeftRow + imageHeight / 10 > 101) {
+        return alert("ERROR: Image goes off the bottom edge of the website. Please try again.");
+      }
+      // Write lines: Square number, title, URL, pixel data
+      // Pixels are RGB in English reading order, 602 characters per line including 0x prefix
+      for (let y = 0; y < imageHeight; y += 10) {
+        for (let x = 0; x < imageWidth; x += 10) {
+          const squareNumber = topLeftSquareNumber + (y / 10) * 100 + (x / 10);
+          const pixelData = [];
+          for (let i = 0; i < 10; i++) {
+            const pixelIndex = (y + i) * imageWidth + x;
+            for (let j = 0; j < 10; j++) {
+              const pixelDataIndex = pixelIndex + j;
+              pixelData.push(imagePixelData[pixelDataIndex * 3].toString(16).padStart(2, "0"));
+              pixelData.push(imagePixelData[pixelDataIndex * 3 + 1].toString(16).padStart(2, "0"));
+              pixelData.push(imagePixelData[pixelDataIndex * 3 + 2].toString(16).padStart(2, "0"));
+            }
+          }
+          preflightOutputTextArea.value += squareNumber + "\t" + title + "\t" + url + "\t0x" + pixelData.join("") + "\n";
+        }
+      }
+      preflightOutputTextArea.dispatchEvent(new Event("input"));
+    });
+
+    // Web3Modal setup /////////////////////////////////////////////////////////////////////////////////////////////////
+    // warning: Web3Modal does not use SRI, error reported at https://github.com/WalletConnect/web3modal/issues/1305
+    // documentation from https://docs.walletconnect.com/2.0/web3modal/html/wagmi/installation
+    // hack from https://github.com/WalletConnect/web3modal-examples/issues/46
+    window.process = { env: { NODE_ENV: "development" } };
+    import {
+      EthereumClient,
+      w3mConnectors,
+      w3mProvider,
+      WagmiCore, // same as from @wagmi/core
+      WagmiCoreChains, // same as from @wagmi/core/chains
+    } from 'https://unpkg.com/@web3modal/ethereum@2.7.1'
+    import { Web3Modal } from 'https://unpkg.com/@web3modal/html@2.7.1'
+    const { configureChains, createConfig, writeContract, waitForTransaction } = WagmiCore;
+    const { mainnet } = WagmiCoreChains;
+    const walletConnectProjectId = '2aca272d18deb10ff748260da5f78bfd';
+    const chains = [mainnet];
+    const { publicClient } = configureChains(chains, [w3mProvider({ projectId: walletConnectProjectId })]);
+    const wagmiConfig = createConfig({
+      autoConnect: true,
+      connectors: w3mConnectors({ projectId: walletConnectProjectId, chains }),
+      publicClient
+    });
+    const ethereumClient = new EthereumClient(wagmiConfig, chains);
+    // todo: remove WalletConnect as the huge default option
+    const web3modal = new Web3Modal({ projectId: walletConnectProjectId }, ethereumClient);
+
+    // Handle Connect Wallet button and its animation //////////////////////////////////////////////////////////////////
+    ethereumClient.watchAccount((account) => {
+      connectWalletButton.innerText = account.isConnected
+        ? "Connected: " + account.address.slice(0, 6) + "\u2026" + account.address.slice(-4)
+        : "Connect wallet";
+    });
+    document.getElementById('connect-wallet').addEventListener('click', () => {
+      web3modal.openModal()
+    });
+
+    // Handle Personalize button ///////////////////////////////////////////////////////////////////////////////////////
+    personalizeButton.addEventListener("click", async function () {
+      if (!personalizationArgs) {
+        return alert("ERROR: Please perform preflight, or manually edit the preflight box and pass validation, then try again.");
+      }
+      const doSendTransaction = async ()=>{
+        receiptsDiv.innerHTML = "<p>Sending transaction, waiting for confirmation&hellip;</p>";
+        let result;
+        try {
+          result = await writeContract({
+            address: underlayContractAddress,
+            abi: underlayContractABI,
+            functionName: "personalizeSquareUnderlayBatch",
+            args: [ personalizationArgs ],
+            value: BigInt(personalizationArgs.length) * 1000000000000000n, // 0.001 Ether per Square
+          });
+          const transaction = await waitForTransaction({ hash: result.hash });
+          receiptsDiv.innerHTML = `<h3>Transaction confirmed</h3><p>Transaction ID: <a target="_blank" href="https://etherscan.io/tx/${transaction.transactionHash}">${transaction.transactionHash}</a>. Your image will show on the Su Squares homepage, which <a target="_blank" href="https://github.com/su-squares/tenthousandsu.com/actions/workflows/load-from-blockchain.yml">refreshes hourly</a>.`;
+        } catch (error) {
+          console.log(error);
+          return alert(error.message);
+        }
+      };
+      // If the wallet is not connected, connect it
+      if (!ethereumClient.getAccount().isConnected) {
+        // Arm on connecting wallet, if connected then fire the transaction
+        const accountConnectionUnsubscriber = ethereumClient.watchAccount((account) => {
+          if (account.isConnected) {
+            doSendTransaction();
+          }
+        });
+        // Disarm if modal is closed
+        const modalUnsubscriber = web3modal.subscribeModal((modalState) => {
+          if (!modalState.open) {
+            accountConnectionUnsubscriber();
+            modalUnsubscriber();
+          }
+        });
+        await web3modal.openModal();
+      } else {
+        // The wallet is connected, fire the transaction
+        doSendTransaction();
+      }
+    });
+  </script>
+</body>
+
+</html>
