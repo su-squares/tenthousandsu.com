@@ -13,8 +13,7 @@
   <header>
     <a id="logo" href="/"><img src="assets/logo-su-squares.svg" style="width:348px;height:57px;object-fit: cover;" alt="Su Squares logo"></a>
     <span>
-      The first ERC-721 NFT<br>
-      <strong>Available: <span id="available-count">&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;</span></strong>
+      The first ERC-721 NFT
     </span>
     <a class="btn" href="white-paper">About us</a>
     <a class="btn" href="buy">Buy</a>
@@ -35,14 +34,14 @@
 
   <article>
     <p style="display:flex; justify-content: space-between">
-      <span>Click below to purchase an available Su Square for 0.5 Ether.</span>
-      <span>Or <a style="color:#ffd700"
-          href="mailto:Su@TenThousandSu.com?subject=Buy%20a%20random%20Square&body=Hi%20Su!%0A%0AI'd%20like%20to%20buy%20%20a%20random%20Su%20Squares%20at%20a%20cheaper%20price.%0A%0AMy%20wallet%20address%20is%20XXXXXXXXXXX%0A%0A">buy
+      <span>Click below to buy an available Su Square (0.5 ETH)</span>
+      <span><a style="color:#ffd700"
+          href="mailto:Su@TenThousandSu.com?subject=Buy%20a%20random%20Square&body=Hi%20Su!%0A%0AI'd%20like%20to%20buy%20%20a%20random%20Su%20Squares%20at%20a%20cheaper%20price.%0A%0AMy%20wallet%20address%20is%20XXXXXXXXXXX%0A%0A">Get
           a
-          <img alt="random block"
-            src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABQAAAAUCAMAAAC6V+0/AAAAAXNSR0IB2cksfwAAAAlwSFlzAAALEwAACxMBAJqcGAAAADZQTFRF9sxg2ZYl1ZI67sAy3aNk9sAMYE8ZFBAA2ZY6yIE++sQIwHk62ZI69sQI8sAI9sQM1ZpkbGRb8/GKXwAAAGVJREFUeJyFkFkOgDAIBevCK3X3/pe1tFatYJwfwgRCeM41b9rO9aRAlPCV8d9S4CDwtT4kB+G0t5Qu5PIvuZYEpFtjJSNTOqbl/VGRbEmCOfkIZLbWlxJIrjmQ1UhpIwXcDoU/ANslCMY1JLSSAAAAAElFTkSuQmCC"
-            style="height:20px; width:20px; image-rendering: pixelated;">
-          random 2×2 Square</a> at a discount.</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-question-square-fill" viewBox="0 0 16 16">
+            <path d="M2 0a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V2a2 2 0 0 0-2-2H2zm3.496 6.033a.237.237 0 0 1-.24-.247C5.35 4.091 6.737 3.5 8.005 3.5c1.396 0 2.672.73 2.672 2.24 0 1.08-.635 1.594-1.244 2.057-.737.559-1.01.768-1.01 1.486v.105a.25.25 0 0 1-.25.25h-.81a.25.25 0 0 1-.25-.246l-.004-.217c-.038-.927.495-1.498 1.168-1.987.59-.444.965-.736.965-1.371 0-.825-.628-1.168-1.314-1.168-.803 0-1.253.478-1.342 1.134-.018.137-.128.25-.266.25h-.825zm2.325 6.443c-.584 0-1.009-.394-1.009-.927 0-.552.425-.94 1.01-.94.609 0 1.028.388 1.028.94 0 .533-.42.927-1.029.927z"/>
+          </svg>
+          random 3×3 Square</a> at a discount.</span>
     </p>
     <a id="wheretogo" href="" target="_blank">
       <div style="position:relative;height:1000px">
@@ -87,11 +86,6 @@
 
         // Start fence animation
         lightUpFence(new Set([1]));
-
-        // Count how many sold
-        const availableCountSpan = document.getElementById("available-count");
-        const sold = squarePersonalizations.filter(value => value !== null).length;
-        availableCountSpan.textContent = (10000 - sold).toLocaleString();
 
         // Show newly minted and personalized Squares
         const newlyMintedSection = document.getElementById("newly-minted");
