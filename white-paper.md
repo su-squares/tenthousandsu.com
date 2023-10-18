@@ -61,6 +61,10 @@ Your Su Square entitles you to advertise your image/text/hyperlink on TenThousan
 
 No. We do not have access to purchased Su Squares. This is enforced by the blockchain. We don't have any way to get it back. And the fact that we can't get it back is publicly knowable by inspecting our Su Squares smart contract on the blockchain.
 
+## Use of clothing
+
+Each Su Square which is purchased directly from the Su Squares website is intended to grant non-exclusive use of a pair of socks located near Philadelphia. Please contact us ahead of time to exercise this usage. To learn more about sales tax exemptions for NFTs in Pennsylvania, please see episode 87 of [Community Service Hour](https://hour.gg).
+
 ## Who runs this project?
 
 [Su Entriken](https://www.linkedin.com/in/suwang621/) and [William Entriken](https://www.linkedin.com/in/fulldecent/)
