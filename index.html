@@ -123,8 +123,8 @@
       const positionDiv = document.getElementById("position");
       const tooltipDiv = document.getElementById("tooltip");
       const whereToGoAnchor = document.getElementById("wheretogo");
-      const x = Math.min(Math.max(Math.floor((e.clientX - theImage.x) / 10), 0), 99);
-      const y = Math.min(Math.max(Math.floor((e.clientY - theImage.y) / 10), 0), 99);
+      const x = Math.min(Math.max(Math.floor((e.clientX - theImage.x / 2) / 10), 0), 99);
+      const y = Math.min(Math.max(Math.floor((e.clientY - theImage.y / 2) / 10), 0), 99);
       const squareNumber = x + y * 100 + 1;
       positionDiv.style.left = x * 10 + "px";
       positionDiv.style.top = y * 10 + "px";
@@ -151,7 +151,7 @@
     // Animate the electric fence
     let fence = new Set();
     let litUpEdge = new Set();
-    let wasEverLitUp = new Set([1]);
+    let wasEverLitUp = new Set();
 
     function lightUpFence(edge) {
       // Unlight old
