@@ -1,35 +1,35 @@
 ---
 layout: article
 permalink: /white-paper
-title: Su Squares White Paper
+title: Su Squares white paper
 ---
 
-# Su Squares White Paper
+# Su Squares white paper
 
 *If you have a question, please mail [Su@TenThousandSu.com](mailto:Su@TenThousandSu.com?subject=Su Squares&body=Hi Su, Please help! I have a question about Su Squares. ).*
 
 ## What are Su Squares?
 
-Su Squares are cute little blocks where you can attach a picture and website link. It will show publicly on [the homepage](/), and you can update it anytime. Once you own a Su Square, it is yours and your ownership is enforced by the Ethereum® blockchain.
+Su Squares are cute little blocks where you can attach a picture and website link. It will show publicly on [the homepage](/), and you can update it anytime. Once you own a Su Square, it is yours and your ownership is enforced by the Ethereum blockchain.
 
 We pay homage to [The Million Dollar Homepage](http://milliondollarhomepage.com/) and [CryptoKitties](https://www.cryptokitties.co/), and specifically, [Dieter Shirley](https://github.com/dete).
 
 ## Why buy a Su Square?
 
-**Su Squares is a billboard** that connects you to neighboring projects based on the location you purchase. We have run the Su Squares image on display on Times Square (16 displays) and I-95.
+**Su Squares is a billboard** that connects you to neighboring projects based on the location you purchase. We have run the Su Squares image on display [on Times Square (16 displays)](https://www.youtube.com/playlist?list=PLaMigeN8Exx_ID8tDBAXHIwjoUWDRahe7) and US Interstate 95 (I-95).
 
-**The first ever ERC-721 NFT project for sale,** purchasing a square allows you to permanently own a unique piece of blockchain history. No other project can make this claim. Please see <a target="_blank" href="https://eips.ethereum.org/EIPS/eip-721">the ERC-721 paper</a> and find Su Squares listed. Su Squares was built by the lead author of ERC-721.
+**The first ever ERC-721 NFT project for sale,** purchasing a Square allows you to permanently own a unique piece of blockchain history. Please see <a target="_blank" href="https://eips.ethereum.org/EIPS/eip-721">the ERC-721 paper</a> and find Su Squares listed. Su Squares was built by the lead author of ERC-721.
 
 **For brands looking to connect** with highly engaged members of the Web3 community, owning  a Su Square gives you permanent exposure to this audience. Your Square is yours forever and will act as living proof of your “skin in the game”. Celebrate this historic moment in crypto and bring awareness to like-minded individuals that can become your customers.
 
 **Crypto-asset enthusiasts should buy a Square.** This is a great vanity location where you can display your colorful crypto-assets and link back to a website or social profile of your choosing.
 
-**Join a community** of individuals that lift each other up! Vibrant discussion in the Discord, and Square owners gain access to a special exclusive server role. We also host conference workshops, and weekly Twitter features for owners are just some of the ways we’ve supported our square owners in the past few months.
+**Join a community** of individuals that lift each other up! Vibrant discussion in the Discord, and Square owners gain access to a special exclusive server role. We also [host conference workshops](https://hour.gg), and weekly X features for owners are just some of the ways we’ve supported our Square owners.
 
 ## How does it work?
 
 1. [Purchase a Su Square](/buy) and keep it in your Ethereum wallet.
-2. Upload your image, text and hyperlink onto your square, it shows on [the homepage](/) within one day.
+2. Upload your image, text and hyperlink onto your square, it shows on [the homepage](/) within one **hour**.
 
 Su Squares is an [**ERC-721 Deed**](https://eips.ethereum.org/EIPS/eip-721) that trades on the Ethereum blockchain. A specially-crafted smart contract ensures exclusive and secure ownership of your Squares. Nobody, even Su, can take back a square that you own. The Su Squares project [hosted multiple public bug bounties](https://github.com/su-squares/ethereum-contract) to pay anybody that could find any problem with the smart contract.
 
