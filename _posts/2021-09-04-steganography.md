@@ -119,5 +119,5 @@ strings square-*.rgb
 
 1. Using the above techniques, splice a message into your current Su Square.
 2. Using the above techniques, with modification, splice a message into the the end of an image.
-3. Create a 10×10 PNG image that includes a web page that generates a random maze, see https://twitter.com/botond_balazs/status/637960240055615488.
+3. Create a 10×10 PNG image that includes a web page that generates a random maze, see https://x.com/botond_balazs/status/637960240055615488.
 4. Golf that JavaScript better than @fulldecent golfed it.

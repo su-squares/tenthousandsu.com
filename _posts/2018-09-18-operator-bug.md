@@ -24,7 +24,7 @@ Many bugs also have security implications and this one is no exception. A differ
 
 ## Will you fix it?
 
-Yes, we are working now to document and resolve the problem. The new version will publish within one week and will be live on the https://tenthousandsu.com/ homepage. A second announcement will be made on [@SuSquares](https://twitter.com/SuSquares) on Twitter and also on this site.
+Yes, we are working now to document and resolve the problem. The new version will publish within one week and will be live on the https://tenthousandsu.com/ homepage. A second announcement will be made on [@SuSquares](https://x.com/SuSquares) on X and also on this site.
 
 ## What happens to my squares?
 

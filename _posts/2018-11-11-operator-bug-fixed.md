@@ -46,4 +46,4 @@ Now we have a higher degree of confidence in the Su Squares smart contract and i
 
 Thank you for your extreme patience during this update, and we sincerely apologize for the inconvenience this caused you.
 
-Stay tuned for an upcoming announcement about our re-launch event. [See our Twitter](https://twitter.com/susquares). And happy singles day!
+Stay tuned for an upcoming announcement about our re-launch event. [See our X](https://x.com/susquares). And happy singles day!

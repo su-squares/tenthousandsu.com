@@ -78,15 +78,15 @@ Shortly after finalization of the standard, Su Squares was shown on stage at the
 
 * 2018-07-27 Ethereum Foundation approved a grant to support William Entriken in ERC-721 work, this was a private program (not DevGrants), [transaction](https://etherscan.io/tx/0x3f5342da9b079d5ced289c367e1829eaef016f3eca49e1b33479c64f1286facf). Privacy note: that sending address has already elsewhere been published as owned by Ethereum Foundation and was published by people publicly associated with Ethereum Foundation.
 
-* 2018-08-05 Initial Deed Offering for Su Squares (i.e. first marketing push) https://twitter.com/fulldecent/status/1026316100378812416
+* 2018-08-05 Initial Deed Offering for Su Squares (i.e. first marketing push) https://x.com/fulldecent/status/1026316100378812416
 
-* 2018-08-06 Received endorsement from NonFungibles.com https://twitter.com/nonfungibles/status/1026428522536075268
+* 2018-08-06 Received endorsement from NonFungibles.com https://x.com/nonfungibles/status/1026428522536075268
 
-* 2018-08-14 Finally got a Twitter account https://twitter.com/SuSquares/status/1029426483318738944
+* 2018-08-14 Started our X account https://x.com/SuSquares/status/1029426483318738944
 
 * 2018-11-05 Su Squares [was upgraded](https://etherscan.io/tx/0x07bb215de77674c272b3a0e3f336642879f926df52e79d9ff8b26fdcbc4acb1b), this is current version of the contract
 * 2019-04-04 [First edition business cards ordered GotPrint order #238027xx](/assets/2019-04-04-business-cards-order.pdf), 35 pt. Trifecta Pearl with Kanvas Texture, quantity 250
-* 2021-03-24 A comemorative one-of-one collectable of the original state of Su Squares is [minted on Rarible](https://rarible.com/token/0x60f80121c31a0d46b5279700f9df786054aa5ee5:580921?tab=details)
+* 2021-03-24 A commemorative one-of-one collectable of the original state of Su Squares is [minted on Rarible](https://rarible.com/token/0x60f80121c31a0d46b5279700f9df786054aa5ee5:580921?tab=details)
 
 ## Contemporaneous notes & interviews
 
