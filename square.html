@@ -59,6 +59,7 @@
 
     <h2>Emojified</h2>
     <pre id="emojified"></pre>
+    <button class="btn" id="copy-emojified">Copy</button>
   </article>
 
   <footer>
@@ -76,38 +77,24 @@
     const extras = fetch('build/squareExtra.json').then(response => response.json());
 
     Promise.all([personalizations, extras]).then(([personalizations, extras]) => {
-      // Each personalization is [version, title, href, blockNumber] or null
-      // Each extra is [mintedBlock, updatedBlock, underlayVisible] or null
-      // Inputs are zero indexed, outputs are one indexed
-      const squares = ["OFFBYONE"].concat(personalizations.map((personalization, index) => {
-        if (personalization === null) {
-          return null;
-        }
-        return {
-          version: personalization[0],
-          title: personalization[1],
-          href: personalization[2],
-          blockNumber: personalization[3],
-          mintedBlock: extras[index][0],
-          updatedBlock: extras[index][1],
-          underlayVisible: extras[index][2],
-        };
-      }));
+      // Each personalization is [title, href] or null
+      // Each extra is [mintedBlock, updatedBlock, mainIsPersonalized, version] or null
+      // Arrays are zero indexed, but the first Su Square number is 1!
 
       const elSquareNumber = document.getElementById("square-number");
       elSquareNumber.innerText = squareNumber;
 
       const elMinted = document.getElementById('minted');
-      elMinted.innerText = squares[squareNumber].mintedBlock;
+      elMinted.innerText = extras[squareNumber - 1] ? `Block ${extras[squareNumber - 1][0]}` : 'Not minted';
 
       const elPersonalized = document.getElementById('personalized');
-      elPersonalized.innerText = squares[squareNumber].blockNumber;
+      elPersonalized.innerText = extras[squareNumber - 1] ? `Block ${extras[squareNumber - 1][1]}` : 'Not personalized';
 
       const elTitle = document.getElementById('title');
-      elTitle.innerText = squares[squareNumber].title;
+      elTitle.innerText = personalizations[squareNumber - 1] ? personalizations[squareNumber - 1][0] : 'Not personalized';
 
       const elLink = document.getElementById('link');
-      elLink.innerText = squares[squareNumber].href;
+      elLink.innerText = personalizations[squareNumber - 1] ? personalizations[squareNumber - 1][1] : 'Not personalized';
 
       const elEmojified = document.getElementById('emojified');
       
@@ -204,6 +191,17 @@
         // Set emoji string
         elEmojified.innerHTML = emojiString;
       }
+
+      // Copy emojified
+      const elCopyEmojified = document.getElementById('copy-emojified');
+      elCopyEmojified.addEventListener('click', () => {
+        const range = document.createRange();
+        range.selectNode(elEmojified);
+        window.getSelection().removeAllRanges();
+        window.getSelection().addRange(range);
+        document.execCommand('copy');
+        window.getSelection().removeAllRanges();
+      });
     });
   </script>
 </body>

@@ -68,13 +68,18 @@
     var squarePersonalizations = [];
     var squareExtra = [];
   
+    // Animate the electric fence
+    let fence = new Set();
+    let litUpEdge = new Set();
+    let wasEverLitUp = new Set();
+
     const squarePersonalizationsPromise = fetch("build/squarePersonalizations.json").then(response => response.json());
     const squareExtraPromise = fetch("build/squareExtra.json").then(response => response.json());
   
     Promise.all([squarePersonalizationsPromise, squareExtraPromise])
       .then(([personalizations, extra]) => {
-        squarePersonalizations = personalizations;
-        squareExtra = extra;
+        squarePersonalizations = personalizations; /* [title, href] or null */
+        squareExtra = extra; /* [mintedBlock, updatedBlock, mainIsPersonalized, version */
   
         // Start fence animation
         lightUpFence(new Set([1]));
@@ -85,13 +90,12 @@
         const mostRecentMintedSquares = squareExtra
           .map((extraData, index) => [index, extraData])
           .filter(([index, extraData]) => extraData !== null)
-          .sort((a, b) => b[1][0] - a[1][0])
+          .sort((a, b) => b[1][0 /* mintedBlock */] - a[1][0])
           .slice(0, 5);
         mostRecentMintedSquares.forEach(([index, extraData]) => {
           const row = Math.floor((index - 1) / 100);
           const col = (index - 1) % 100;
           const squareNumber = index + 1;
-          const [mintedBlock, updatedBlock, underlayVisible] = extraData;
           newlyMintedSection.insertAdjacentHTML("beforeend",
             `<a style="display:flex; flex-direction: column; align-items: center; justify-content: center; flex: 1 1 0" href="https://tenthousandsu.com/square#${squareNumber}">
               <div style="background: url('https://tenthousandsu.com/build/wholeSquare.png'); height: 10px; width: 10px; background-position-x: ${-col * 10}px; background-position-y: ${-row * 10}px; display: inline-block; zoom: 5; image-rendering: pixelated;"></div>
@@ -103,7 +107,7 @@
           .map((extraData, index) => [index, extraData])
           .filter(([index, extraData]) => extraData !== null)
           .filter(([index, extraData]) => extraData[1] !== extraData[0])
-          .sort((a, b) => b[1][1] - a[1][1])
+          .sort((a, b) => b[1][1 /* updatedBlock */] - a[1][1])
           .slice(0, 5);
         mostRecentPersonalizedSquares.forEach(([index, extraData]) => {
           const row = Math.floor((index) / 100);
@@ -128,14 +132,14 @@
         document.getElementById("theImage").style.cursor = "pointer";
         tooltipDiv.textContent = "Square #" + squareNumber + " is available for sale, click to buy.";
         whereToGoAnchor.href = "buy?square=" + squareNumber;
-      } else if (!squarePersonalizations[squareNumber - 1][1] && !squarePersonalizations[squareNumber - 1][2]) {
+      } else if (!squarePersonalizations[squareNumber - 1][0] && !squarePersonalizations[squareNumber - 1][1]) {
         document.getElementById("theImage").style.cursor = "not-allowed";
         tooltipDiv.textContent = "Square #" + squareNumber + " WAS PURCHASED BUT NOT YET PERSONALIZED";
         whereToGoAnchor.removeAttribute("href");
       } else {
         document.getElementById("theImage").style.cursor = "pointer";
-        tooltipDiv.textContent = "Square #" + squareNumber + " " + squarePersonalizations[squareNumber - 1][1];
-        whereToGoAnchor.href = squarePersonalizations[squareNumber - 1][2];
+        tooltipDiv.textContent = "Square #" + squareNumber + " " + squarePersonalizations[squareNumber - 1][0];
+        whereToGoAnchor.href = squarePersonalizations[squareNumber - 1][1];
       }
   
       positionDiv.style.left = ((squareNumber - 1) % 100) * 10 + "px";

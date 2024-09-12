@@ -62,7 +62,23 @@
     // Load personalizations ///////////////////////////////////////////////////////////////////////////////////////////
     fetch("build/squarePersonalizations.json")
       .then(response => response.json())
-      .then(data => { squarePersonalizations = data; });
+      .then(data => { squarePersonalizations = data; })
+      .then(data => {
+        // Setup datalist for square number input
+        const datalist = document.createElement("datalist");
+        datalist.id = "square-numbers";
+        for (let i = 1; i <= 10000; i++) {
+          if (squarePersonalizations && squarePersonalizations[i-1]) {
+            continue;
+          }
+          const option = document.createElement("option");
+          option.value = i;
+          datalist.appendChild(option);
+        }
+        squareNumberInput.setAttribute("list", "square-numbers");
+        squareNumberInput.parentNode.appendChild(datalist);
+        console.log(datalist);
+      })
 
     // Validate Square number //////////////////////////////////////////////////////////////////////////////////////////
     squareNumberInput.addEventListener("input", ()=>{

@@ -47,6 +47,7 @@ header > * {
   color: #ffd700;
   padding: 10px;
   text-decoration: none;
+  cursor: pointer;
 }
 
 .btn:hover {
