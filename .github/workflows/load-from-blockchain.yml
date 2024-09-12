@@ -20,10 +20,10 @@ jobs:
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
       - name: Check-out tenthousandsu.com website repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         
       - name: Check-out update-script repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: 'su-squares/update-script'
           path: 'update-script'
@@ -36,10 +36,10 @@ jobs:
           mv erc721 update-script/build/metadata
           echo $UPDATE_SCRIPT_CONFIG_JSON > update-script/config.json
         
-      - name: Set up Node 16
-        uses: actions/setup-node@v3
+      - name: Set up Node
+        uses: actions/setup-node@v4
         with:
-          node-version: '16'
+          node-version: 'lts/*'
           cache: 'yarn'
           cache-dependency-path: 'update-script/yarn.lock'
           
