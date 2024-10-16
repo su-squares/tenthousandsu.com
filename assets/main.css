@@ -20,10 +20,6 @@ body {
   padding-right: 2px;
 }
 
-#biga #image {
-  image-rendering: crisp-edges;
-}
-
 header {
   padding: 1rem;
   display: flex;
@@ -88,19 +84,12 @@ footer {
   text-align: center;
 }
 
-.image-list {
-  color: rgba(0,0,0,0.8);
-
-  /* Permalink - use to edit and share this gradient: https://colorzilla.com/gradient-editor/#eeeeee+0,cccccc+100;Gren+3D */
-  background: rgba(0, 0, 0, 0.2);
-  background: linear-gradient(135deg, rgba(0,0,0,0) 0%,rgba(0,0,0,0.2) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
-
-  padding: 1rem;
-  display: flex;
-  flex-basis: auto;
-  justify-content: space-around;
-  align-items: center;
-  box-sizing: border-box;
+hr {
+  border: none;
+  border-top: 2rem solid rgba(0,0,0,0.2);
+  border-color: linear-gradient(135deg, rgba(0,0,0,0) 0%,rgba(0,0,0,0.2) 100%);
+  margin-top: 0.5rem;
+  margin-bottom: 0.5rem;
 }
 
 #tooltip {
@@ -117,8 +106,4 @@ footer {
 
 a:link, a:visited, a:active {
   color: #ffd700;
-}
-
-hr {
-  border: 2px solid #ffd700;
 }
