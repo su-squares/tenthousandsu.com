@@ -36,18 +36,18 @@ jobs:
           mv erc721 update-script/build/metadata
           echo $UPDATE_SCRIPT_CONFIG_JSON > update-script/config.json
 
-      - name: Set up Node
+      - name: Enable Corepack
+        run: corepack enable
+
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "lts/*"
+          node-version-file: update-script/.nvmrc
           cache: "yarn"
+          check-latest: true
           cache-dependency-path: "update-script/yarn.lock"
 
-      - name: Enable Corepack and install correct Yarn version
-        run: |
-          corepack enable
-
-      - name: Install package dependencies with yarn
+      - name: Install dependencies
         run: |
           cd update-script
           yarn install --immutable
