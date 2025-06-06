@@ -43,6 +43,10 @@ jobs:
           cache: "yarn"
           cache-dependency-path: "update-script/yarn.lock"
 
+      - name: Enable Corepack and install correct Yarn version
+        run: |
+          corepack enable
+
       - name: Install package dependencies with yarn
         run: |
           cd update-script
