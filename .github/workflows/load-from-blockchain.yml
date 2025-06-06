@@ -6,7 +6,7 @@ name: Load from blockchain
 on:
   # Triggers the workflow every hour on the 21st minute
   schedule:
-    - cron: '21 * * * *'
+    - cron: "21 * * * *"
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
@@ -21,13 +21,13 @@ jobs:
     steps:
       - name: Check-out tenthousandsu.com website repository
         uses: actions/checkout@v4
-        
+
       - name: Check-out update-script repository
         uses: actions/checkout@v4
         with:
-          repository: 'su-squares/update-script'
-          path: 'update-script'
-          
+          repository: "su-squares/update-script"
+          path: "update-script"
+
       - name: Wire up update-script
         env:
           UPDATE_SCRIPT_CONFIG_JSON: ${{ secrets.UPDATE_SCRIPT_CONFIG_JSON }}
@@ -35,31 +35,31 @@ jobs:
           mv build update-script/build
           mv erc721 update-script/build/metadata
           echo $UPDATE_SCRIPT_CONFIG_JSON > update-script/config.json
-        
+
       - name: Set up Node
         uses: actions/setup-node@v4
         with:
-          node-version: 'lts/*'
-          cache: 'yarn'
-          cache-dependency-path: 'update-script/yarn.lock'
-          
+          node-version: "lts/*"
+          cache: "yarn"
+          cache-dependency-path: "update-script/yarn.lock"
+
       - name: Install package dependencies with yarn
         run: |
           cd update-script
           yarn install --immutable
-          
-      - name: Run have-there-been-updates.mjs
+
+      - name: Run have-there-been-updates
         timeout-minutes: 5
         run: |
           cd update-script
-          node have-there-been-updates.mjs || echo "LOAD=yes" >> $GITHUB_ENV
-          
-      - name: Run load-blockchain.mjs
+          yarn run have-there-been-updates || echo "LOAD=yes" >> $GITHUB_ENV
+
+      - name: Run load-blockchain
         if: env.LOAD == 'yes'
         timeout-minutes: 5
         run: |
           cd update-script
-          node load-blockchain.mjs
+          yarn run load-blockchain
 
       - name: Export build from update-script
         if: env.LOAD == 'yes'
@@ -74,5 +74,4 @@ jobs:
           git config user.name "update-script/load-blockchain.mjs"
           git config user.email "<>"
           git commit -m 'Load from blockchain'
-          #git push -u origin main:workflow-test
           git push
