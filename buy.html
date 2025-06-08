@@ -3,7 +3,7 @@
 
 <head>
   <meta charset="utf-8">
-  <title>Su Squares, buy a square</title>
+  <title>Su Squares, mint a square</title>
   <link rel="canonical" href="https://tenthousandsu.com/buy" />
   <link rel="stylesheet" href="assets/main.css">
   <style>
@@ -16,12 +16,15 @@
 
 <body>
   <header>
-    <a id="logo" href="/"><img src="assets/logo-su-squares.svg" style="width:348px;height:57px;object-fit: cover;" alt="Su Squares logo"></a>
+    <a id="logo" href="/"><img src="assets/logo-su-squares.svg" style="width:348px;height:57px;object-fit: cover;"
+        alt="Su Squares logo"></a>
     <button id="connect-wallet" class="btn">Connect wallet</button>
   </header>
   <article class="lead">
-    <h1>Buy Su Squares <span id="square-number-with-number-sign"></span></h1>
-    <p><em>If you have a question, please mail <a href="mailto:Su@TenThousandSu.com?subject=Sales%20question&body=HiSu,%20Please%20help!%20I%20have%20a%20question%20about%20Su%20Squares.">Su@TenThousandSu.com</a>.</em></p>
+    <h1>Mint Su Squares <span id="square-number-with-number-sign"></span></h1>
+    <p><em>If you have a question, please mail <a
+          href="mailto:Su@TenThousandSu.com?subject=Sales%20question&body=HiSu,%20Please%20help!%20I%20have%20a%20question%20about%20Su%20Squares.">Su@TenThousandSu.com</a>.</em>
+    </p>
 
     <div id="pick-a-square">
       <h2>Which Square would you like?</h2>
@@ -32,11 +35,11 @@
       <button id="select-square" type="button" class="btn btn-lg">Select Square</button>
     </div>
 
-    <div id="buy-selected-square" style="display:none">
-      <p>Please connect your wallet using the button above and then click buy below.</p>
-      <button id="buy" type="button" class="btn btn-lg">Buy Square</button>
+    <div id="mint-selected-square" style="display:none">
+      <p>Please connect your wallet using the button above and then click mint below.</p>
+      <button id="mint" type="button" class="btn btn-lg">Mint Square</button>
     </div>
-    
+
     <p>Your purchase is subject to the terms, and your understanding of, our <a href="/white-paper">white paper</a>.</p>
 
     <div id="receipts">
@@ -45,7 +48,8 @@
 
   <footer>
     <small>
-      No cookies. No analytics. To the extent possible under law, Su Entriken has waived all copyright and related or neighboring rights to the TenThousandSu.com website. This work is published from the United States.
+      No cookies. No analytics. To the extent possible under law, Su Entriken has waived all copyright and related or
+      neighboring rights to the TenThousandSu.com website. This work is published from the United States.
     </small>
   </footer>
 
@@ -54,9 +58,9 @@
     const squareNumberWithNumberSignSpan = document.getElementById("square-number-with-number-sign");
     const squareNumberInput = document.getElementById("square-number");
     const connectWalletButton = document.getElementById("connect-wallet");
-    const buyButton = document.getElementById("buy");
+    const mintButton = document.getElementById("mint");
     const pickASquareDiv = document.getElementById("pick-a-square");
-    const buySelectedSquareDiv = document.getElementById("buy-selected-square");
+    const mintSelectedSquareDiv = document.getElementById("mint-selected-square");
     const receiptsDiv = document.getElementById("receipts");
     let squareNumber;
     let squarePersonalizations;
@@ -70,7 +74,7 @@
         const datalist = document.createElement("datalist");
         datalist.id = "square-numbers";
         for (let i = 1; i <= 10000; i++) {
-          if (squarePersonalizations && squarePersonalizations[i-1]) {
+          if (squarePersonalizations && squarePersonalizations[i - 1]) {
             continue;
           }
           const option = document.createElement("option");
@@ -83,7 +87,7 @@
       })
 
     // Validate Square number //////////////////////////////////////////////////////////////////////////////////////////
-    squareNumberInput.addEventListener("input", ()=>{
+    squareNumberInput.addEventListener("input", () => {
       squareNumber = null;
       const value = parseInt(squareNumberInput.value);
       if (isNaN(value) || value < 1 || value > 10000) {
@@ -93,18 +97,18 @@
     });
 
     // Handle select Square button /////////////////////////////////////////////////////////////////////////////////////
-    document.getElementById("select-square").addEventListener("click", ()=>{
+    document.getElementById("select-square").addEventListener("click", () => {
       if (!squareNumber) {
         return alert("Please enter a Square number.");
       }
       // If the personalizations are loaded, check that the Square is available
       if (squarePersonalizations) {
-        if (squarePersonalizations[squareNumber-1]) {
+        if (squarePersonalizations[squareNumber - 1]) {
           return alert("Sorry, Square " + squareNumber + " was already purchased.");
         }
       }
       pickASquareDiv.style.display = "none";
-      buySelectedSquareDiv.style.display = "block";
+      mintSelectedSquareDiv.style.display = "block";
       squareNumberWithNumberSignSpan.innerText = "#" + squareNumber;
     });
 
@@ -153,23 +157,23 @@
       web3modal.openModal()
     });
 
-    // Handle buy button ///////////////////////////////////////////////////////////////////////////////////////////////
+    // Handle mint button ///////////////////////////////////////////////////////////////////////////////////////////////
     const mainContractABI = [
-      {"constant":false,"inputs":[{"name":"_tokenId","type":"uint256"},{"name":"_newOwner","type":"address"}],"name":"grantToken","outputs":[],"payable":false,"stateMutability":"nonpayable","type":"function"},
-      {"anonymous":false,"inputs":[{"indexed":false,"name":"_nftId","type":"uint256"}],"name":"Personalized","type":"event"},
-      {"constant":false,"inputs":[{"name":"_squareId","type":"uint256"},{"name":"_rgbData","type":"bytes"},{"name":"_title","type":"string"},{"name":"_href","type":"string"}],"name":"personalizeSquare","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},
-      {"anonymous":false,"inputs":[{"indexed":true,"name":"_from","type":"address"},{"indexed":true,"name":"_to","type":"address"},{"indexed":true,"name":"_tokenId","type":"uint256"}],"name":"Transfer","type":"event"},
-      {"constant":false,"inputs":[{"name":"_nftId","type":"uint256"}],"name":"purchase","outputs":[],"payable":true,"stateMutability":"payable","type":"function"},
-      {"constant":true,"inputs":[{"name":"_owner","type":"address"}],"name":"balanceOf","outputs":[{"name":"","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},
-      {"constant":true,"inputs":[{"name":"_tokenId","type":"uint256"}],"name":"ownerOf","outputs":[{"name":"_owner","type":"address"}],"payable":false,"stateMutability":"view","type":"function"},
-      {"constant":true,"inputs":[{"name":"_owner","type":"address"},{"name":"_index","type":"uint256"}],"name":"tokenOfOwnerByIndex","outputs":[{"name":"_tokenId","type":"uint256"}],"payable":false,"stateMutability":"view","type":"function"},
+      { "constant": false, "inputs": [{ "name": "_tokenId", "type": "uint256" }, { "name": "_newOwner", "type": "address" }], "name": "grantToken", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" },
+      { "anonymous": false, "inputs": [{ "indexed": false, "name": "_nftId", "type": "uint256" }], "name": "Personalized", "type": "event" },
+      { "constant": false, "inputs": [{ "name": "_squareId", "type": "uint256" }, { "name": "_rgbData", "type": "bytes" }, { "name": "_title", "type": "string" }, { "name": "_href", "type": "string" }], "name": "personalizeSquare", "outputs": [], "payable": true, "stateMutability": "payable", "type": "function" },
+      { "anonymous": false, "inputs": [{ "indexed": true, "name": "_from", "type": "address" }, { "indexed": true, "name": "_to", "type": "address" }, { "indexed": true, "name": "_tokenId", "type": "uint256" }], "name": "Transfer", "type": "event" },
+      { "constant": false, "inputs": [{ "name": "_nftId", "type": "uint256" }], "name": "purchase", "outputs": [], "payable": true, "stateMutability": "payable", "type": "function" },
+      { "constant": true, "inputs": [{ "name": "_owner", "type": "address" }], "name": "balanceOf", "outputs": [{ "name": "", "type": "uint256" }], "payable": false, "stateMutability": "view", "type": "function" },
+      { "constant": true, "inputs": [{ "name": "_tokenId", "type": "uint256" }], "name": "ownerOf", "outputs": [{ "name": "_owner", "type": "address" }], "payable": false, "stateMutability": "view", "type": "function" },
+      { "constant": true, "inputs": [{ "name": "_owner", "type": "address" }, { "name": "_index", "type": "uint256" }], "name": "tokenOfOwnerByIndex", "outputs": [{ "name": "_tokenId", "type": "uint256" }], "payable": false, "stateMutability": "view", "type": "function" },
     ];
 
-    buyButton.addEventListener("click", async ()=>{
+    mintButton.addEventListener("click", async () => {
       if (!squareNumber) {
         return alert("Please enter a Square number.");
       }
-      const doSendTransaction = async ()=>{
+      const doSendTransaction = async () => {
         receiptsDiv.innerHTML = "<p>Sending transaction, waiting for confirmation&hellip;</p>";
         let result;
         try {
@@ -177,7 +181,7 @@
             address: "0xE9e3F9cfc1A64DFca53614a0182CFAD56c10624F",
             abi: mainContractABI,
             functionName: "purchase",
-            args: [ squareNumber ],
+            args: [squareNumber],
             value: "500000000000000000", // 0.5 Eth
           });
           const transaction = await waitForTransaction({ hash: result.hash });

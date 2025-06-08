@@ -10,16 +10,19 @@
 
 <body>
   <header>
-    <a id="logo" href="/"><img src="assets/logo-su-squares.svg" style="width:348px;height:57px;object-fit: cover;" alt="Su Squares logo"></a>
+    <a id="logo" href="/"><img src="assets/logo-su-squares.svg" style="width:348px;height:57px;object-fit: cover;"
+        alt="Su Squares logo"></a>
     <span>
       The first ERC-721 NFT
     </span>
     <a class="btn" href="white-paper">About us</a>
-    <a class="btn" href="buy">Buy</a>
+    <a class="btn" href="buy">Mint</a>
     <a class="btn" href="https://tools.tenthousandsu.com/personalize">Personalize</a>
     <a class="btn" target="_blank" href="https://x.com/susquares">
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-twitter-x" viewBox="0 0 16 16">
-        <path d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.601.75Zm-.86 13.028h1.36L4.323 2.145H2.865l8.875 11.633Z"/>
+      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-twitter-x"
+        viewBox="0 0 16 16">
+        <path
+          d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.601.75Zm-.86 13.028h1.36L4.323 2.145H2.865l8.875 11.633Z" />
       </svg>
     </a>
     <a class="btn" target="_blank" href="https://discord.gg/6nTGNdjQ3B">
@@ -36,14 +39,14 @@
     <div id="image"></div>
 
     <dl>
-        <dt>Minted</dt>
-        <dd id="minted"></dd>
-        <dt>Personalized</dt>
-        <dd id="personalized"></dd> <!-- also show #X most recent -->
-        <dt>Title</dt>
-        <dd id="title"></dd>
-        <dt>Link</dt>
-        <dd id="link"></dd>
+      <dt>Minted</dt>
+      <dd id="minted"></dd>
+      <dt>Personalized</dt>
+      <dd id="personalized"></dd> <!-- also show #X most recent -->
+      <dt>Title</dt>
+      <dd id="title"></dd>
+      <dt>Link</dt>
+      <dd id="link"></dd>
     </dl>
 
     <h2>Location</h2>
@@ -60,7 +63,9 @@
   <footer>
     <small>
       No cookies. No analytics. Not responsible for content of linked sites. Images shown on homepage are &copy; their
-      respective owners. This image <a target="_blank" href="https://github.com/su-squares/tenthousandsu.com/actions/workflows/load-from-blockchain.yml">refreshes hourly</a>. To the extent possible under law, Su Entriken has waived
+      respective owners. This image <a target="_blank"
+        href="https://github.com/su-squares/tenthousandsu.com/actions/workflows/load-from-blockchain.yml">refreshes
+        hourly</a>. To the extent possible under law, Su Entriken has waived
       all copyright and related or neighboring rights to the TenThousandSu.com website. This work is published from the
       United States.
     </small>
@@ -92,7 +97,7 @@
       elLink.innerText = personalizations[squareNumber - 1] ? personalizations[squareNumber - 1][1] : 'Not personalized';
 
       const elEmojified = document.getElementById('emojified');
-      
+
       // Set image
       const row = Math.floor((squareNumber - 1) / 100); // 0 indexed
       const col = (squareNumber - 1) % 100; // 0 indexed
@@ -131,15 +136,15 @@
 
       // Emoji squares and RGB values for ⬛⬜🟥🟧🟨🟩🟦🟪🟫
       const emojis = [
-        {"emoji": "⬛", "red": 0, "green": 0, "blue": 0},
-        {"emoji": "⬜", "red": 255, "green": 255, "blue": 255},
-        {"emoji": "🟥", "red": 255, "green": 0, "blue": 0},
-        {"emoji": "🟧", "red": 255, "green": 165, "blue": 0},
-        {"emoji": "🟨", "red": 255, "green": 255, "blue": 0},
-        {"emoji": "🟩", "red": 0, "green": 128, "blue": 0},
-        {"emoji": "🟦", "red": 0, "green": 0, "blue": 255},
-        {"emoji": "🟪", "red": 128, "green": 0, "blue": 128},
-        {"emoji": "🟫", "red": 139, "green": 69, "blue": 19},
+        { "emoji": "⬛", "red": 0, "green": 0, "blue": 0 },
+        { "emoji": "⬜", "red": 255, "green": 255, "blue": 255 },
+        { "emoji": "🟥", "red": 255, "green": 0, "blue": 0 },
+        { "emoji": "🟧", "red": 255, "green": 165, "blue": 0 },
+        { "emoji": "🟨", "red": 255, "green": 255, "blue": 0 },
+        { "emoji": "🟩", "red": 0, "green": 128, "blue": 0 },
+        { "emoji": "🟦", "red": 0, "green": 0, "blue": 255 },
+        { "emoji": "🟪", "red": 128, "green": 0, "blue": 128 },
+        { "emoji": "🟫", "red": 139, "green": 69, "blue": 19 },
       ]
 
       // Create canvas
@@ -150,7 +155,7 @@
       const context = canvas.getContext('2d');
       const image = new Image();
       image.src = 'build/wholeSquare.png';
-      image.onload = function(){
+      image.onload = function () {
         context.drawImage(image, col * 10, row * 10, 10, 10, 0, 0, 10, 10);
         // Get pixels
         const imageData = context.getImageData(0, 0, 10, 10);
@@ -200,4 +205,5 @@
     });
   </script>
 </body>
+
 </html>

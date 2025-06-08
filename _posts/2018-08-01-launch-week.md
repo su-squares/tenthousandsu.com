@@ -6,7 +6,7 @@ title: Launch week
 
 # Launch week
 
-***Initial deed offering** starts Monday August 6th, 2018 and lasts one week until Monday August 13th, 2018. A special offer applies for people buying squares during launch week.*
+***Initial deed offering** starts Monday August 6th, 2018 and lasts one week until Monday August 13th, 2018. A special offer applies for people minting squares during launch week.*
 
 *If you have a question, please mail [Su@TenThousandSu.com](mailto:Su@TenThousandSu.com?subject=Su Squares&body=Hi Su%2C Please help! I have a question about Su Squares. ).*
 

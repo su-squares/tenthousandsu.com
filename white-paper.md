@@ -14,7 +14,7 @@ Su Squares are cute little blocks where you can attach a picture and website lin
 
 We pay homage to [The Million Dollar Homepage](http://milliondollarhomepage.com/) and [CryptoKitties](https://www.cryptokitties.co/), and specifically, [Dieter Shirley](https://github.com/dete).
 
-## Why buy a Su Square?
+## Why mint a Su Square?
 
 **Su Squares is a billboard** that connects you to neighboring projects based on the location you purchase. We have run the Su Squares image on display [on Times Square (16 displays)](https://www.youtube.com/playlist?list=PLaMigeN8Exx_ID8tDBAXHIwjoUWDRahe7) and US Interstate 95 (I-95).
 
@@ -22,7 +22,7 @@ We pay homage to [The Million Dollar Homepage](http://milliondollarhomepage.com/
 
 **For brands looking to connect** with highly engaged members of the Web3 community, owning  a Su Square gives you permanent exposure to this audience. Your Square is yours forever and will act as living proof of your “skin in the game”. Celebrate this historic moment in crypto and bring awareness to like-minded individuals that can become your customers.
 
-**Crypto-asset enthusiasts should buy a Square.** This is a great vanity location where you can display your colorful crypto-assets and link back to a website or social profile of your choosing.
+**Crypto-asset enthusiasts should mint a Square.** This is a great vanity location where you can display your colorful crypto-assets and link back to a website or social profile of your choosing.
 
 **Join a community** of individuals that lift each other up! Vibrant discussion in the Discord, and Square owners gain access to a special exclusive server role. We also [host conference workshops](https://hour.gg), and weekly X features for owners are just some of the ways we’ve supported our Square owners.
 
@@ -43,7 +43,7 @@ The source code for the Su Squares smart contract is [publicly accessible on Git
 
 ## What is the cost?
 
-The cost for each Su Square is **0.5 Ether**. You can buy any available Square for this price, and the price won't change. Choose the best location on the page before it is gone!
+The cost for each Su Square is **0.5 Ether**. You can mint any available Square for this price, and the price won't change. Choose the best location on the page before it is gone!
 
 It costs **0.001 Ether** to personalize your Square using our underlay contract.
 
