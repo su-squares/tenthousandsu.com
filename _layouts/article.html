@@ -1,36 +1,39 @@
 <!doctype html>
 <html lang="en">
+
 <head>
   <meta charset="utf-8">
   <title>{{ page.title | escape }}</title>
   <link rel="canonical" href="{{ site.url | escape }}{{ page.permalink | escape }}" />
   <link rel="stylesheet" href="/assets/main.css">
-  <script src="https://cdn.jsdelivr.net/npm/anchor-js@4.3.1/anchor.min.js" integrity="sha256-0WMZ9PF4b2hTF66Eglv/9H5Vwk6lnOG4AbmCJxo96WQ=" crossorigin="anonymous"></script>
+  <script src="https://cdn.jsdelivr.net/npm/anchor-js@4.3.1/anchor.min.js"
+    integrity="sha256-0WMZ9PF4b2hTF66Eglv/9H5Vwk6lnOG4AbmCJxo96WQ=" crossorigin="anonymous"></script>
 </head>
+
 <body>
   <header>
-    <a id="logo" href="/"><img src="/assets/logo-su-squares.svg" style="width:348px;height:57px;object-fit:cover;"></div></a>
+    <a id="logo" href="/"><img src="/assets/logo-su-squares.svg" style="width:348px;height:57px;object-fit:cover;"></a>
   </header>
 
   <hr>
 
   <article class="lead">
-      {{ content }}
-      <h2>Claim your Square</h2>
-      <p>➡️ Next, go to <a href="/">the homepage</a>, and click an available Square to claim it.</p>
-  </article>
-
+    {{ content }}
+    <h2>Claim your Square</h2>
+    <p>➡️ Next, go to <a href="/">the homepage</a>, and click an available Square to claim it.</p>
   </article>
   <footer>
     <small>
-      No cookies. No analytics. To the extent possible under law, Su Entriken has waived all copyright and related or neighboring rights to the TenThousandSu.com website. This work is published from the United States.
+      No cookies. No analytics. To the extent possible under law, Su Entriken has waived all copyright and related or
+      neighboring rights to the TenThousandSu.com website. This work is published from the United States.
     </small>
   </footer>
   <script>
     // Add anchors on DOMContentLoaded
-    document.addEventListener('DOMContentLoaded', function(event) {
+    document.addEventListener('DOMContentLoaded', function (event) {
       anchors.add();
     });
   </script>
 </body>
+
 </html>

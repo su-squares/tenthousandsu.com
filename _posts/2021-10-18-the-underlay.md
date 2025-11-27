@@ -63,6 +63,7 @@ Here is a technical summary of the differences:
 | Transaction cost (at 100 Gwei, London)              | 0.0388 Ether  | 0**.**0043 Ether |
 | A smart contract that owns a Square can personalize | ✅ Yes         | ✅ Yes            |
 | A smart contract can query the personalization      | ✅ Yes         | ❌ No             |
+{: .table-styled}
 
 For future use cases that have been discussed, such as renting Squares using a smart contract, using a smart contract to combine or publish other information as a personalization, these are all compatible with the main contract and the underlay.
 
