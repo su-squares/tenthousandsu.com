@@ -797,76 +797,108 @@ a:active {
   }
 }
 
-/* Article pages keep typography readable as the viewport shrinks */
+/* Article/personalize/mint pages keep typography readable as the viewport shrinks */
 @media (max-width: 1007px) {
-  html.article-page {
+  html.article-page,
+  html.personalize-page,
+  html.mint-page {
     font-size: 110%;
   }
 
-  .article-page h1 {
+  .article-page h1,
+  .personalize-page h1,
+  .mint-page h1 {
     font-size: 3.4rem;
     line-height: 3.6rem;
   }
 
-  .article-page h2 {
+  .article-page h2,
+  .personalize-page h2,
+  .mint-page h2 {
     font-size: 2.4rem;
     line-height: 2.7rem;
   }
 }
 
 @media (max-width: 760px) {
-  html.article-page {
+  html.article-page,
+  html.personalize-page,
+  html.mint-page {
     font-size: 105%;
   }
 
-  .article-page h1 {
+  .article-page h1,
+  .personalize-page h1,
+  .mint-page h1 {
     font-size: 3rem;
     line-height: 3.3rem;
   }
 
-  .article-page h2 {
+  .article-page h2,
+  .personalize-page h2,
+  .mint-page h2 {
     font-size: 2.1rem;
     line-height: 2.4rem;
   }
 
   .article-page h3,
-  .article-page article.lead {
+  .personalize-page h3,
+  .mint-page h3,
+  .article-page article.lead,
+  .personalize-page article.lead,
+  .mint-page article.lead {
     font-size: 1.3rem;
   }
 }
 
 @media (max-width: 520px) {
-  html.article-page {
+  html.article-page,
+  html.personalize-page,
+  html.mint-page {
     font-size: 100%;
   }
 
-  .article-page h1 {
+  .article-page h1,
+  .personalize-page h1,
+  .mint-page h1 {
     font-size: 2.5rem;
     line-height: 2.8rem;
   }
 
-  .article-page h2 {
+  .article-page h2,
+  .personalize-page h2,
+  .mint-page h2 {
     font-size: 1.8rem;
     line-height: 2.1rem;
   }
 
   .article-page h3,
-  .article-page article.lead {
+  .personalize-page h3,
+  .mint-page h3,
+  .article-page article.lead,
+  .personalize-page article.lead,
+  .mint-page article.lead {
     font-size: 1.2rem;
   }
 }
 
 @media (max-width: 400px) {
-  html.article-page {
+  html.article-page,
+  html.personalize-page,
+  html.mint-page {
     font-size: 96%;
   }
 
-  .article-page h1 {
+  .article-page h1,
+  .personalize-page h1,
+  .mint-page h1 {
     font-size: 2.2rem;
     line-height: 2.5rem;
   }
 
-  .article-page h2 {
+  .article-page h2,
+  .personalize-page h2,
+  .mint-page h2 {
     font-size: 1.6rem;
     line-height: 1.9rem;
   }
