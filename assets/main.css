@@ -487,6 +487,58 @@ article {
   /* Better spacing between sections */
 }
 
+.map-container {
+  width: 100%;
+  max-width: 1000px;
+  display: block;
+  margin: 0 auto 2rem auto;
+}
+
+.map-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+}
+
+.map-image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+}
+
+.map-position {
+  background: pink;
+  opacity: 0.8;
+  width: 10px;
+  height: 10px;
+  position: absolute;
+  pointer-events: none;
+  display: none;
+}
+
+.map-tooltip {
+  position: absolute;
+  color: black;
+  background: rgba(255, 255, 255, 0.85);
+  padding: 0.25rem 0.5rem;
+  border-radius: 0.35rem;
+  font-size: 0.9rem;
+  pointer-events: none;
+  max-width: 16rem;
+  display: none;
+}
+
+.map-fence {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
 .newly-feed {
   width: 100%;
   gap: 2rem;

@@ -40,15 +40,12 @@
 
   <article>
     <p>Click below to mint an available Su Square (0.5 ETH).</p>
-    <a id="wheretogo" href="#" target="_blank">
-      <div style="position:relative;height:1000px">
-        <img id="theImage" src="build/wholeSquare.webp" alt="All Su Squares"
-          style="margin:0; height:1000px; width:1000px">
-        <div id="position"
-          style="background:pink;opacity:0.8;width:10px;height:10px;;position:absolute;pointer-events:none">
-        </div>
-        <div id="tooltip" style="color:black"></div>
-        <div id="electric-fence"></div>
+    <a id="wheretogo" class="map-container" href="#" target="_blank">
+      <div class="map-wrapper">
+        <img id="theImage" class="map-image" src="build/wholeSquare.webp" alt="All Su Squares">
+        <div id="position" class="map-position"></div>
+        <div id="tooltip" class="map-tooltip"></div>
+        <div id="electric-fence" class="map-fence"></div>
       </div>
     </a>
   </article>
@@ -135,11 +132,21 @@
         });
       });
 
+    const GRID_DIMENSION = 100;
+
+    function getCellSize() {
+      const rect = document.getElementById("theImage").getBoundingClientRect();
+      return rect.width ? rect.width / GRID_DIMENSION : 10;
+    }
+
     function setPosition(squareNumber) {
       positionSquareNumber = squareNumber;
       const positionDiv = document.getElementById("position");
       const tooltipDiv = document.getElementById("tooltip");
       const whereToGoAnchor = document.getElementById("wheretogo");
+      const cellSize = getCellSize();
+      const col = (squareNumber - 1) % GRID_DIMENSION;
+      const row = Math.floor((squareNumber - 1) / GRID_DIMENSION);
 
       if (!squarePersonalizations[squareNumber - 1]) {
         document.getElementById("theImage").style.cursor = "pointer";
@@ -155,19 +162,30 @@
         whereToGoAnchor.href = squarePersonalizations[squareNumber - 1][1];
       }
 
-      positionDiv.style.left = ((squareNumber - 1) % 100) * 10 + "px";
-      positionDiv.style.top = Math.floor((squareNumber - 1) / 100) * 10 + "px";
+      positionDiv.style.width = cellSize + "px";
+      positionDiv.style.height = cellSize + "px";
+      positionDiv.style.left = (col * cellSize) + "px";
+      positionDiv.style.top = (row * cellSize) + "px";
+      positionDiv.style.display = "block";
+
       tooltipDiv.style.left = positionDiv.style.left;
-      tooltipDiv.style.top = (parseInt(positionDiv.style.top) + 30) + "px";
+      tooltipDiv.style.top = (row * cellSize + cellSize * 3) + "px";
       tooltipDiv.style.display = "block";
     }
+
+    window.addEventListener("resize", () => {
+      if (document.getElementById("tooltip").style.display === "block") {
+        setPosition(positionSquareNumber);
+      }
+    });
 
     document.getElementById("theImage").addEventListener("mousemove", (e) => {
       const theImage = document.getElementById("theImage");
       const rect = theImage.getBoundingClientRect(); // Get the bounding rectangle of the image
-      const x = Math.min(Math.max(Math.floor((e.clientX - rect.left) / 10), 0), 99); // Adjust by element's left position
-      const y = Math.min(Math.max(Math.floor((e.clientY - rect.top) / 10), 0), 99); // Adjust by element's top position
-      const squareNumber = x + y * 100 + 1;
+      const cellSize = getCellSize();
+      const x = Math.min(Math.max(Math.floor((e.clientX - rect.left) / cellSize), 0), GRID_DIMENSION - 1); // Adjust by element's left position
+      const y = Math.min(Math.max(Math.floor((e.clientY - rect.top) / cellSize), 0), GRID_DIMENSION - 1); // Adjust by element's top position
+      const squareNumber = x + y * GRID_DIMENSION + 1;
       setPosition(squareNumber);
     });
 
@@ -175,18 +193,18 @@
       const key = e.key.toLowerCase();
       if (key === 'w' || key === ',' || key === 'arrowup') {
         // Move up
-        if (positionSquareNumber > 100) setPosition(positionSquareNumber - 100);
+        if (positionSquareNumber > GRID_DIMENSION) setPosition(positionSquareNumber - GRID_DIMENSION);
         event.preventDefault(); // Prevent scrolling
       } else if (key === 'a' || key === 'a' || key === 'arrowleft') {
         // Move left
-        if (positionSquareNumber % 100 !== 1) setPosition(positionSquareNumber - 1);
+        if (positionSquareNumber % GRID_DIMENSION !== 1) setPosition(positionSquareNumber - 1);
       } else if (key === 's' || key === 'o' || key === 'arrowdown') {
         // Move down
-        if (positionSquareNumber <= 100 * 99) setPosition(positionSquareNumber + 100);
+        if (positionSquareNumber <= GRID_DIMENSION * (GRID_DIMENSION - 1)) setPosition(positionSquareNumber + GRID_DIMENSION);
         event.preventDefault(); // Prevent scrolling
       } else if (key === 'd' || key === 'e' || key === 'arrowright') {
         // Move right
-        if (positionSquareNumber % 100 !== 0) setPosition(positionSquareNumber + 1);
+        if (positionSquareNumber % GRID_DIMENSION !== 0) setPosition(positionSquareNumber + 1);
       } else if (key === 'enter') {
         // Trigger click for highlighted square
         const whereToGoAnchor = document.getElementById("wheretogo");
@@ -211,25 +229,25 @@
         element.id = "electric-fence-" + square;
         element.style.pointerEvents = "none";
         element.style.position = "absolute";
-        element.style.left = ((square - 1) % 100 * 10) + "px";
-        element.style.top = Math.floor((square - 1) / 100) * 10 + "px";
-        element.style.width = "10px";
-        element.style.height = "10px";
+        element.style.left = ((square - 1) % GRID_DIMENSION) + "%";
+        element.style.top = Math.floor((square - 1) / GRID_DIMENSION) + "%";
+        element.style.width = "1%";
+        element.style.height = "1%";
         element.style.background = "#ffd700";
         element.style.opacity = "0.25";
         document.getElementById("electric-fence").appendChild(element);
         if (squarePersonalizations[square - 1] !== null) {
           litUpEdge.add(square);
-          if (square > 100 && !wasEverLitUp.has(square - 100)) {
-            nextEdge.add(square - 100);
+          if (square > GRID_DIMENSION && !wasEverLitUp.has(square - GRID_DIMENSION)) {
+            nextEdge.add(square - GRID_DIMENSION);
           }
-          if (square <= 100 * 99 && !wasEverLitUp.has(square + 100)) {
-            nextEdge.add(square + 100);
+          if (square <= GRID_DIMENSION * (GRID_DIMENSION - 1) && !wasEverLitUp.has(square + GRID_DIMENSION)) {
+            nextEdge.add(square + GRID_DIMENSION);
           }
-          if (square % 100 != 1 && !wasEverLitUp.has(square - 1)) {
+          if (square % GRID_DIMENSION != 1 && !wasEverLitUp.has(square - 1)) {
             nextEdge.add(square - 1);
           }
-          if (square % 100 != 0 && !wasEverLitUp.has(square + 1)) {
+          if (square % GRID_DIMENSION != 0 && !wasEverLitUp.has(square + 1)) {
             nextEdge.add(square + 1);
           }
         } else {
