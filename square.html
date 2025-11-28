@@ -115,25 +115,27 @@
 
       // Set arrow location, based on quadrant
       const elArrow = document.getElementById('arrow');
+      const mapScale = 0.5;
+      const scalePosition = (value) => `${value * mapScale}px`;
+      const setArrow = (src, topPx, leftPx) => {
+        elArrow.src = src;
+        elArrow.style.top = scalePosition(topPx);
+        elArrow.style.left = scalePosition(leftPx);
+      };
+      elArrow.style.width = `${100 * mapScale}px`;
+      elArrow.style.height = `${100 * mapScale}px`;
+
       if (row < 50) {
         if (col < 50) {
-          elArrow.src = 'assets/ul.png';
-          elArrow.style.top = `${row * 10 + 10}px`;
-          elArrow.style.left = `${col * 10 + 10}px`;
+          setArrow('assets/ul.png', row * 10 + 10, col * 10 + 10);
         } else {
-          elArrow.src = 'assets/ur.png';
-          elArrow.style.top = `${row * 10 + 10}px`;
-          elArrow.style.left = `${col * 10 - 100}px`;
+          setArrow('assets/ur.png', row * 10 + 10, col * 10 - 100);
         }
       } else {
         if (col < 50) {
-          elArrow.src = 'assets/dl.png';
-          elArrow.style.top = `${row * 10 - 100}px`;
-          elArrow.style.left = `${col * 10 + 10}px`;
+          setArrow('assets/dl.png', row * 10 - 100, col * 10 + 10);
         } else {
-          elArrow.src = 'assets/dr.png';
-          elArrow.style.top = `${row * 10 - 100}px`;
-          elArrow.style.left = `${col * 10 - 100}px`;
+          setArrow('assets/dr.png', row * 10 - 100, col * 10 - 100);
         }
       }
 

@@ -319,6 +319,37 @@ table th {
   width: 100%;
 }
 
+.square-page>.square-location {
+  width: 100%;
+  max-width: 500px;
+  align-self: center;
+}
+
+.square-location {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  overflow: auto;
+}
+
+.square-location__canvas {
+  position: relative;
+  width: 500px;
+  height: 500px;
+  margin: 0 auto;
+}
+
+.square-location__image {
+  display: block;
+  width: 500px;
+  height: 500px;
+  image-rendering: pixelated;
+}
+
+.square-location__arrow {
+  position: absolute;
+}
+
 .square-page h1,
 .square-page h2,
 .square-page h3,
@@ -616,6 +647,11 @@ a:active {
     max-width: 100%;
     word-wrap: break-word;
     overflow-wrap: break-word;
+  }
+
+  .square-location__canvas,
+  .square-location__image {
+    max-width: none;
   }
 
   /* Make images responsive */
