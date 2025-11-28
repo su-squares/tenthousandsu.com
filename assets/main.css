@@ -281,6 +281,97 @@ table th {
   font-weight: bold;
 }
 
+/* Custom styled definition list with accent borders and better spacing */
+.dl-styled {
+  border: 1px solid var(--color-accent);
+  padding: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+}
+
+.dl-styled dt {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--color-accent);
+  border-right: 1px solid var(--color-accent);
+  font-weight: bold;
+  margin: 0;
+}
+
+.dl-styled dd {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--color-accent);
+  margin: 0;
+}
+
+.dl-styled dt:last-of-type,
+.dl-styled dd:last-of-type {
+  border-bottom: none;
+}
+
+/* Square page layout - centered content with flexbox */
+.square-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  max-width: 600px;
+}
+
+.square-page>* {
+  width: 100%;
+}
+
+.square-page h1,
+.square-page h2,
+.square-page h3,
+.square-page h4,
+.square-page h5,
+.square-page h6 {
+  text-align: center;
+}
+
+/* Wrapper for dl-styled to handle overflow like tables */
+.dl-wrapper {
+  width: 100%;
+  max-width: 600px;
+}
+
+.dl-wrapper .dl-styled {
+  overflow-x: auto;
+}
+
+/* Custom scrollbar for dl-styled */
+.dl-wrapper .dl-styled::-webkit-scrollbar {
+  height: 8px;
+  background: transparent;
+}
+
+.dl-wrapper .dl-styled::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.dl-wrapper .dl-styled::-webkit-scrollbar-thumb {
+  background: var(--color-accent);
+  border-radius: 20px;
+  border: none;
+}
+
+#emojified {
+  text-align: center;
+}
+
+#copy-emojified {
+  width: 150px;
+  margin: 0 auto;
+  font-size: 1rem;
+}
+
+/* Mobile: make copy button bigger for better touch targets */
+@media (max-width: 1007px) {
+  #copy-emojified {
+    font-size: 40px;
+  }
+}
+
 code {
   vertical-align: bottom
 }
