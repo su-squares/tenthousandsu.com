@@ -313,7 +313,6 @@ table th {
   display: flex;
   flex-direction: column;
   align-items: center;
-  max-width: 600px;
 }
 
 .square-page>* {
@@ -365,12 +364,7 @@ table th {
   font-size: 1rem;
 }
 
-/* Mobile: make copy button bigger for better touch targets */
-@media (max-width: 1007px) {
-  #copy-emojified {
-    font-size: 40px;
-  }
-}
+
 
 code {
   vertical-align: bottom
@@ -489,7 +483,7 @@ footer {
 }
 
 small {
-  font-size: 25px;
+  font-size: 15px;
 }
 
 @media (min-width: 1000px) {
