@@ -53,12 +53,14 @@
     </a>
   </article>
 
-  <article>
-    <section id="newly-minted" style="display:flex; align-items: center; width: 100%; margin-bottom: 2em">
-      <strong style="flex: 1 1 0">Newly minted</strong>
+  <article class="newly-feed">
+    <section id="newly-minted" class="newly-feed__section">
+      <strong class="newly-feed__heading">Newly minted</strong>
+      <div class="newly-feed__items"></div>
     </section>
-    <section id="newly-personalized" style="display:flex; align-items: center; width: 100%">
-      <strong style="flex: 1 1 0">Latest personalized</strong>
+    <section id="newly-personalized" class="newly-feed__section">
+      <strong class="newly-feed__heading">Latest personalized</strong>
+      <div class="newly-feed__items"></div>
     </section>
   </article>
 
@@ -96,6 +98,8 @@
         // Show newly minted and personalized Squares
         const newlyMintedSection = document.getElementById("newly-minted");
         const newlyPersonalizedSection = document.getElementById("newly-personalized");
+        const newlyMintedList = newlyMintedSection.querySelector(".newly-feed__items");
+        const newlyPersonalizedList = newlyPersonalizedSection.querySelector(".newly-feed__items");
         const mostRecentMintedSquares = squareExtra
           .map((extraData, index) => [index, extraData])
           .filter(([index, extraData]) => extraData !== null)
