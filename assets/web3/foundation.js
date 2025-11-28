@@ -3,6 +3,7 @@ import { walletConnectProjectId } from "./config.js";
 let cachedClients = null;
 const readyCallbacks = [];
 const wagmiLocalStorageKey = "wagmi.store";
+const MAINNET_CHAIN_ID = 1;
 
 export function onWeb3Ready(callback) {
   if (cachedClients) {
@@ -68,8 +69,13 @@ export async function loadWeb3() {
     WagmiCoreChains,
   } = ethereumLib;
   const { Web3Modal } = web3ModalLib;
-  const { configureChains, createConfig, writeContract, waitForTransaction } =
-    WagmiCore;
+  const {
+    configureChains,
+    createConfig,
+    writeContract,
+    waitForTransaction,
+    switchNetwork,
+  } = WagmiCore;
   const { mainnet } = WagmiCoreChains;
 
   const chains = [mainnet];
@@ -87,7 +93,13 @@ export async function loadWeb3() {
     ethereumClient
   );
 
-  cachedClients = { ethereumClient, web3modal, writeContract, waitForTransaction };
+  cachedClients = {
+    ethereumClient,
+    web3modal,
+    writeContract,
+    waitForTransaction,
+    switchNetwork,
+  };
   readyCallbacks.splice(0).forEach((cb) => cb(cachedClients));
   return cachedClients;
 }
@@ -134,4 +146,21 @@ export async function ensureConnected(action) {
       reject(error);
     }
   });
+}
+
+export async function ensureMainnetOrWarn(clients) {
+  const { ethereumClient, switchNetwork } = clients || (await loadWeb3());
+  try {
+    const network = ethereumClient.getNetwork();
+    const chainId = network?.chain?.id;
+    if (chainId === MAINNET_CHAIN_ID) return clients || cachedClients;
+    if (switchNetwork) {
+      await switchNetwork({ chainId: MAINNET_CHAIN_ID });
+      return clients || cachedClients;
+    }
+  } catch (error) {
+    console.warn("Network switch failed", error);
+  }
+  alert("Please switch to Ethereum mainnet to continue.");
+  throw new Error("Not on mainnet");
 }
