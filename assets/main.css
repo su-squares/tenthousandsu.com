@@ -315,10 +315,6 @@ table th {
   align-items: center;
 }
 
-.square-page>* {
-  width: 100%;
-}
-
 .square-page>.square-location {
   width: 100%;
   max-width: 500px;
@@ -357,6 +353,29 @@ table th {
 .square-page h5,
 .square-page h6 {
   text-align: center;
+}
+
+
+@media (max-width: 900px) {
+  .square-page h1 {
+    font-size: 3.4rem;
+  }
+}
+
+@media (max-width: 650px) {
+  .square-page h1 {
+    font-size: 2.7rem;
+  }
+}
+
+@media (max-width: 500px) {
+  .square-page h1 {
+    font-size: 2.3rem;
+  }
+
+  .square-page h2 {
+    font-size: 2rem;
+  }
 }
 
 /* Wrapper for dl-styled to handle overflow like tables */
@@ -461,7 +480,6 @@ article {
   width: 100%;
   max-width: 1000px;
   box-sizing: border-box;
-  padding: 2rem;
   /* Use flexbox to center content inside article */
   display: flex;
   flex-direction: column;
@@ -510,7 +528,7 @@ footer {
   width: 90%;
   max-width: 1200px;
   text-align: center;
-  margin: 1rem 0;
+  margin: 2rem 0 1rem 0;
 }
 
 small {
@@ -635,14 +653,11 @@ a:active {
     max-height: 57px;
   }
 
-  /* Better spacing for mobile */
   article {
-    padding: 1.5rem 1rem;
     gap: 2rem;
-    /* Increased spacing between sections on mobile */
   }
 
-  /* Ensure all content wraps properly */
+
   article * {
     max-width: 100%;
     word-wrap: break-word;
@@ -686,13 +701,6 @@ a:active {
 /* Additional fixes for very small screens */
 @media (max-width: 480px) {
   article {
-    padding: 1rem 0.75rem;
     gap: 2.5rem;
-    /* Even more spacing on small screens */
-  }
-
-  /* Adjust header padding */
-  header {
-    padding: 0.75rem;
   }
 }
