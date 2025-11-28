@@ -12,6 +12,8 @@ layout: null
   <link rel="canonical" href="https://tenthousandsu.com" />
   <link rel="stylesheet" href="assets/main.css?20210926">
   {% include alert-modal-head.html %}
+  <link rel="stylesheet" href="/assets/leaving-modal/modal.css">
+  <script src="/assets/leaving-modal/leaving-modal.js"></script>
 </head>
 
 <body>
@@ -82,6 +84,7 @@ layout: null
     let fence = new Set();
     let litUpEdge = new Set();
     let wasEverLitUp = new Set();
+    const whereToGoAnchor = document.getElementById("wheretogo");
 
     const squarePersonalizationsPromise = fetch("build/squarePersonalizations.json").then(response => response.json());
     const squareExtraPromise = fetch("build/squareExtra.json").then(response => response.json());
@@ -145,7 +148,9 @@ layout: null
       positionSquareNumber = squareNumber;
       const positionDiv = document.getElementById("position");
       const tooltipDiv = document.getElementById("tooltip");
-      const whereToGoAnchor = document.getElementById("wheretogo");
+      if (!whereToGoAnchor) {
+        return;
+      }
       const cellSize = getCellSize();
       const col = (squareNumber - 1) % GRID_DIMENSION;
       const row = Math.floor((squareNumber - 1) / GRID_DIMENSION);
@@ -209,12 +214,45 @@ layout: null
         if (positionSquareNumber % GRID_DIMENSION !== 0) setPosition(positionSquareNumber + 1);
       } else if (key === 'enter') {
         // Trigger click for highlighted square
-        const whereToGoAnchor = document.getElementById("wheretogo");
-        if (whereToGoAnchor.href) {
+        if (whereToGoAnchor && whereToGoAnchor.hasAttribute("href")) {
           whereToGoAnchor.click();
         }
       }
     });
+
+    function handleWhereToGoClick(event) {
+      if (!whereToGoAnchor) {
+        return;
+      }
+
+      const href = whereToGoAnchor.getAttribute("href");
+      if (!href || href === "#") {
+        return;
+      }
+
+      const modal = window.SuLeavingModal;
+      if (!modal || typeof modal.shouldWarnForUrl !== "function" || typeof modal.show !== "function") {
+        return;
+      }
+
+      let destination;
+      try {
+        destination = new URL(href, window.location.href);
+      } catch (error) {
+        return;
+      }
+
+      if (!modal.shouldWarnForUrl(destination)) {
+        return;
+      }
+
+      event.preventDefault();
+      modal.show(destination, whereToGoAnchor.getAttribute("target") || "_self");
+    }
+
+    if (whereToGoAnchor) {
+      whereToGoAnchor.addEventListener("click", handleWhereToGoClick);
+    }
 
     function lightUpFence(edge) {
       litUpEdge.forEach(s => {

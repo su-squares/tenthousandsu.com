@@ -1,0 +1,139 @@
+.su-leaving-backdrop {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.65);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+  z-index: 11000;
+}
+
+.su-leaving-backdrop.is-visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.su-leaving {
+  width: 90vw;
+  max-width: 540px;
+  background-image: linear-gradient(to bottom right, #2d3c96, #d53392);
+  border: 1px solid #ffd700;
+  color: var(--color-accent, #ffd700);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  box-sizing: border-box;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  text-align: center;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+}
+
+.su-leaving-backdrop.is-visible .su-leaving {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.su-leaving__title {
+  font-weight: 800;
+  font-size: 1.35rem;
+  letter-spacing: 0.01em;
+}
+
+.su-leaving__message {
+  line-height: 1.6rem;
+  margin: 0;
+}
+
+.su-leaving__url {
+  display: inline-block;
+  padding: 0.75rem 0.5rem;
+  border: 1px dashed rgba(255, 215, 0, 0.6);
+  border-radius: 0.5rem;
+  background: rgba(0, 0, 0, 0.15);
+  color: #ffd700;
+  text-decoration: none;
+  font-weight: 600;
+  word-break: break-all;
+}
+
+.su-leaving__url:hover {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.su-leaving__actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.75rem;
+  padding-top: 0.25rem;
+}
+
+.su-leaving__button {
+  flex: 1 1 0;
+  min-width: 140px;
+  padding: 0.65rem 1rem;
+  border-radius: 0.6rem;
+  border: 2px solid #ffd700;
+  background: none;
+  color: #ffd700;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  cursor: pointer;
+  transition: transform 0.1s ease, box-shadow 0.1s ease, background-color 0.15s ease;
+}
+
+.su-leaving__button:focus-visible {
+  outline: 3px solid rgba(255, 215, 0, 0.8);
+  outline-offset: 2px;
+}
+
+.su-leaving__button:active {
+  transform: translateY(1px);
+}
+
+.su-leaving__button--stay {
+  border-color: #d44e4e;
+  color: #ffd700;
+  box-shadow: 0 0 0 1px rgba(212, 78, 78, 0.4);
+}
+
+.su-leaving__button--stay:hover {
+  background: rgba(212, 78, 78, 0.18);
+}
+
+.su-leaving__button--go {
+  background: #ffd700;
+  color: #2d3c96;
+  border-color: #ffd700;
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+
+.su-leaving__button--go:hover {
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.35);
+}
+
+.su-leaving__button--go:active {
+  box-shadow: 0 6px 14px rgba(0, 0, 0, 0.3);
+}
+
+@media (max-width: 520px) {
+  .su-leaving {
+    padding: 1rem;
+  }
+
+  .su-leaving__actions {
+    flex-direction: column;
+  }
+
+  .su-leaving__button {
+    width: 100%;
+  }
+}
