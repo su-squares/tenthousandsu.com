@@ -7,15 +7,14 @@
   <title>{{ page.title | escape }}</title>
   <link rel="canonical" href="{{ site.url | escape }}{{ page.permalink | escape }}" />
   <link rel="stylesheet" href="/assets/main.css">
+  {% include nav-menu-head.html %}
   {% include alert-modal-head.html %}
   <script src="https://cdn.jsdelivr.net/npm/anchor-js@4.3.1/anchor.min.js"
     integrity="sha256-0WMZ9PF4b2hTF66Eglv/9H5Vwk6lnOG4AbmCJxo96WQ=" crossorigin="anonymous"></script>
 </head>
 
 <body>
-  <header>
-    <a id="logo" href="/"><img src="/assets/logo-su-squares.svg" style="width:348px;height:57px;object-fit:cover;"></a>
-  </header>
+  {% include nav-header.html %}
 
   <hr>
 

@@ -754,7 +754,10 @@ a:active {
     max-width: 90%;
   }
 
-  header,
+  header {
+    max-width: 100%;
+  }
+
   hr {
     max-width: 95%;
   }
@@ -763,11 +766,7 @@ a:active {
 /* Tablet and mobile improvements */
 @media (max-width: 1007px) {
 
-  /* Increase base font size by 1/3 for better mobile readability */
-  html {
-    font-size: 153%;
-    /* 115% * 1.33 = ~153% */
-  }
+
 
   /* Fix header for mobile */
   header {
