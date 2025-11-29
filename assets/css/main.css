@@ -248,22 +248,69 @@ table th {
 }
 
 .btn-lg {
-  font-size: 2rem;
+  font-size: 1.5rem;
   margin-top: 0.5em;
   margin-bottom: 0.5em;
+  padding: 1rem;
 }
 
-input[type="text"] {
-  font-size: 1rem;
+/* Global form controls */
+input[type="text"],
+input[type="number"],
+input[type="url"],
+input[type="file"],
+textarea,
+select {
+  appearance: none;
+  font: inherit;
   width: 100%;
+  padding: 0.65rem 0.85rem;
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.2);
+  color: var(--color-accent);
+  box-shadow: var(--shadow-strong);
+  transition: background 120ms ease, box-shadow 120ms ease, transform 120ms ease;
 }
 
-input[type="number"] {
-  font-size: 1rem;
+input[type="file"] {
+  cursor: pointer;
+  padding: 0.5rem 0.65rem;
+}
+
+input[type="file"]::file-selector-button {
+  margin-right: 0.75rem;
+  padding: 0.5rem 0.85rem;
+  border: 2px solid var(--color-accent);
+  border-radius: calc(var(--radius-sm) - 0.1rem);
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--color-accent);
+  cursor: pointer;
+  transition: background 120ms ease, transform 120ms ease;
+}
+
+input[type="file"]::file-selector-button:hover {
+  background: rgba(0, 0, 0, 0.4);
+  transform: translateY(-1px);
 }
 
 textarea {
-  font-size: 1rem;
+  min-height: 10rem;
+  resize: vertical;
+}
+
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: none;
+  background: rgba(0, 0, 0, 0.35);
+  box-shadow: 0 0 0 2px rgba(255, 215, 0, 0.55), var(--shadow-hover);
+  transform: translateY(-1px);
+}
+
+input::placeholder,
+textarea::placeholder {
+  color: rgba(255, 215, 0, 0.75);
 }
 
 footer {

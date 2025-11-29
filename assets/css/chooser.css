@@ -164,11 +164,7 @@
 
 .square-lookup__controls input[type="number"] {
   width: 8rem;
-  padding: 0.6rem 0.8rem;
-  border: 2px solid var(--color-accent);
-  border-radius: var(--radius-sm);
-  background: rgba(0, 0, 0, 0.2);
-  color: var(--color-accent);
+  flex: 0 0 auto;
 }
 
 .square-lookup__controls button,
