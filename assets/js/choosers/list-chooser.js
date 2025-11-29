@@ -1,7 +1,7 @@
-import { loadSquareData } from "./square-data.js";
+import { loadSquareData } from "../square-data.js";
 
 /**
- * Attach a chooser modal to a trigger/input pair.
+ * Attach a list-style chooser modal to a trigger/input pair.
  * @param {Object} options
  * @param {HTMLInputElement} options.input Element to receive the chosen number.
  * @param {HTMLElement} options.trigger Element that opens the modal when clicked.
@@ -11,7 +11,7 @@ import { loadSquareData } from "./square-data.js";
  * @param {string} [options.description] Helper text inside the modal.
  * @param {boolean} [options.updateInput] Whether to write the selection into the input (default true).
  */
-export function attachSquareChooser({
+export function attachListChooser({
   input,
   trigger,
   filter = () => true,

@@ -1,8 +1,10 @@
-import { attachSquareChooser } from "/assets/js/square-chooser.js";
+import { attachListChooser } from "/assets/js/choosers/list-chooser.js";
+import { attachCanvasChooser } from "/assets/js/choosers/canvas-chooser.js";
 import { loadSquareData } from "/assets/js/square-data.js";
 
 const input = document.getElementById("square-lookup-input");
 const chooseButton = document.getElementById("square-lookup-choose");
+const chooseCanvasButton = document.getElementById("square-lookup-canvas");
 const submitButton = document.getElementById("square-lookup-submit");
 
 if (input && chooseButton && submitButton) {
@@ -31,7 +33,7 @@ if (input && chooseButton && submitButton) {
     return { ok: true, value };
   };
 
-  attachSquareChooser({
+  attachListChooser({
     input,
     trigger: chooseButton,
     filter: (_id, ctx) => Boolean(ctx.extra),
@@ -42,6 +44,19 @@ if (input && chooseButton && submitButton) {
     title: "Choose a minted Square",
     description: "Tap a square below to look it up.",
   });
+
+  if (chooseCanvasButton) {
+    attachCanvasChooser({
+      input,
+      trigger: chooseCanvasButton,
+      filter: (_id, ctx) => Boolean(ctx.extra),
+      onSelect: (id) => {
+        window.location.href = `/square#${id}`;
+      },
+      updateInput: false,
+      title: "Choose square from canvas",
+    });
+  }
 
   submitButton.addEventListener("click", async () => {
     const result = await validateSquare();
