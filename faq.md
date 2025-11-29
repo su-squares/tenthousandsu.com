@@ -1,6 +1,7 @@
 ---
 layout: article
 permalink: /faq
+title: Su Squares FAQ
 ---
 
 [Edit this page](https://github.com/su-squares/tenthousandsu.com/blob/master/faq.md)
