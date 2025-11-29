@@ -9,6 +9,22 @@ const submitButton = document.getElementById("square-lookup-submit");
 
 if (input && chooseButton && submitButton) {
   let dataCache;
+  const normalizedPath = window.location.pathname.replace(/\/+$/, "").toLowerCase();
+  const isSquarePage = normalizedPath.endsWith("/square") || normalizedPath.endsWith("/square.html");
+  if (isSquarePage && "scrollRestoration" in history) {
+    history.scrollRestoration = "manual";
+  }
+
+  const goToSquare = (id) => {
+    const targetHash = `#${id}`;
+    if (isSquarePage) {
+      window.scrollTo(0, 0);
+      window.location.hash = targetHash;
+      window.location.reload();
+    } else {
+      window.location.href = `/square${targetHash}`;
+    }
+  };
 
   const requireData = async () => {
     if (dataCache) return dataCache;
@@ -47,7 +63,7 @@ if (input && chooseButton && submitButton) {
     trigger: chooseButton,
     filter: (_id, ctx) => Boolean(ctx.extra),
     onSelect: (id) => {
-      window.location.href = `/square#${id}`;
+      goToSquare(id);
     },
     updateInput: false,
     title: "Choose a minted Square",
@@ -60,7 +76,7 @@ if (input && chooseButton && submitButton) {
       trigger: chooseCanvasButton,
       filter: (_id, ctx) => Boolean(ctx.extra),
       onSelect: (id) => {
-        window.location.href = `/square#${id}`;
+        goToSquare(id);
       },
       updateInput: false,
       title: "Choose square from canvas",
@@ -73,6 +89,6 @@ if (input && chooseButton && submitButton) {
       alert(result.message);
       return;
     }
-    window.location.href = `/square#${result.value}`;
+    goToSquare(result.value);
   });
 }
