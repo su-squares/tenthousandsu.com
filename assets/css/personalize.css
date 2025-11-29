@@ -1,0 +1,17 @@
+/* Personalize and batch personalize pages */
+.personalize-page article {
+  gap: 1.75rem;
+}
+
+.personalize-page input[type="number"] {
+  max-width: 10rem;
+}
+
+.personalize-page canvas {
+  image-rendering: pixelated;
+}
+
+.personalize-page textarea {
+  width: 100%;
+  box-sizing: border-box;
+}

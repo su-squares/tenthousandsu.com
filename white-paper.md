@@ -75,11 +75,13 @@ Su Squares promote creativity, innovation and collaboration among the web 3.0 co
 
 ## Articles
 
+<ul class="articles-list">
 {% for post in site.posts %}
-[{{ post.title }}]({{ post.url }})
-
+  <li><a href="{{ post.url }}">{{ post.title }}</a></li>
 {% endfor %}
+</ul>
 
-See also:
-
-[Tools & Tricks](http://tools.tenthousandsu.com)
+<div class="articles-see-also">
+  <p><strong>See also:</strong></p>
+  <p><a href="http://tools.tenthousandsu.com">Tools & Tricks</a></p>
+</div>

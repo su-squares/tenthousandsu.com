@@ -9,7 +9,8 @@ layout: null
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Su Squares, cute squares you own and personalize</title>
   <meta name="description" content="The first ERC-721 NFT. Cute squares you own and personalize.">
-  <link rel="stylesheet" href="assets/main.css?20210926">
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/square.css">
   {% include nav-menu-head.html %}
   {% include alert-modal-head.html %}
   {% include offline-modal-head.html %}
@@ -38,7 +39,7 @@ layout: null
     <h2>Location</h2>
     <div style="position:relative;height:1000px; zoom: 0.5">
       <img id="theImage" src="build/wholeSquare.webp" alt="All Su Squares" style="height:1000px; width:1000px">
-      <img id="arrow" src="assets/dr.png" alt="Location" style="height:100px; width:100px; position:absolute">
+      <img id="arrow" src="assets/images/dr.png" alt="Location" style="height:100px; width:100px; position:absolute">
     </div>
 
     <h2>Emojified</h2>
@@ -110,15 +111,15 @@ layout: null
 
       if (row < 50) {
         if (col < 50) {
-          setArrow('assets/ul.png', row * 10 + 10, col * 10 + 10);
+          setArrow('assets/images/ul.png', row * 10 + 10, col * 10 + 10);
         } else {
-          setArrow('assets/ur.png', row * 10 + 10, col * 10 - 100);
+          setArrow('assets/images/ur.png', row * 10 + 10, col * 10 - 100);
         }
       } else {
         if (col < 50) {
-          setArrow('assets/dl.png', row * 10 - 100, col * 10 + 10);
+          setArrow('assets/images/dl.png', row * 10 - 100, col * 10 + 10);
         } else {
-          setArrow('assets/dr.png', row * 10 - 100, col * 10 - 100);
+          setArrow('assets/images/dr.png', row * 10 - 100, col * 10 - 100);
         }
       }
 

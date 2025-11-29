@@ -85,7 +85,7 @@ Shortly after finalization of the standard, Su Squares was shown on stage at the
 * 2018-08-14 Started our X account https://x.com/SuSquares/status/1029426483318738944
 
 * 2018-11-05 Su Squares [was upgraded](https://etherscan.io/tx/0x07bb215de77674c272b3a0e3f336642879f926df52e79d9ff8b26fdcbc4acb1b), this is current version of the contract
-* 2019-04-04 [First edition business cards ordered GotPrint order #238027xx](/assets/2019-04-04-business-cards-order.pdf), 35 pt. Trifecta Pearl with Kanvas Texture, quantity 250
+* 2019-04-04 [First edition business cards ordered GotPrint order #238027xx](/assets/images/2019-04-04-business-cards-order.pdf), 35 pt. Trifecta Pearl with Kanvas Texture, quantity 250
 * 2021-03-24 A commemorative one-of-one collectable of the original state of Su Squares is [minted on Rarible](https://rarible.com/token/0x60f80121c31a0d46b5279700f9df786054aa5ee5:580921?tab=details)
 
 ## Contemporaneous notes & interviews

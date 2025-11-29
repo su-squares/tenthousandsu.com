@@ -1,0 +1,381 @@
+/* Base styles shared across pages */
+:root {
+  --color-primary: #2d3c96;
+  --color-accent: #ffd700;
+  --bg-gradient: linear-gradient(to bottom right, #2d3c96, #d53392);
+  --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  --radius-sm: 0.4rem;
+  --radius-md: 0.5rem;
+  --shadow-strong: 4px 6px 4px rgba(255, 255, 255, 0.2);
+  --shadow-hover: 3px 6px 10px #999;
+  --shadow-active: 1px 4px 10px #555;
+  --max-width-content: 1000px;
+  --scrollbar-size: 8px;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-sans);
+  font-size: 115%;
+  line-height: 1.7;
+  -webkit-font-smoothing: antialiased;
+  -webkit-text-size-adjust: 100%;
+  background-color: var(--color-primary);
+  color: var(--color-accent);
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background-color: var(--color-primary);
+  background-image: var(--bg-gradient);
+  color: inherit;
+}
+
+a:link,
+a:visited,
+a:active {
+  color: var(--color-accent);
+}
+
+p {
+  margin: 0 0 1.2rem 0;
+  line-height: 1.7;
+}
+
+ol,
+ul {
+  margin: 0 0 1.4rem 0;
+  padding-left: 1.4rem;
+}
+
+li {
+  line-height: 1.6;
+  margin-bottom: 0.5rem;
+}
+
+blockquote {
+  margin: 1.5rem 0;
+  padding-left: 1rem;
+  border-left: 3px solid var(--color-accent);
+  line-height: 1.6;
+}
+
+img {
+  border-style: none;
+  max-width: 100%;
+  height: auto;
+}
+
+code,
+kbd,
+pre,
+samp {
+  font-family: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  font-size: 0.95rem;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-sans);
+  font-weight: 800;
+  margin: 0 0 1rem 0;
+}
+
+h1 {
+  font-size: clamp(2.6rem, 3vw + 1.2rem, 3.6rem);
+  line-height: 1.1;
+  margin-top: 2.5rem;
+}
+
+h2 {
+  font-size: clamp(2.1rem, 2.5vw + 1rem, 2.8rem);
+  line-height: 1.2;
+  margin-top: 2rem;
+}
+
+h3 {
+  font-size: clamp(1.6rem, 1.5vw + 1rem, 2rem);
+  line-height: 1.3;
+  margin-top: 1.5rem;
+}
+
+h4 {
+  font-size: 1.25rem;
+  line-height: 1.35;
+  margin-top: 1.25rem;
+}
+
+h5 {
+  font-size: 1.05rem;
+  line-height: 1.4;
+  margin-top: 1rem;
+}
+
+h6 {
+  font-size: 0.95rem;
+  line-height: 1.4;
+  margin-top: 1rem;
+}
+
+header {
+  width: 100%;
+  padding: 1rem;
+  display: flex;
+  flex-basis: auto;
+  justify-content: space-between;
+  align-items: center;
+  box-sizing: border-box;
+}
+
+header>* {
+  flex-grow: 0;
+  text-align: center;
+}
+
+hr {
+  width: 100%;
+  border: none;
+  border-top: 2rem solid rgba(0, 0, 0, 0.2);
+  margin: 0.5rem 0;
+}
+
+article {
+  width: 100%;
+  max-width: var(--max-width-content);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  padding: 0 1.5rem;
+}
+
+.lead {
+  font-size: 1.05rem;
+  line-height: 1.75;
+}
+
+table {
+  border-spacing: 0;
+  border-collapse: collapse;
+}
+
+table td,
+table th {
+  padding: 0;
+  line-height: 1.8rem;
+}
+
+/* Custom styled table with accent borders and better spacing */
+.table-styled {
+  border: 1px solid var(--color-accent);
+  border-collapse: collapse;
+}
+
+.table-styled td,
+.table-styled th {
+  padding: 1rem 1.5rem;
+  border: 1px solid var(--color-accent);
+  line-height: 1.5rem;
+}
+
+.table-styled th {
+  font-weight: bold;
+}
+
+/* Custom styled definition list with accent borders and better spacing */
+.dl-styled {
+  border: 1px solid var(--color-accent);
+  padding: 0;
+  display: grid;
+  grid-template-columns: auto 1fr;
+}
+
+.dl-styled dt {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--color-accent);
+  border-right: 1px solid var(--color-accent);
+  font-weight: bold;
+  margin: 0;
+}
+
+.dl-styled dd {
+  padding: 1rem 1.5rem;
+  border-bottom: 1px solid var(--color-accent);
+  margin: 0;
+}
+
+.dl-styled dt:last-of-type,
+.dl-styled dd:last-of-type {
+  border-bottom: none;
+}
+
+.btn {
+  background: none;
+  border-radius: 0.5rem;
+  border: 2px solid var(--color-accent);
+  box-shadow: var(--shadow-strong);
+  color: var(--color-accent);
+  padding: 10px;
+  text-decoration: none;
+  cursor: pointer;
+}
+
+.btn:hover {
+  box-shadow: var(--shadow-hover);
+}
+
+.btn:active {
+  position: relative;
+  left: 2px;
+  top: 2px;
+  box-shadow: var(--shadow-active);
+}
+
+.btn-lg {
+  font-size: 2rem;
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+}
+
+input[type="text"] {
+  font-size: 1rem;
+  width: 100%;
+}
+
+input[type="number"] {
+  font-size: 1rem;
+}
+
+textarea {
+  font-size: 1rem;
+}
+
+footer {
+  width: 90%;
+  max-width: 1200px;
+  text-align: center;
+  margin: 3rem 0 1rem 0;
+}
+
+small {
+  font-size: 0.95rem;
+}
+
+.no-break {
+  white-space: nowrap;
+}
+
+/* Global scrollbar styling */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-accent) transparent;
+}
+
+*::-webkit-scrollbar {
+  width: var(--scrollbar-size);
+  height: var(--scrollbar-size);
+  background: transparent;
+}
+
+*::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+*::-webkit-scrollbar-thumb {
+  background: var(--color-accent);
+  border-radius: 20px;
+  border: none;
+}
+
+@media (min-width: 1000px) {
+  small {
+    font-size: 0.9rem;
+  }
+}
+
+@media (max-width: 1200px) {
+  header {
+    max-width: 100%;
+  }
+
+  hr {
+    max-width: 95%;
+  }
+}
+
+/* Tablet and mobile improvements */
+@media (max-width: 1007px) {
+  header {
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+  }
+
+  header #logo img {
+    max-width: 100%;
+    height: auto !important;
+    width: auto !important;
+    max-height: 57px;
+  }
+
+  article {
+    gap: 2rem;
+  }
+
+  article * {
+    max-width: 100%;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+
+  /* Make images responsive */
+  article img {
+    max-width: 100%;
+    height: auto;
+  }
+
+  /* Adjust table to be scrollable on mobile */
+  article table {
+    display: block;
+    overflow-x: auto;
+    max-width: 100%;
+  }
+
+  /* Adjust code blocks to prevent overflow */
+  article pre,
+  article code {
+    max-width: 100%;
+    overflow-x: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+
+  /* Prevent horizontal overflow */
+  html,
+  body {
+    overflow-x: hidden;
+  }
+}
+
+/* Additional fixes for very small screens */
+@media (max-width: 480px) {
+  article {
+    gap: 2.5rem;
+  }
+}

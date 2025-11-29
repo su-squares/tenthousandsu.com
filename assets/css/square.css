@@ -1,0 +1,73 @@
+/* Square detail page */
+.square-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.square-page h1,
+.square-page h2,
+.square-page h3,
+.square-page h4,
+.square-page h5,
+.square-page h6 {
+  text-align: center;
+}
+
+.square-location {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  overflow: auto;
+}
+
+.square-location__canvas {
+  position: relative;
+  width: 500px;
+  height: 500px;
+  margin: 0 auto;
+}
+
+.square-location__image {
+  display: block;
+  width: 500px;
+  height: 500px;
+  image-rendering: pixelated;
+}
+
+.square-location__arrow {
+  position: absolute;
+}
+
+.square-page .dl-wrapper {
+  width: 100%;
+  max-width: 600px;
+}
+
+.square-page .dl-styled {
+  overflow-x: auto;
+}
+
+#emojified {
+  text-align: center;
+}
+
+#copy-emojified {
+  width: 150px;
+  margin: 0 auto;
+  font-size: 1rem;
+}
+
+@media (max-width: 900px) {
+  .square-page h1 {
+    font-size: clamp(2.4rem, 3vw + 1.4rem, 3.2rem);
+  }
+}
+
+@media (max-width: 500px) {
+  .square-location__canvas,
+  .square-location__image {
+    max-width: none;
+  }
+}

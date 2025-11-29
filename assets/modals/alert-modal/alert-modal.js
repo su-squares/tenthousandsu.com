@@ -1,5 +1,5 @@
 (function () {
-  const STYLESHEET_HREF = "/assets/alert-modal/modal.css";
+  const STYLESHEET_HREF = "/assets/modals/alert-modal/modal.css";
   const TEMPLATE_HTML = `
     <div class="su-alert-backdrop" aria-hidden="true">
       <div class="su-alert" role="dialog" aria-modal="true" aria-label="Alert">

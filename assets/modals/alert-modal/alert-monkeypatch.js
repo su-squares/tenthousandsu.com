@@ -1,5 +1,5 @@
 (function () {
-  const MODAL_SRC = "/assets/alert-modal/alert-modal.js";
+  const MODAL_SRC = "/assets/modals/alert-modal/alert-modal.js";
   const nativeAlert = window.alert.bind(window);
   let modalLoadingPromise;
 

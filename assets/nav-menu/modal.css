@@ -139,7 +139,6 @@
   top: 50%;
   width: min(540px, 95vw);
   max-width: 95vw;
-  max-height: 420px;
   background-image: linear-gradient(to bottom right, #2d3c96, #d53392);
   border: 1px solid #ffd700;
   color: var(--color-accent, #ffd700);
@@ -195,6 +194,7 @@
 .su-nav-back {
   width: 42px;
   height: 42px;
+  font-size: 1.5rem;
   border: none;
   background: none;
   color: #fff;
@@ -347,3 +347,8 @@
     margin-right: 0;
   }
 }
+
+@media (max-width: 450px) {
+  .su-nav-logo img {
+    width: 150px;
+  }

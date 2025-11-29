@@ -16,4 +16,4 @@ Please see our new [batch personalize page](personalize-batch) which does this f
 
 Because that Square is not available. You are attempting to place an order that will revert. MetaMask could do a much better job of articulating this.
 
-![revert-tx](assets/revert-tx.png)
+![revert-tx](assets/images/revert-tx.png)
