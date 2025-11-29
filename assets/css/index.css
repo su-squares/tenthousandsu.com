@@ -146,3 +146,23 @@
     font-size: 1.1rem;
   }
 }
+
+/* Mobile hint text - only visible on small screens */
+.mobile-hint {
+  font-weight: bold;
+  text-align: center;
+  /* offset the gap spacing */
+  margin: -2rem auto;
+  padding: 0;
+  display: none;
+}
+
+@media (max-width: 700px) {
+  .mobile-hint {
+    display: block; /* Show on mobile */
+  }
+
+  .map-container {
+    margin-top: 0.5rem;
+  }
+}
