@@ -2,8 +2,8 @@
   const STYLESHEET_HREF = "/assets/modals/alert-modal/modal.css";
   const TEMPLATE_HTML = `
     <div class="su-alert-backdrop" aria-hidden="true">
-      <div class="su-alert" role="dialog" aria-modal="true" aria-label="Alert">
-        <div class="su-alert__message"></div>
+      <div class="su-alert" role="dialog" aria-modal="true" aria-label="Alert" aria-describedby="su-alert-message">
+        <div class="su-alert__message" id="su-alert-message"></div>
         <div class="su-alert__actions">
           <button type="button" class="btn su-alert__button">Okay</button>
         </div>
@@ -55,8 +55,17 @@
       }
     });
     document.addEventListener("keydown", function (event) {
-      if (event.key === "Escape" && backdrop && backdrop.classList.contains(VISIBLE_CLASS)) {
+      if (!backdrop || !backdrop.classList.contains(VISIBLE_CLASS)) {
+        return;
+      }
+
+      if (event.key === "Escape") {
         hide();
+      } else if (event.key === "Tab") {
+        // Focus trap: prevent Tab from escaping the modal.
+        // Since there's only one focusable element, just prevent default.
+        event.preventDefault();
+        dismissButton.focus({ preventScroll: true });
       }
     });
 
@@ -99,10 +108,10 @@
       node.setAttribute("aria-hidden", "false");
       node.classList.add(VISIBLE_CLASS);
 
-      // Focus after paint to avoid scroll jumps.
+      // Focus after transition completes to ensure modal is fully visible.
       setTimeout(function () {
         dismissButton.focus({ preventScroll: true });
-      }, 0);
+      }, 50);
     });
   }
 
