@@ -102,29 +102,43 @@ layout: null
 
       // Set arrow location, based on quadrant
       const elArrow = document.getElementById('arrow');
-      const mapScale = 0.5;
-      const scalePosition = (value) => `${value * mapScale}px`;
-      const setArrow = (src, topPx, leftPx) => {
-        elArrow.src = src;
-        elArrow.style.top = scalePosition(topPx);
-        elArrow.style.left = scalePosition(leftPx);
-      };
-      elArrow.style.width = `${100 * mapScale}px`;
-      elArrow.style.height = `${100 * mapScale}px`;
+      const elCanvas = document.querySelector('.square-location__canvas');
 
-      if (row < 50) {
-        if (col < 50) {
-          setArrow('assets/images/ul.png', row * 10 + 10, col * 10 + 10);
+      const updateArrowPosition = () => {
+        // Get actual rendered size and calculate scale factor
+        const actualWidth = elCanvas.offsetWidth;
+        const originalSize = 1000; // Original image is 1000x1000px
+        const dynamicScale = actualWidth / originalSize;
+
+        const scalePosition = (value) => `${value * dynamicScale}px`;
+        const setArrow = (src, topPx, leftPx) => {
+          elArrow.src = src;
+          elArrow.style.top = scalePosition(topPx);
+          elArrow.style.left = scalePosition(leftPx);
+        };
+        elArrow.style.width = `${100 * dynamicScale}px`;
+        elArrow.style.height = `${100 * dynamicScale}px`;
+
+        if (row < 50) {
+          if (col < 50) {
+            setArrow('assets/images/ul.png', row * 10 + 10, col * 10 + 10);
+          } else {
+            setArrow('assets/images/ur.png', row * 10 + 10, col * 10 - 100);
+          }
         } else {
-          setArrow('assets/images/ur.png', row * 10 + 10, col * 10 - 100);
+          if (col < 50) {
+            setArrow('assets/images/dl.png', row * 10 - 100, col * 10 + 10);
+          } else {
+            setArrow('assets/images/dr.png', row * 10 - 100, col * 10 - 100);
+          }
         }
-      } else {
-        if (col < 50) {
-          setArrow('assets/images/dl.png', row * 10 - 100, col * 10 + 10);
-        } else {
-          setArrow('assets/images/dr.png', row * 10 - 100, col * 10 - 100);
-        }
-      }
+      };
+
+      // Initial positioning
+      updateArrowPosition();
+
+      // Update on window resize
+      window.addEventListener('resize', updateArrowPosition);
 
       // Emoji squares and RGB values for ⬛⬜🟥🟧🟨🟩🟦🟪🟫
       const emojis = [
