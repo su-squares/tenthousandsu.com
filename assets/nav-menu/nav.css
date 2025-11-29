@@ -49,13 +49,13 @@
 }
 
 .su-nav-connect {
-  min-width: 150px;
-  padding: 5px;
+  min-width: 100px;
+  padding: 5px 10px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  white-space: nowrap;
+  white-space: pre-line;
   line-height: 1.2;
   flex-shrink: 0;
 }
@@ -106,9 +106,7 @@
     min-width: 100px;
     width: auto;
     max-width: 100%;
-    font-size: 1rem;
     line-height: 1.2;
-    white-space: pre-line;
     text-align: center;
     word-break: break-word;
   }
@@ -241,6 +239,8 @@
   padding: 0.65rem 0.85rem;
   box-shadow: 4px 6px 4px rgba(255, 255, 255, 0.2);
   transition: box-shadow 0.15s ease, transform 0.15s ease;
+  background: none;
+  cursor: pointer;
 }
 
 .su-nav-btn:hover {

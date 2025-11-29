@@ -10,7 +10,7 @@
     {% if include.desktop_button_two_label and include.desktop_button_two_href %}
     <a class="btn su-nav-desktop-extra" href="{{ include.desktop_button_two_href }}">{{ include.desktop_button_two_label }}</a>
     {% endif %}
-    <button id="connect-wallet" class="btn su-nav-connect" type="button">Connect&#10;Wallet</button>
+    <button id="connect-wallet" class="btn su-nav-connect" type="button" aria-label="Connect Wallet">Connect&#10;Wallet</button>
   </div>
   <button class="su-nav-hamburger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="su-nav-main-modal">
     <span aria-hidden="true"></span>
@@ -40,27 +40,29 @@
       </button>
     </div>
 
-    <div class="su-nav-buttons">
-      <a class="su-nav-btn" data-nav-path="/" href="/">Home</a>
-      <a class="su-nav-btn" data-nav-path="/buy" href="/buy">Mint</a>
-      <div class="su-nav-buttons-row">
-        <a class="su-nav-btn" data-nav-path="/personalize" href="/personalize">Personalize</a>
-        <a class="su-nav-btn su-nav-btn--batch" data-nav-path="/personalize-batch" href="/personalize-batch">Batch mode</a>
+    <nav aria-label="Main navigation">
+      <div class="su-nav-buttons">
+        <a class="su-nav-btn" data-nav-path="/" href="/">Home</a>
+        <a class="su-nav-btn" data-nav-path="/buy" href="/buy">Mint</a>
+        <div class="su-nav-buttons-row">
+          <a class="su-nav-btn" data-nav-path="/personalize" href="/personalize">Personalize</a>
+          <a class="su-nav-btn su-nav-btn--batch" data-nav-path="/personalize-batch" href="/personalize-batch">Batch mode</a>
+        </div>
+        <a class="su-nav-btn" data-nav-path="/white-paper" href="/white-paper">About us</a>
+        <a class="su-nav-btn" data-nav-path="/faq" href="/faq">FAQ</a>
+        <button class="su-nav-btn su-nav-btn-articles" data-nav-path="/articles" type="button" aria-controls="su-nav-articles-modal">
+          Articles
+          <svg class="su-nav-arrow-right" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#ffd700" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6" />
+          </svg>
+        </button>
       </div>
-      <a class="su-nav-btn" data-nav-path="/white-paper" href="/white-paper">About us</a>
-      <a class="su-nav-btn" data-nav-path="/faq" href="/faq">FAQ</a>
-      <a class="su-nav-btn su-nav-btn-articles" data-nav-path="/articles" href="#">
-        Articles
-        <svg class="su-nav-arrow-right" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#ffd700" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6" />
-        </svg>
-      </a>
-    </div>
+    </nav>
   </div>
 
   <div class="su-nav-modal" id="su-nav-articles-modal" role="dialog" aria-modal="true" aria-label="Articles" aria-hidden="true" tabindex="-1">
     <div class="su-nav-modal__top">
-      <button class="su-nav-back" type="button" aria-label="Back to main menu">
+      <button class="su-nav-back" type="button" aria-label="Back to main menu" aria-controls="su-nav-main-modal">
         <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#ffffff" stroke-width="2">
           <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
         </svg>
@@ -83,10 +85,12 @@
     </div>
 
     <div class="su-nav-modal__title">Articles</div>
-    <div class="su-nav-articles">
-      {% for post in site.posts %}
-      <a class="su-nav-article-link" data-nav-path="{{ post.url }}" href="{{ post.url | escape }}">{{ post.title | escape }}</a>
-      {% endfor %}
-    </div>
+    <nav aria-label="Article navigation">
+      <div class="su-nav-articles">
+        {% for post in site.posts %}
+        <a class="su-nav-article-link" data-nav-path="{{ post.url }}" href="{{ post.url | escape }}">{{ post.title | escape }}</a>
+        {% endfor %}
+      </div>
+    </nav>
   </div>
 </div>
