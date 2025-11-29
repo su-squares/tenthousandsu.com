@@ -16,6 +16,15 @@ if (input && chooseButton && submitButton) {
     return dataCache;
   };
 
+  input.addEventListener("input", () => {
+    const value = parseInt(input.value, 10);
+    if (isNaN(value) || value < 1 || value > 10000) {
+      input.setCustomValidity("Enter a number between 1 and 10,000.");
+    } else {
+      input.setCustomValidity("");
+    }
+  });
+
   const isMinted = (id, data) => {
     if (!data) return false;
     return Boolean(data.extra[id - 1]);
@@ -28,7 +37,7 @@ if (input && chooseButton && submitButton) {
     }
     const data = await requireData();
     if (!isMinted(value, data)) {
-      return { ok: false, message: `Square #${value} is not minted.` };
+      return { ok: false, message: "This square has not been minted, please try again with another value." };
     }
     return { ok: true, value };
   };

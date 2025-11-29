@@ -11,6 +11,7 @@ layout: null
   <meta name="description" content="The first ERC-721 NFT. Cute squares you own and personalize.">
   <link rel="stylesheet" href="assets/css/main.css">
   <link rel="stylesheet" href="assets/css/square.css">
+  <link rel="stylesheet" href="assets/css/chooser.css">
   {% include nav-menu-head.html %}
   {% include alert-modal-head.html %}
   {% include offline-modal-head.html %}
@@ -46,6 +47,8 @@ layout: null
     <pre id="emojified"></pre>
     <button class="btn" id="copy-emojified">Copy</button>
   </article>
+
+  {% include square-lookup.html %}
 
   <footer>
     <small>
@@ -193,6 +196,7 @@ layout: null
       });
     });
   </script>
+  <script type="module" src="/assets/js/square-lookup.js"></script>
 </body>
 
 </html>
