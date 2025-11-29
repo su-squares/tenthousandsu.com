@@ -12,6 +12,7 @@ layout: null
   <link rel="canonical" href="https://tenthousandsu.com" />
   <link rel="stylesheet" href="assets/css/main.css">
   <link rel="stylesheet" href="assets/css/index.css">
+  <link rel="stylesheet" href="assets/css/chooser.css">
   {% include nav-menu-head.html %}
   {% include alert-modal-head.html %}
   {% include offline-modal-head.html %}
@@ -45,6 +46,16 @@ layout: null
       <strong class="newly-feed__heading">Latest personalized</strong>
       <div class="newly-feed__items"></div>
     </section>
+  </article>
+
+  <article class="square-lookup">
+    <h2>Square look up</h2>
+    <p>Enter an already minted square to look up information about it.</p>
+    <div class="square-lookup__controls">
+      <input id="square-lookup-input" type="number" min="1" max="10000" inputmode="numeric" placeholder="e.g. 8503">
+      <button id="square-lookup-choose" type="button">Choose from list</button>
+    </div>
+    <button id="square-lookup-submit" type="button" class="square-lookup__submit">Look up</button>
   </article>
 
   <footer>
@@ -289,6 +300,7 @@ layout: null
       }
     }
   </script>
+  <script type="module" src="/assets/js/square-lookup.js"></script>
 </body>
 
 </html>
