@@ -1,9 +1,20 @@
-import { walletConnectProjectId } from "./config.js";
+import { enableSepolia } from "./config.js";
+import {
+  MAINNET_CHAIN_ID,
+  SEPOLIA_CHAIN_ID,
+  loadWagmiClient,
+} from "./wallet/wagmi-client.js";
+import { openConnectModal } from "./wallet/connect-modal.js";
+import {
+  clearStoredSession,
+  getStoredSession,
+  openWalletDeepLink,
+} from "./wallet/wc-store.js";
 
 let cachedClients = null;
 const readyCallbacks = [];
 const wagmiLocalStorageKey = "wagmi.store";
-const MAINNET_CHAIN_ID = 1;
+let disconnectWatcher = null;
 
 export function onWeb3Ready(callback) {
   if (cachedClients) {
@@ -11,18 +22,6 @@ export function onWeb3Ready(callback) {
     return;
   }
   readyCallbacks.push(callback);
-}
-
-async function loadLibraries() {
-  // Web3Modal requires process.env to exist, stub just enough for the library.
-  if (!window.process) {
-    window.process = { env: { NODE_ENV: "development" } };
-  }
-  const [ethereumLib, web3ModalLib] = await Promise.all([
-    import("https://unpkg.com/@web3modal/ethereum@2.7.1"),
-    import("https://unpkg.com/@web3modal/html@2.7.1"),
-  ]);
-  return { ethereumLib, web3ModalLib };
 }
 
 function hasPersistedWagmiConnection() {
@@ -41,6 +40,9 @@ function hasPersistedWagmiConnection() {
         const value = localStorage.getItem(key);
         if (value && value !== "{}") return true;
       }
+      if (key === "su-wc-session") {
+        return true;
+      }
     }
   } catch (error) {
     console.warn("Unable to inspect wagmi storage", error);
@@ -49,66 +51,36 @@ function hasPersistedWagmiConnection() {
 }
 
 export function shouldEagerLoadWeb3() {
-  // Opt-out: set window.suWeb3 = { autoLoad: false } before nav-menu-head include.
-  // Opt-in: set window.suWeb3 = { autoLoad: true } to force eager load even without stored session.
   const config = window.suWeb3;
   if (config?.autoLoad === false) return false;
+  // Default to eager load unless explicitly disabled.
   if (config?.autoLoad === true) return true;
-  return hasPersistedWagmiConnection();
+  return hasPersistedWagmiConnection() || true;
 }
 
 export async function loadWeb3() {
   if (cachedClients) return cachedClients;
-
-  const { ethereumLib, web3ModalLib } = await loadLibraries();
-  const {
-    EthereumClient,
-    w3mConnectors,
-    w3mProvider,
-    WagmiCore,
-    WagmiCoreChains,
-  } = ethereumLib;
-  const { Web3Modal } = web3ModalLib;
-  const {
-    configureChains,
-    createConfig,
-    writeContract,
-    waitForTransaction,
-    switchNetwork,
-  } = WagmiCore;
-  const { mainnet } = WagmiCoreChains;
-
-  const chains = [mainnet];
-  const { publicClient } = configureChains(chains, [
-    w3mProvider({ projectId: walletConnectProjectId }),
-  ]);
-  const wagmiConfig = createConfig({
-    autoConnect: true,
-    connectors: w3mConnectors({ projectId: walletConnectProjectId, chains }),
-    publicClient,
-  });
-  const ethereumClient = new EthereumClient(wagmiConfig, chains);
-  const web3modal = new Web3Modal(
-    { projectId: walletConnectProjectId },
-    ethereumClient
-  );
-
-  cachedClients = {
-    ethereumClient,
-    web3modal,
-    writeContract,
-    waitForTransaction,
-    switchNetwork,
-  };
+  cachedClients = await loadWagmiClient();
+  if (!disconnectWatcher) {
+    try {
+      disconnectWatcher = cachedClients.watchAccount((account) => {
+        if (!account.isConnected) {
+          clearStoredSession();
+        }
+      });
+    } catch (_error) {
+      /* ignore watcher issues */
+    }
+  }
   readyCallbacks.splice(0).forEach((cb) => cb(cachedClients));
   return cachedClients;
 }
 
 export async function ensureConnected(action) {
-  const { ethereumClient, web3modal } = await loadWeb3();
-  const runAction = () => action(cachedClients);
+  const wagmi = await loadWeb3();
+  const runAction = () => action(wagmi);
 
-  if (ethereumClient.getAccount().isConnected) {
+  if (wagmi.getAccount().isConnected) {
     return runAction();
   }
 
@@ -117,30 +89,33 @@ export async function ensureConnected(action) {
     const cleanup = () => {
       finished = true;
       try {
-        accountUnsubscribe();
-      } catch (e) {
-        /* no-op */
-      }
-      try {
-        modalUnsubscribe();
-      } catch (e) {
-        /* no-op */
+        accountUnsubscribe?.();
+      } catch (_error) {
+        /* noop */
       }
     };
 
-    const accountUnsubscribe = ethereumClient.watchAccount((account) => {
+    const accountUnsubscribe = wagmi.watchAccount((account) => {
       if (!account.isConnected || finished) return;
       cleanup();
       resolve(runAction());
     });
-    const modalUnsubscribe = web3modal.subscribeModal((modalState) => {
-      if (modalState.open || finished) return;
-      cleanup();
-      resolve();
-    });
 
     try {
-      await web3modal.openModal();
+      const session = getStoredSession();
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+      if (session && isMobile) {
+        openWalletDeepLink();
+      }
+      await openConnectModal();
+      const account = wagmi.getAccount();
+      if (account?.isConnected) {
+        cleanup();
+        resolve(runAction());
+      } else {
+        cleanup();
+        resolve();
+      }
     } catch (error) {
       cleanup();
       reject(error);
@@ -149,18 +124,30 @@ export async function ensureConnected(action) {
 }
 
 export async function ensureMainnetOrWarn(clients) {
-  const { ethereumClient, switchNetwork } = clients || (await loadWeb3());
+  const wagmi = clients || (await loadWeb3());
   try {
-    const network = ethereumClient.getNetwork();
+    const network = wagmi.getNetwork();
     const chainId = network?.chain?.id;
-    if (chainId === MAINNET_CHAIN_ID) return clients || cachedClients;
-    if (switchNetwork) {
-      await switchNetwork({ chainId: MAINNET_CHAIN_ID });
-      return clients || cachedClients;
+    const isAllowedChain =
+      chainId === MAINNET_CHAIN_ID || (enableSepolia && chainId === SEPOLIA_CHAIN_ID);
+    if (isAllowedChain) return wagmi;
+    if (wagmi.switchNetwork) {
+      await wagmi.switchNetwork({ chainId: MAINNET_CHAIN_ID });
+      return wagmi;
     }
   } catch (error) {
     console.warn("Network switch failed", error);
   }
   alert("Please switch to Ethereum mainnet to continue.");
   throw new Error("Not on mainnet");
+}
+
+export function clearCachedWalletSession() {
+  clearStoredSession();
+}
+
+export function openWalletFromStore() {
+  const session = getStoredSession();
+  if (!session) return false;
+  return openWalletDeepLink();
 }

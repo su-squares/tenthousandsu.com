@@ -1,24 +1,56 @@
 import {
-  ensureConnected,
   loadWeb3,
   onWeb3Ready,
   shouldEagerLoadWeb3,
 } from "./foundation.js";
+import { openConnectModal } from "./wallet/connect-modal.js";
+import { openAccountModal } from "./wallet/account-modal.js";
+import { truncateAddress } from "./wallet/wagmi-client.js";
 
 const connectWalletButton = document.getElementById("connect-wallet");
 
 if (connectWalletButton) {
   let accountUnsubscribe;
+  let lastEnsAddress = null;
+  let cachedEnsName = null;
 
-  const attachAccountWatcher = ({ ethereumClient }) => {
+  const updateButton = (account) => {
+    if (!account?.isConnected) {
+      connectWalletButton.innerText = "Connect\nWallet";
+      return;
+    }
+    const label = cachedEnsName || truncateAddress(account.address);
+    connectWalletButton.innerText = `Connected:\n${label}`;
+  };
+
+  const fetchEnsIfNeeded = async (wagmi, address) => {
+    if (!address || address === lastEnsAddress) return;
+    lastEnsAddress = address;
+    cachedEnsName = null;
+    try {
+      const ens = await wagmi.fetchEnsName({ address, chainId: 1 });
+      if (ens && address === lastEnsAddress) {
+        cachedEnsName = ens;
+        updateButton({ isConnected: true, address });
+      }
+    } catch (error) {
+      if (window?.suWeb3?.debug) {
+        console.warn("ENS lookup failed", error);
+      }
+      cachedEnsName = null;
+    }
+  };
+
+  const attachAccountWatcher = (wagmi) => {
     if (accountUnsubscribe) return;
-    accountUnsubscribe = ethereumClient.watchAccount((account) => {
-      connectWalletButton.innerText = account.isConnected
-        ? "Connected:\n" +
-            account.address.slice(0, 6) +
-            "\u2026" +
-            account.address.slice(-4)
-        : "Connect\nWallet";
+    accountUnsubscribe = wagmi.watchAccount((account) => {
+      updateButton(account);
+      if (account?.isConnected && account.address) {
+        fetchEnsIfNeeded(wagmi, account.address);
+      } else {
+        cachedEnsName = null;
+        lastEnsAddress = null;
+      }
     });
   };
 
@@ -35,9 +67,14 @@ if (connectWalletButton) {
   connectWalletButton.addEventListener("click", async () => {
     connectWalletButton.disabled = true;
     try {
-      const web3 = await loadWeb3();
-      attachAccountWatcher(web3);
-      await web3.web3modal.openModal();
+      const wagmi = await loadWeb3();
+      attachAccountWatcher(wagmi);
+      const account = wagmi.getAccount();
+      if (account?.isConnected) {
+        await openAccountModal();
+      } else {
+        await openConnectModal();
+      }
     } catch (error) {
       console.error(error);
     } finally {
