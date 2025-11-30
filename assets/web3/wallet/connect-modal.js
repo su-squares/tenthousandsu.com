@@ -3,6 +3,11 @@ import { attemptNetworkSwitch } from "./network.js";
 import { renderQr as renderQrCanvas } from "./qr.js";
 import { rememberUri, rememberTopic, openWalletDeepLink } from "./wc-store.js";
 import { openInfoModal } from "./info-modal.js";
+import {
+  CONNECTING_VARIANT,
+  renderConnectingModal,
+} from "./connecting-modal.js";
+import { ensureBackButton } from "./back-button.js";
 
 let overlayEl = null;
 let modalEl = null;
@@ -11,6 +16,7 @@ let closeHandler = null;
 let connectorsRef = [];
 let onSelectRef = () => {};
 let onCloseRef = () => {};
+let backBtn = null;
 
 const MOBILE_QUERY = "(max-width: 730px)";
 
@@ -19,6 +25,7 @@ const STATE = {
   qrUri: "",
   copied: false,
   connectingName: "",
+  connectingVariant: CONNECTING_VARIANT.DEFAULT,
   errorMessage: "",
 };
 
@@ -75,6 +82,7 @@ export function closeConnectModal() {
   STATE.qrUri = "";
   STATE.copied = false;
   STATE.connectingName = "";
+  STATE.connectingVariant = CONNECTING_VARIANT.DEFAULT;
   STATE.errorMessage = "";
   if (closeHandler) closeHandler();
 }
@@ -89,6 +97,10 @@ function setQr(uri) {
   log("setQr", uri);
   STATE.qrUri = uri;
   render();
+}
+
+function setBackHandler(handler) {
+  backBtn = ensureBackButton(modalEl, handler);
 }
 
 function setCopied(flag) {
@@ -106,6 +118,10 @@ function setError(message) {
   log("error", message);
   STATE.errorMessage = message;
   setView("error");
+}
+
+function setConnectingVariant(variant) {
+  STATE.connectingVariant = variant || CONNECTING_VARIANT.DEFAULT;
 }
 
 /**
@@ -209,25 +225,6 @@ function renderList(connectors, onSelect) {
   });
 }
 
-function renderConnecting(hasUri, onCancel, onOpenWallet) {
-  contentEl.innerHTML = `
-    <div class="wallet-modal__header">
-      <h2>Connecting</h2>
-    </div>
-    <p class="wallet-helper">Check your wallet to approve the request.</p>
-    <div class="wallet-actions">
-      <button class="wallet-btn wallet-btn--ghost" type="button" data-cancel>Cancel</button>
-      ${
-        hasUri
-          ? `<button class="wallet-btn" type="button" data-open-wallet>Open wallet app</button>`
-          : ""
-      }
-    </div>
-  `;
-  contentEl.querySelector("[data-cancel]")?.addEventListener("click", onCancel);
-  contentEl.querySelector("[data-open-wallet]")?.addEventListener("click", onOpenWallet);
-}
-
 function renderQrView(onBack, onCopy, onOpenWallet) {
   contentEl.innerHTML = `
     <div class="wallet-modal__header">
@@ -252,13 +249,12 @@ function renderQrView(onBack, onCopy, onOpenWallet) {
         />
       </div>
       <div class="wallet-actions">
-        <button class="wallet-btn wallet-btn--ghost" type="button" data-back>Back</button>
         <button class="wallet-btn" type="button" data-copy>${STATE.copied ? "Copied!" : "Copy link"}</button>
-        <button class="wallet-btn" type="button" data-open-wallet>Open wallet</button>
+        <button class="wallet-btn" type="button" data-open-wallet>Open mobile wallet</button>
       </div>
     </div>
   `;
-  contentEl.querySelector("[data-back]")?.addEventListener("click", onBack);
+  // Back handled by shared arrow button; no in-content back button.
   contentEl.querySelector("[data-copy]")?.addEventListener("click", onCopy);
   contentEl.querySelector("[data-open-wallet]")?.addEventListener("click", onOpenWallet);
 
@@ -323,6 +319,7 @@ function render(connectors = [], onSelect = () => {}, onClose = () => {}) {
   }
   switch (STATE.view) {
     case "qr":
+      setBackHandler(() => setView("list"));
       renderQrView(
         () => setView("list"),
         () => {
@@ -334,19 +331,29 @@ function render(connectors = [], onSelect = () => {}, onClose = () => {}) {
       );
       break;
     case "connecting":
-      renderConnecting(Boolean(STATE.qrUri), () => {
-        setView("list");
-        onCloseRef();
-      }, () => openWalletDeepLink(STATE.qrUri));
+      setBackHandler(null);
+      renderConnectingModal(contentEl, {
+        variant: STATE.connectingVariant || CONNECTING_VARIANT.DEFAULT,
+        hasUri: Boolean(STATE.qrUri),
+        onCancel: () => {
+          setView("list");
+          onCloseRef();
+        },
+        onOpenWallet: () => openWalletDeepLink(STATE.qrUri),
+        onShowQr: () => setView("qr"),
+      });
       break;
     case "error":
+      setBackHandler(null);
       renderError(() => setView("list"));
       break;
     case "canceled":
+      setBackHandler(null);
       renderCanceled(() => setView("list"));
       break;
     case "list":
     default:
+      setBackHandler(null);
       renderList(connectorsRef, onSelectRef);
       break;
   }
@@ -418,7 +425,10 @@ export async function openConnectModal() {
   const handleConnector = async (connector) => {
     let removeDisplayListener = null;
     try {
-      if (connector.id === "walletConnect") {
+      const isWalletConnect = connector.id === "walletConnect";
+      const mobile = isMobile();
+
+      if (isWalletConnect) {
         const provider = await connector.getProvider();
         if (provider && typeof provider.on === "function") {
           const displayHandler = (uri) => {
@@ -426,7 +436,7 @@ export async function openConnectModal() {
             const stored = rememberUri(uri);
             setQr(stored.uri);
             rememberTopic(stored.topic);
-            if (isMobile()) {
+            if (mobile) {
               openWalletDeepLink(stored.uri);
               setView("connecting");
             } else {
@@ -442,9 +452,18 @@ export async function openConnectModal() {
             }
           };
         }
+
+        setConnectingVariant(mobile ? CONNECTING_VARIANT.WALLETCONNECT : CONNECTING_VARIANT.DEFAULT);
+        if (mobile) {
+          setView("connecting");
+        } else {
+          setView("qr");
+        }
+      } else {
+        setConnectingVariant(CONNECTING_VARIANT.DEFAULT);
+        setView("connecting");
       }
 
-      setView("connecting");
       await connect({ connector });
       const account = wagmi.getAccount();
       if (account?.isConnected) {

@@ -1,7 +1,14 @@
+import { ensureBackButton } from "./back-button.js";
+
 let overlayEl = null;
 let modalEl = null;
 let contentEl = null;
 let closeHandler = null;
+let backBtn = null;
+
+function setBackHandler(handler) {
+  backBtn = ensureBackButton(modalEl, handler);
+}
 
 function ensureElements() {
   if (overlayEl) return;
@@ -32,6 +39,8 @@ function ensureElements() {
   modalEl.appendChild(contentEl);
   overlayEl.appendChild(modalEl);
   document.body.appendChild(overlayEl);
+
+  setBackHandler(null);
 }
 
 function showOverlay() {
@@ -48,7 +57,6 @@ export function closeInfoModal() {
 function render(onBack) {
   contentEl.innerHTML = `
     <div class="wallet-modal__header">
-      <button class="wallet-back-arrow" type="button" aria-label="Back" data-back>←</button>
       <h2>What does a wallet do?</h2>
     </div>
 
@@ -69,7 +77,7 @@ function render(onBack) {
     </div>
   `;
 
-  contentEl.querySelector("[data-back]")?.addEventListener("click", () => {
+  setBackHandler(() => {
     closeInfoModal();
     if (onBack) onBack();
   });

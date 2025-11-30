@@ -16,27 +16,6 @@
   color: #ccaa00; /* Darker yellow */
 }
 
-/* Back arrow button */
-.wallet-back-arrow {
-  position: absolute;
-  top: 0;
-  left: 0;
-  background: none;
-  border: none;
-  color: #fff;
-  cursor: pointer;
-  font-size: 1.3rem;
-  line-height: 1;
-  padding: 0.25rem;
-}
-
-@media (max-width: 600px) {
-  .wallet-back-arrow {
-    font-size: 2rem;
-    top: -50%;
-  }
-}
-
 /* Checkmark list */
 .wallet-checklist {
   text-align: left;
