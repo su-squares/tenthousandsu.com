@@ -65,6 +65,8 @@
 .wallet-list {
   display: grid;
   gap: 0.6rem;
+  max-height: 250px;
+  overflow-y: auto;
 }
 
 .wallet-list button {
