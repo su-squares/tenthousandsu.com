@@ -1,9 +1,9 @@
 /**
- * Lazy QR code generator using a tiny client-side library.
+ * Lazy QR code generator with gradient support using qr-creator.
  * @module qr
  */
 
-const QR_LIB_URL = "https://esm.sh/qrcode@1.5.3";
+const QR_LIB_URL = "https://cdn.jsdelivr.net/npm/qr-creator/dist/qr-creator.es6.min.js";
 let qrLibPromise = null;
 
 async function loadQrLib() {
@@ -13,7 +13,7 @@ async function loadQrLib() {
 }
 
 /**
- * Render a QR code into a canvas element.
+ * Render a gradient QR code into a canvas element.
  * @param {HTMLCanvasElement} canvas
  * @param {string} value
  * @returns {Promise<void>}
@@ -21,17 +21,27 @@ async function loadQrLib() {
 export async function renderQr(canvas, value) {
   if (!canvas || !value) return;
   const qrLib = await loadQrLib();
-  const QRCode = qrLib?.default || qrLib?.QRCode || qrLib;
-  if (!QRCode || typeof QRCode.toCanvas !== "function") {
+  const QrCreator = qrLib?.default || qrLib?.QrCreator || qrLib;
+  if (!QrCreator || typeof QrCreator.render !== "function") {
     throw new Error("QR code library failed to load");
   }
-  return QRCode.toCanvas(canvas, value, {
-    errorCorrectionLevel: "M",
-    margin: 2,
-    width: 200,
-    color: {
-      dark: "#ffd700",
-      light: "#000000",
+
+  const size = 220;
+
+  return QrCreator.render({
+    text: value,
+    size: size,
+    ecLevel: "H",
+    radius: 0.5,
+    fill: {
+      type: "linear-gradient",
+      position: [0, 0, 1, 1],
+      colorStops: [
+        [0, "#2d3c96"],
+        [1, "#d53392"]
+      ]
     },
-  });
+    background: "#000000",
+    quiet: 2
+  }, canvas);
 }

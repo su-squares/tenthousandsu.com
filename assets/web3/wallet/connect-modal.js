@@ -1,4 +1,5 @@
 import { loadWagmiClient } from "./wagmi-client.js";
+import { attemptNetworkSwitch } from "./network.js";
 import { renderQr as renderQrCanvas } from "./qr.js";
 import { rememberUri, rememberTopic, openWalletDeepLink } from "./wc-store.js";
 
@@ -118,6 +119,9 @@ function renderList(connectors, onSelect, onClose) {
     .join("");
 
   contentEl.innerHTML = `
+    <div class="wallet-modal__logo">
+      <img src="${window.location.origin}/assets/images/logo-su-squares.png" alt="Su Squares">
+    </div>
     <div class="wallet-modal__header">
       <h2 id="wallet-connect-title">Connect your wallet</h2>
       <button class="wallet-close" type="button" aria-label="Close" data-close>&#10005;</button>
@@ -168,7 +172,23 @@ function renderQrView(onBack, onCopy, onOpenWallet) {
       <button class="wallet-close" type="button" aria-label="Close" data-close>&#10005;</button>
     </div>
     <div class="wallet-qr">
-      <div><canvas id="wallet-qr-canvas" width="220" height="220" aria-label="Wallet QR"></canvas></div>
+      <div class="wallet-qr__container">
+        <div class="wallet-qr__placeholder" id="wallet-qr-placeholder">
+          <span class="wallet-qr__loading-text">Generating QR...</span>
+        </div>
+        <canvas
+          id="wallet-qr-canvas"
+          width="220"
+          height="220"
+          aria-label="Wallet QR"
+          style="display: none;"
+        ></canvas>
+        <img
+          src="${window.location.origin}/assets/images/logo-su-squares.png"
+          alt="Su Squares"
+          class="wallet-qr__logo"
+        />
+      </div>
       <div class="wallet-actions">
         <button class="wallet-btn wallet-btn--ghost" type="button" data-back>Back</button>
         <button class="wallet-btn" type="button" data-copy>${STATE.copied ? "Copied!" : "Copy link"}</button>
@@ -182,10 +202,21 @@ function renderQrView(onBack, onCopy, onOpenWallet) {
   contentEl.querySelector("[data-open-wallet]")?.addEventListener("click", onOpenWallet);
 
   const canvas = contentEl.querySelector("#wallet-qr-canvas");
+  const placeholder = contentEl.querySelector("#wallet-qr-placeholder");
+
   if (canvas && STATE.qrUri) {
-    renderQrCanvas(canvas, STATE.qrUri).catch((error) => {
-      console.error("QR render failed", error);
-    });
+    renderQrCanvas(canvas, STATE.qrUri)
+      .then(() => {
+        if (placeholder) placeholder.style.display = "none";
+        canvas.style.display = "block";
+        canvas.classList.add("wallet-fade");
+      })
+      .catch((error) => {
+        console.error("QR render failed", error);
+        if (placeholder) {
+          placeholder.innerHTML = '<span class="wallet-qr__loading-text">QR generation failed</span>';
+        }
+      });
   }
 }
 
@@ -275,6 +306,12 @@ export async function openConnectModal() {
   log("openConnectModal");
   const wagmi = await loadWagmiClient();
   const { connectors, connect, watchAccount } = wagmi;
+  let networkSwitchPromise = null;
+  const autoSwitchIfUnsupported = () => {
+    if (networkSwitchPromise) return networkSwitchPromise;
+    networkSwitchPromise = attemptNetworkSwitch(wagmi).catch(() => false);
+    return networkSwitchPromise;
+  };
   // Filter injected to only ready connectors; keep WC regardless.
   const filteredConnectors = connectors.filter((connector) => {
     if (connector.id === "walletConnect") return true;
@@ -302,7 +339,11 @@ export async function openConnectModal() {
   };
 
   const onAccount = watchAccount((account) => {
-    if (account.isConnected) complete(account);
+    if (account.isConnected) {
+      autoSwitchIfUnsupported()
+        .catch(() => false)
+        .finally(() => complete(wagmi.getAccount()));
+    }
   });
 
   const cleanup = () => {
@@ -348,7 +389,8 @@ export async function openConnectModal() {
       await connect({ connector });
       const account = wagmi.getAccount();
       if (account?.isConnected) {
-        complete(account);
+        await autoSwitchIfUnsupported();
+        complete(wagmi.getAccount());
       } else {
         complete(null);
       }
