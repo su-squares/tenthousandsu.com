@@ -17,6 +17,7 @@
 }
 
 .wallet-modal {
+  position: relative;
   width: min(520px, 92vw);
   max-width: 520px;
   background-image: linear-gradient(135deg, #2d3c96, #d53392);
@@ -41,8 +42,8 @@
 
 .wallet-close {
   position: absolute;
-  top: 0;
-  right: 0;
+  top: 8px;
+  right: 8px;
   background: none;
   border: none;
   color: #fff;
@@ -50,6 +51,7 @@
   font-size: 1.3rem;
   line-height: 1;
   padding: 0.25rem;
+  z-index: 10;
 }
 
 .wallet-modal__logo {

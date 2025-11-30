@@ -50,6 +50,14 @@ function ensureElements() {
   modalEl.className = "wallet-modal";
   contentEl = document.createElement("div");
 
+  const closeBtn = document.createElement("button");
+  closeBtn.className = "wallet-close";
+  closeBtn.type = "button";
+  closeBtn.setAttribute("aria-label", "Close");
+  closeBtn.textContent = "✕";
+  closeBtn.addEventListener("click", closeConnectModal);
+
+  modalEl.appendChild(closeBtn);
   modalEl.appendChild(contentEl);
   overlayEl.appendChild(modalEl);
   document.body.appendChild(overlayEl);
@@ -154,7 +162,7 @@ function connectorUid(connector) {
   return connector.id;
 }
 
-function renderList(connectors, onSelect, onClose) {
+function renderList(connectors, onSelect) {
   const items = connectors
     .map((connector) => {
       const icon = connectorIcon(connector);
@@ -175,7 +183,6 @@ function renderList(connectors, onSelect, onClose) {
     </div>
     <div class="wallet-modal__header">
       <h2 id="wallet-connect-title">Connect your wallet</h2>
-      <button class="wallet-close" type="button" aria-label="Close" data-close>&#10005;</button>
     </div>
     <div class="wallet-list" aria-labelledby="wallet-connect-title">
       ${items}
@@ -195,8 +202,6 @@ function renderList(connectors, onSelect, onClose) {
       if (target) onSelect(target);
     });
   });
-  const closeBtn = contentEl.querySelector("[data-close]");
-  closeBtn?.addEventListener("click", onClose);
 
   contentEl.querySelector("[data-info-modal]")?.addEventListener("click", () => {
     closeConnectModal();
@@ -208,7 +213,6 @@ function renderConnecting(hasUri, onCancel, onOpenWallet) {
   contentEl.innerHTML = `
     <div class="wallet-modal__header">
       <h2>Connecting</h2>
-      <button class="wallet-close" type="button" aria-label="Close" data-close>&#10005;</button>
     </div>
     <p class="wallet-helper">Check your wallet to approve the request.</p>
     <div class="wallet-actions">
@@ -221,7 +225,6 @@ function renderConnecting(hasUri, onCancel, onOpenWallet) {
     </div>
   `;
   contentEl.querySelector("[data-cancel]")?.addEventListener("click", onCancel);
-  contentEl.querySelector("[data-close]")?.addEventListener("click", onCancel);
   contentEl.querySelector("[data-open-wallet]")?.addEventListener("click", onOpenWallet);
 }
 
@@ -229,7 +232,6 @@ function renderQrView(onBack, onCopy, onOpenWallet) {
   contentEl.innerHTML = `
     <div class="wallet-modal__header">
       <h2>Scan with wallet</h2>
-      <button class="wallet-close" type="button" aria-label="Close" data-close>&#10005;</button>
     </div>
     <div class="wallet-qr">
       <div class="wallet-qr__container">
@@ -257,7 +259,6 @@ function renderQrView(onBack, onCopy, onOpenWallet) {
     </div>
   `;
   contentEl.querySelector("[data-back]")?.addEventListener("click", onBack);
-  contentEl.querySelector("[data-close]")?.addEventListener("click", closeConnectModal);
   contentEl.querySelector("[data-copy]")?.addEventListener("click", onCopy);
   contentEl.querySelector("[data-open-wallet]")?.addEventListener("click", onOpenWallet);
 
@@ -284,7 +285,6 @@ function renderError(onBack) {
   contentEl.innerHTML = `
     <div class="wallet-modal__header">
       <h2>Error</h2>
-      <button class="wallet-close" type="button" aria-label="Close" data-close>&#10005;</button>
     </div>
     <p class="wallet-helper">${STATE.errorMessage || "Something went wrong."}</p>
     <div class="wallet-actions">
@@ -292,14 +292,12 @@ function renderError(onBack) {
     </div>
   `;
   contentEl.querySelector("[data-back]")?.addEventListener("click", onBack);
-  contentEl.querySelector("[data-close]")?.addEventListener("click", closeConnectModal);
 }
 
 function renderCanceled(onBack) {
   contentEl.innerHTML = `
     <div class="wallet-modal__header">
       <h2>Request canceled</h2>
-      <button class="wallet-close" type="button" aria-label="Close" data-close>&#10005;</button>
     </div>
     <p class="wallet-helper">You denied the connection request.</p>
     <div class="wallet-actions">
@@ -307,7 +305,6 @@ function renderCanceled(onBack) {
     </div>
   `;
   contentEl.querySelector("[data-back]")?.addEventListener("click", onBack);
-  contentEl.querySelector("[data-close]")?.addEventListener("click", closeConnectModal);
 }
 
 function render(connectors = [], onSelect = () => {}, onClose = () => {}) {
@@ -319,11 +316,9 @@ function render(connectors = [], onSelect = () => {}, onClose = () => {}) {
     contentEl.innerHTML = `
       <div class="wallet-modal__header">
         <h2>No wallets found</h2>
-        <button class="wallet-close" type="button" aria-label="Close" data-close>&#10005;</button>
       </div>
       <p class="wallet-helper">No wallet connectors are available in this browser.</p>
     `;
-    contentEl.querySelector("[data-close]")?.addEventListener("click", closeConnectModal);
     return;
   }
   switch (STATE.view) {
@@ -352,7 +347,7 @@ function render(connectors = [], onSelect = () => {}, onClose = () => {}) {
       break;
     case "list":
     default:
-      renderList(connectorsRef, onSelectRef, onCloseRef);
+      renderList(connectorsRef, onSelectRef);
       break;
   }
 }

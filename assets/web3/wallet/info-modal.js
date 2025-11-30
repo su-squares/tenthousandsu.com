@@ -21,6 +21,14 @@ function ensureElements() {
   modalEl.className = "wallet-modal";
   contentEl = document.createElement("div");
 
+  const closeBtn = document.createElement("button");
+  closeBtn.className = "wallet-close";
+  closeBtn.type = "button";
+  closeBtn.setAttribute("aria-label", "Close");
+  closeBtn.textContent = "✕";
+  closeBtn.addEventListener("click", closeInfoModal);
+
+  modalEl.appendChild(closeBtn);
   modalEl.appendChild(contentEl);
   overlayEl.appendChild(modalEl);
   document.body.appendChild(overlayEl);
@@ -42,7 +50,6 @@ function render(onBack) {
     <div class="wallet-modal__header">
       <button class="wallet-back-arrow" type="button" aria-label="Back" data-back>←</button>
       <h2>What does a wallet do?</h2>
-      <button class="wallet-close" type="button" aria-label="Close" data-close>&#10005;</button>
     </div>
 
     <div class="wallet-checklist">
@@ -66,8 +73,6 @@ function render(onBack) {
     closeInfoModal();
     if (onBack) onBack();
   });
-
-  contentEl.querySelector("[data-close]")?.addEventListener("click", closeInfoModal);
 }
 
 /**
