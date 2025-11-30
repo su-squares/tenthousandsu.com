@@ -26,6 +26,9 @@ const log = (...args) => {
   if (DEBUG) console.debug("[wallet]", ...args);
 };
 
+/** WalletConnect icon path */
+const WALLETCONNECT_ICON = "/assets/images/walletconnect.png";
+
 function isMobile() {
   return window.matchMedia && window.matchMedia(MOBILE_QUERY).matches;
 }
@@ -96,23 +99,70 @@ function setError(message) {
   setView("error");
 }
 
+/**
+ * Get icon for a connector
+ * @param {Object} connector
+ * @returns {string|null}
+ */
 function connectorIcon(connector) {
-  if (connector?.icon && typeof connector.icon === "string") return connector.icon;
-  if (connector?.id === "walletConnect") {
-    return `${window.location.origin}/assets/images/ethereum_logo.png`;
+  // EIP-6963 metadata takes priority
+  if (connector._eip6963?.icon) {
+    return connector._eip6963.icon;
+  }
+  // WalletConnect gets its own icon
+  if (connector.id === "walletConnect") {
+    return `${window.location.origin}${WALLETCONNECT_ICON}`;
+  }
+  // Fallback to connector's own icon property
+  if (connector?.icon && typeof connector.icon === "string") {
+    return connector.icon;
   }
   return null;
+}
+
+/**
+ * Get display name for a connector
+ * @param {Object} connector
+ * @returns {string}
+ */
+function connectorName(connector) {
+  // EIP-6963 name
+  if (connector._eip6963?.name) {
+    return connector._eip6963.name;
+  }
+  // Standard name
+  if (connector.name) {
+    return connector.name;
+  }
+  // Fallback
+  if (connector.id === "walletConnect") {
+    return "WalletConnect";
+  }
+  return "Wallet";
+}
+
+/**
+ * Get unique ID for connector (for deduplication and data attributes)
+ * @param {Object} connector
+ * @returns {string}
+ */
+function connectorUid(connector) {
+  if (connector._eip6963?.uuid) {
+    return connector._eip6963.uuid;
+  }
+  return connector.id;
 }
 
 function renderList(connectors, onSelect, onClose) {
   const items = connectors
     .map((connector) => {
       const icon = connectorIcon(connector);
-      const label = connector.name || (connector.id === "walletConnect" ? "WalletConnect" : "Wallet");
+      const label = connectorName(connector);
+      const uid = connectorUid(connector);
       return `
-        <button type="button" data-connector-id="${connector.id}">
+        <button type="button" data-connector-uid="${uid}">
+          ${icon ? `<img src="${icon}" alt="" class="wallet-btn-icon">` : '<span class="wallet-btn-icon-placeholder"></span>'}
           <span>${label}</span>
-          ${icon ? `<img src="${icon}" alt="${label}">` : ""}
         </button>
       `;
     })
@@ -134,9 +184,10 @@ function renderList(connectors, onSelect, onClose) {
     </div>
   `;
 
-  contentEl.querySelectorAll("[data-connector-id]").forEach((btn) => {
+  contentEl.querySelectorAll("[data-connector-uid]").forEach((btn) => {
     btn.addEventListener("click", () => {
-      const target = connectors.find((c) => c.id === btn.dataset.connectorId);
+      const uid = btn.dataset.connectorUid;
+      const target = connectors.find((c) => connectorUid(c) === uid);
       if (target) onSelect(target);
     });
   });
@@ -312,10 +363,13 @@ export async function openConnectModal() {
     networkSwitchPromise = attemptNetworkSwitch(wagmi).catch(() => false);
     return networkSwitchPromise;
   };
+
   // Filter injected to only ready connectors; keep WC regardless.
   const filteredConnectors = connectors.filter((connector) => {
     if (connector.id === "walletConnect") return true;
-    // For injected, require ready() if present.
+    // EIP-6963 connectors are always ready (provider already exists)
+    if (connector._eip6963) return true;
+    // For legacy injected, require ready() if present.
     if (typeof connector.ready === "boolean") return connector.ready;
     if (typeof connector.ready === "function") {
       try {
@@ -326,6 +380,7 @@ export async function openConnectModal() {
     }
     return true;
   });
+
   showOverlay();
 
   let done = false;

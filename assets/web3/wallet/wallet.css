@@ -71,7 +71,6 @@
   width: 100%;
   display: flex;
   align-items: center;
-  justify-content: space-between;
   padding: 0.85rem 1rem;
   border-radius: 8px;
   background: rgba(0, 0, 0, 0.2);
@@ -327,4 +326,23 @@
   .wallet-status__aside {
     justify-content: flex-start;
   }
+}
+
+.wallet-list button .wallet-btn-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.wallet-list button .wallet-btn-icon-placeholder {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+.wallet-list button {
+  display: flex;
+  align-items: center;
+  gap: 12px;
 }
