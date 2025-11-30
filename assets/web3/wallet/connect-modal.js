@@ -2,6 +2,7 @@ import { loadWagmiClient } from "./wagmi-client.js";
 import { attemptNetworkSwitch } from "./network.js";
 import { renderQr as renderQrCanvas } from "./qr.js";
 import { rememberUri, rememberTopic, openWalletDeepLink } from "./wc-store.js";
+import { openInfoModal } from "./info-modal.js";
 
 let overlayEl = null;
 let modalEl = null;
@@ -181,6 +182,9 @@ function renderList(connectors, onSelect, onClose) {
     </div>
     <div class="wallet-helper">
       <p>Use a browser wallet or WalletConnect on mobile.</p>
+      <button type="button" class="wallet-helper-link" data-info-modal aria-controls="wallet-info-modal">
+        Don't have a wallet yet?
+      </button>
     </div>
   `;
 
@@ -193,6 +197,11 @@ function renderList(connectors, onSelect, onClose) {
   });
   const closeBtn = contentEl.querySelector("[data-close]");
   closeBtn?.addEventListener("click", onClose);
+
+  contentEl.querySelector("[data-info-modal]")?.addEventListener("click", () => {
+    closeConnectModal();
+    openInfoModal(() => openConnectModal());
+  });
 }
 
 function renderConnecting(hasUri, onCancel, onOpenWallet) {

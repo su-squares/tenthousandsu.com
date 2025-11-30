@@ -90,6 +90,11 @@
   text-align: center;
   font-size: 0.95rem;
   color: #fff;
+  margin-top: 1rem;
+}
+
+.wallet-helper, p {
+  margin: 0;
 }
 
 .wallet-qr {

@@ -1,0 +1,95 @@
+/* Clickable helper link */
+.wallet-helper-link {
+  background: none;
+  border: none;
+  color:  var(--color-accent);
+  font-weight: 700;
+  cursor: pointer;
+  text-decoration: none;
+  margin-top: 0.5rem;
+  display: inline-block;
+  padding: 0.25rem 0;
+  font-size: .8rem;
+}
+
+.wallet-helper-link:hover {
+  color: #ccaa00; /* Darker yellow */
+}
+
+/* Back arrow button */
+.wallet-back-arrow {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: none;
+  border: none;
+  color: #fff;
+  cursor: pointer;
+  font-size: 1.3rem;
+  line-height: 1;
+  padding: 0.25rem;
+}
+
+@media (max-width: 600px) {
+  .wallet-back-arrow {
+    font-size: 2rem;
+    top: -50%;
+  }
+}
+
+/* Checkmark list */
+.wallet-checklist {
+  text-align: left;
+  margin: 1rem 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.wallet-checklist-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  color: var(--color-accent);
+}
+
+.wallet-checklist-item::before {
+  content: "✓";
+  color:  var(--color-accent);
+  font-weight: 700;
+  font-size: 1.1rem;
+  flex-shrink: 0;
+}
+
+/* Info text */
+.wallet-info-text {
+  text-align: center;
+  color: #fff;
+  margin: 1rem 0;
+  line-height: 1.5;
+}
+
+wallet-helper, p {
+  margin: .5rem;
+}
+
+/* Get a wallet button link */
+.wallet-info-btn {
+  display: block;
+  width: 70%;
+  max-width: 300px;
+  margin: 0 auto;
+  padding: 10px;
+  background: none;
+  border-radius: 0.5rem;
+  border: 2px solid var(--color-accent);
+  box-shadow: var(--shadow-strong);
+  color: var(--color-accent);
+  font-weight: 700;
+  text-decoration: none;
+  text-align: center;
+  cursor: pointer;
+}
+
+.wallet-info-btn:hover {
+  box-shadow: var(--shadow-hover);
+}
