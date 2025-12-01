@@ -3,8 +3,8 @@ import {
   onWeb3Ready,
   shouldEagerLoadWeb3,
 } from "./foundation.js";
-import { openConnectModal } from "./wallet/connect-modal.js";
-import { openAccountModal } from "./wallet/account-modal.js";
+import { openConnectModal } from "./wallet/connect-modal/index.js";
+import { openAccountModal } from "./wallet/account-modal/index.js";
 import { truncateAddress } from "./wallet/wagmi-client.js";
 
 const connectWalletButton = document.getElementById("connect-wallet");

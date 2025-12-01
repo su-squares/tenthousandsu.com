@@ -4,7 +4,7 @@ import {
   SEPOLIA_CHAIN_ID,
   loadWagmiClient,
 } from "./wallet/wagmi-client.js";
-import { openConnectModal } from "./wallet/connect-modal.js";
+import { openConnectModal } from "./wallet/connect-modal/index.js";
 import {
   clearStoredSession,
   getStoredSession,
@@ -52,10 +52,9 @@ function hasPersistedWagmiConnection() {
 
 export function shouldEagerLoadWeb3() {
   const config = window.suWeb3;
-  if (config?.autoLoad === false) return false;
-  // Default to eager load unless explicitly disabled.
   if (config?.autoLoad === true) return true;
-  return hasPersistedWagmiConnection() || true;
+  if (config?.autoLoad === false) return false;
+  return hasPersistedWagmiConnection();
 }
 
 export async function loadWeb3() {

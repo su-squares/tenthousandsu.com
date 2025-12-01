@@ -1,10 +1,7 @@
-export const CONNECTING_VARIANT = {
-  DEFAULT: "default",
-  WALLETCONNECT: "walletConnectMobile",
-};
+import { CONNECTING_VARIANT } from "../constants.js";
 
 /**
- * Render the connecting state into a target container.
+ * Render the connecting state.
  * @param {HTMLElement} target
  * @param {Object} options
  * @param {string} options.variant
@@ -13,7 +10,7 @@ export const CONNECTING_VARIANT = {
  * @param {Function} options.onOpenWallet
  * @param {Function} [options.onShowQr]
  */
-export function renderConnectingModal(target, options = {}) {
+export function renderConnectingView(target, options = {}) {
   if (!target) return;
   const {
     variant = CONNECTING_VARIANT.DEFAULT,

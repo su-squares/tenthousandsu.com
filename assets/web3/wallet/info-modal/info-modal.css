@@ -2,18 +2,18 @@
 .wallet-helper-link {
   background: none;
   border: none;
-  color:  var(--color-accent);
+  color: var(--color-accent);
   font-weight: 700;
   cursor: pointer;
   text-decoration: none;
   margin-top: 0.5rem;
   display: inline-block;
   padding: 0.25rem 0;
-  font-size: .8rem;
+  font-size: 0.8rem;
 }
 
 .wallet-helper-link:hover {
-  color: #ccaa00; /* Darker yellow */
+  color: #ccaa00;
 }
 
 /* Checkmark list */
@@ -33,7 +33,7 @@
 
 .wallet-checklist-item::before {
   content: "✓";
-  color:  var(--color-accent);
+  color: var(--color-accent);
   font-weight: 700;
   font-size: 1.1rem;
   flex-shrink: 0;
@@ -45,10 +45,6 @@
   color: #fff;
   margin: 1rem 0;
   line-height: 1.5;
-}
-
-wallet-helper, p {
-  margin: .5rem;
 }
 
 /* Get a wallet button link */

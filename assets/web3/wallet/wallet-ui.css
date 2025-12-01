@@ -1,0 +1,8 @@
+@import url("/assets/web3/wallet/base/modal-shell.css");
+@import url("/assets/web3/wallet/connect-modal/views/list.css");
+@import url("/assets/web3/wallet/connect-modal/views/qr.css");
+@import url("/assets/web3/wallet/connect-modal/views/connecting.css");
+@import url("/assets/web3/wallet/connect-modal/views/error.css");
+@import url("/assets/web3/wallet/connect-modal/views/canceled.css");
+@import url("/assets/web3/wallet/account-modal/account-modal.css");
+@import url("/assets/web3/wallet/info-modal/info-modal.css");

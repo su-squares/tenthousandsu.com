@@ -1,0 +1,90 @@
+.wallet-connecting-heading {
+  display: flex;
+  justify-content: center;
+}
+
+.wallet-connecting-text {
+  display: inline-flex;
+  gap: 0.15rem;
+  align-items: center;
+  animation: walletConnectingCycle 3.5s ease-in-out infinite;
+  animation-delay: -0.6s;
+  animation-fill-mode: both;
+}
+
+.wallet-connecting-dots::after {
+  content: "";
+  display: inline-block;
+  width: 1.2rem;
+  text-align: left;
+  opacity: 0;
+  animation:
+    walletConnectingDots 3.5s steps(1, end) infinite,
+    walletConnectingFade 3.5s ease-in-out infinite;
+  animation-delay: -0.6s, -0.6s;
+  animation-fill-mode: both, both;
+}
+
+@keyframes walletConnectingCycle {
+  0% {
+    opacity: 0;
+  }
+  14% {
+    opacity: 1;
+  }
+  57% {
+    opacity: 1;
+  }
+  71% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes walletConnectingDots {
+  0%,
+  14% {
+    content: "";
+    opacity: 0;
+  }
+  20%,
+  26% {
+    content: ".";
+    opacity: 1;
+  }
+  26%,
+  34% {
+    content: "..";
+    opacity: 1;
+  }
+  34%,
+  71% {
+    content: "...";
+    opacity: 1;
+  }
+  71%,
+  100% {
+    content: "";
+    opacity: 0;
+  }
+}
+
+@keyframes walletConnectingFade {
+  0% {
+    opacity: 0;
+  }
+  14% {
+    opacity: 1;
+  }
+  57% {
+    opacity: 1;
+  }
+  71% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0;
+  }
+}

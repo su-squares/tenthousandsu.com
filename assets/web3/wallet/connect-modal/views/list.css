@@ -1,0 +1,56 @@
+.wallet-modal__logo {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.wallet-modal__logo img {
+  max-width: 80%;
+  height: auto;
+}
+
+.wallet-list {
+  display: grid;
+  gap: 0.6rem;
+  max-height: 250px;
+  overflow-y: auto;
+}
+
+.wallet-list button {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 0.85rem 1rem;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  color: #ffd700;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.wallet-list img {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.wallet-list button .wallet-btn-icon {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+  flex-shrink: 0;
+}
+
+.wallet-list button .wallet-btn-icon-placeholder {
+  width: 28px;
+  height: 28px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 520px) {
+  .wallet-list button {
+    justify-content: flex-start;
+    gap: 0.75rem;
+  }
+}

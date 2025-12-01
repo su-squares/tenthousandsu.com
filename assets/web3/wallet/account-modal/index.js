@@ -1,60 +1,41 @@
-import { enableSepolia } from "../config.js";
+import { enableSepolia } from "../../config.js";
 import {
   MAINNET_CHAIN_ID,
   SEPOLIA_CHAIN_ID,
   loadWagmiClient,
   truncateAddress,
-} from "./wagmi-client.js";
+} from "../wagmi-client.js";
 import {
   PREFERRED_CHAIN_LABEL,
   attemptNetworkSwitch,
   canSwitchNetwork,
   isAllowedChain,
-} from "./network.js";
-import { clearStoredSession, getStoredSession, openWalletDeepLink } from "./wc-store.js";
+} from "../network.js";
+import { clearStoredSession, getStoredSession, openWalletDeepLink } from "../wc-store.js";
+import { createModalShell } from "../base/modal-shell.js";
 
-let overlayEl = null;
-let modalEl = null;
-let contentEl = null;
+let shell = null;
 let wagmiClient = null;
 let lastDisplayData = null;
 
-function ensureElements() {
-  if (overlayEl) return;
-  overlayEl = document.createElement("div");
-  overlayEl.className = "wallet-overlay";
-  overlayEl.setAttribute("role", "dialog");
-  overlayEl.setAttribute("aria-modal", "true");
-  overlayEl.addEventListener("click", (event) => {
-    if (event.target === overlayEl) closeAccountModal();
+const ensureShell = () => {
+  if (shell) return shell;
+  shell = createModalShell({
+    onRequestClose: () => closeAccountModal(),
+    onOverlayDismiss: () => closeAccountModal(),
   });
+  return shell;
+};
 
-  modalEl = document.createElement("div");
-  modalEl.className = "wallet-modal";
-  contentEl = document.createElement("div");
-
-  const closeBtn = document.createElement("button");
-  closeBtn.className = "wallet-close";
-  closeBtn.type = "button";
-  closeBtn.setAttribute("aria-label", "Close");
-  closeBtn.textContent = "✕";
-  closeBtn.addEventListener("click", closeAccountModal);
-
-  modalEl.appendChild(closeBtn);
-  modalEl.appendChild(contentEl);
-  overlayEl.appendChild(modalEl);
-  document.body.appendChild(overlayEl);
-}
-
-function showOverlay() {
-  ensureElements();
-  overlayEl.classList.add("is-visible");
-}
+const showOverlay = () => {
+  const modalShell = ensureShell();
+  modalShell.show();
+};
 
 export function closeAccountModal() {
-  if (!overlayEl) return;
-  const wasVisible = overlayEl.classList.contains("is-visible");
-  overlayEl.classList.remove("is-visible");
+  if (!shell) return;
+  const wasVisible = shell.overlay.classList.contains("is-visible");
+  shell.hide();
   if (wasVisible) {
     document.dispatchEvent(
       new CustomEvent("wallet:modal-closed", { detail: { modal: "account" } })
@@ -110,7 +91,10 @@ async function fetchDisplayData(wagmi) {
 }
 
 function render({ account, network, ensName, balance }, options = {}) {
-  if (!contentEl) return;
+  const modalShell = ensureShell();
+  const target = modalShell.content;
+  if (!target) return;
+
   const { loadingEns = false, loadingBalance = false } = options;
   const chainId = network?.chain?.id;
   const onMainnet = chainId === MAINNET_CHAIN_ID;
@@ -124,7 +108,7 @@ function render({ account, network, ensName, balance }, options = {}) {
   const wcSession = getStoredSession();
   const switchable = canSwitchNetwork(wagmiClient);
 
-  contentEl.innerHTML = `
+  target.innerHTML = `
     <div class="wallet-modal__header">
       <h2>Wallet</h2>
     </div>
@@ -201,10 +185,10 @@ function render({ account, network, ensName, balance }, options = {}) {
     </div>
   `;
 
-  contentEl.querySelector("[data-copy]")?.addEventListener("click", () => {
+  target.querySelector("[data-copy]")?.addEventListener("click", () => {
     if (account?.address) navigator.clipboard.writeText(account.address);
   });
-  contentEl.querySelector("[data-disconnect]")?.addEventListener("click", async () => {
+  target.querySelector("[data-disconnect]")?.addEventListener("click", async () => {
     try {
       await wagmiClient?.disconnect();
     } catch (error) {
@@ -214,10 +198,10 @@ function render({ account, network, ensName, balance }, options = {}) {
     lastDisplayData = null;
     closeAccountModal();
   });
-  contentEl.querySelector("[data-open-wallet]")?.addEventListener("click", () => {
+  target.querySelector("[data-open-wallet]")?.addEventListener("click", () => {
     openWalletDeepLink(undefined, { userInitiated: true });
   });
-  const switchBtn = contentEl.querySelector("[data-switch-network]");
+  const switchBtn = target.querySelector("[data-switch-network]");
   if (switchBtn) {
     switchBtn.addEventListener("click", async () => {
       switchBtn.disabled = true;
