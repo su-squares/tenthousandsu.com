@@ -1,0 +1,8 @@
+{
+  "name": "storybook",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Storybook component documentation workspace",
+  "keywords": ["storybook", "components", "documentation"],
+  "author": "ritorhymes"
+}

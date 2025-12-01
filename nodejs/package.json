@@ -1,0 +1,15 @@
+{
+  "name": "tenthousandsu-support",
+  "private": true,
+  "version": "1.0.0",
+  "description": "Workspaces for Tenthousandsu.com build support and test tooling",
+  "keywords": ["tenthousandsu", "support", "builder", "vitest", "storybook", "playwright", "smart-contract"],
+  "scripts": {
+    "install:builder": "pnpm --filter builder install",
+    "install:playwright": "pnpm --filter playwright install",
+    "install:storybook": "pnpm --filter storybook install",
+    "install:vitest": "pnpm --filter vitest install",
+    "install:smart-contract": "pnpm --filter smart-contract install",
+    "install:all": "pnpm install"
+  }
+}

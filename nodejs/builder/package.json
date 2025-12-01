@@ -1,0 +1,25 @@
+{
+  "name": "builder",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Internal build workspace for browser ESM bundles",
+  "keywords": [ "builder","esbuild", "esm", "web3", "wagmi", "viem", "QR", "bundle" ],
+  "author": "ritorhymes",
+  "scripts": {
+    "build-wagmi": "esbuild src/wagmi-entry.js --bundle --format=esm --platform=browser --minify --sourcemap --outfile=dist/wagmi-bundle.js",
+    "build-qr": "esbuild src/qr-entry.js --bundle --format=esm --platform=browser --minify --sourcemap --outfile=dist/qr-creator-bundle.js",
+    "build-all": "pnpm build-wagmi && pnpm build-qr"
+  },
+  "dependencies": {
+    "@noble/hashes": "1.3.3",
+    "@wagmi/connectors": "3.1.11",
+    "@wagmi/core": "1.4.13",
+    "@walletconnect/ethereum-provider": "2.10.0",
+    "viem": "1.21.4",
+    "qr-creator": "1.0.0"
+  },
+  "devDependencies": {
+    "esbuild": "0.19.12"
+  }
+}

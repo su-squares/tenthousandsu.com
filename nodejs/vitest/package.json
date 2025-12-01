@@ -1,0 +1,8 @@
+{
+  "name": "vitest",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Vitest unit testing workspace",
+  "keywords": ["vitest", "testing", "unit-tests"],
+  "author": "ritorhymes"
+}

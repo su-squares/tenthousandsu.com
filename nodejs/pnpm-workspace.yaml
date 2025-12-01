@@ -1,0 +1,6 @@
+packages:
+  - 'builder'
+  - 'playwright'
+  - 'storybook'
+  - 'vitest'
+  - 'smart-contract'

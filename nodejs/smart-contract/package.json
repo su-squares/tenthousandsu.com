@@ -1,0 +1,8 @@
+{
+  "name": "smart-contract",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Smart contract development workspace",
+  "keywords": ["smart-contract", "blockchain", "web3"],
+  "author": "ritorhymes"
+}

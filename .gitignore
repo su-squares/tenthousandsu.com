@@ -3,3 +3,9 @@
 
 # Becuase GitHub Pages uses its own version and not the one in your lock file
 Gemfile.lock
+
+# Ignore node_modules from nodejs workspace
+**/node_modules/
+
+# Ignore builder output
+/nodejs/builder/dist/

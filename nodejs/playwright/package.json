@@ -1,0 +1,8 @@
+{
+  "name": "playwright",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Playwright testing workspace",
+  "keywords": ["playwright", "testing", "e2e"],
+  "author": "ritorhymes"
+}
