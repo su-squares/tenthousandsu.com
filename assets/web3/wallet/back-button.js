@@ -14,7 +14,7 @@ export function ensureBackButton(modalEl, onBack) {
     backBtn.className = "wallet-back";
     backBtn.setAttribute("aria-label", "Back");
     backBtn.textContent = "←";
-    modalEl.appendChild(backBtn);
+    modalEl.insertBefore(backBtn, modalEl.firstChild);
   }
   backBtn.style.display = onBack ? "block" : "none";
   backBtn.onclick = onBack || null;

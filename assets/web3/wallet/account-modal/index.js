@@ -107,12 +107,15 @@ function render({ account, network, ensName, balance }, options = {}) {
     ensName || (ensLoading ? "Fetching ENS..." : truncateAddress(account?.address || ""));
   const wcSession = getStoredSession();
   const switchable = canSwitchNetwork(wagmiClient);
+  const describedById = chainMismatch && !switchable ? "wallet-account-note" : "wallet-account-status";
+
+  modalShell.setAria({ labelledBy: "wallet-account-title", describedBy: describedById });
 
   target.innerHTML = `
     <div class="wallet-modal__header">
-      <h2>Wallet</h2>
+      <h2 id="wallet-account-title">Wallet</h2>
     </div>
-    <div class="wallet-status wallet-fade">
+    <div class="wallet-status wallet-fade" id="wallet-account-status">
       <div class="wallet-status__details">
         <div class="${ensLoading ? "wallet-placeholder" : ""}">${addressDisplay || "Not connected"}</div>
         <div class="wallet-small">${account?.address || ""}</div>
@@ -148,7 +151,7 @@ function render({ account, network, ensName, balance }, options = {}) {
     </div>
     ${
       chainMismatch && !switchable
-        ? `<div class="wallet-note">Switch networks in your wallet to continue.</div>`
+        ? `<div class="wallet-note" id="wallet-account-note">Switch networks in your wallet to continue.</div>`
         : ""
     }
     <div class="wallet-actions" style="margin-top: 1rem;">

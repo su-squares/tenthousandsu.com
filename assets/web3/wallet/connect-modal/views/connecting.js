@@ -24,13 +24,15 @@ export function renderConnectingView(target, options = {}) {
 
   target.innerHTML = `
     <div class="wallet-modal__header">
-      <h2 class="wallet-connecting-heading">
+      <h2 class="wallet-connecting-heading" id="wallet-connecting-title">
         <span class="wallet-connecting-text">
           <span>Connecting</span><span class="wallet-connecting-dots" aria-hidden="true"></span>
         </span>
       </h2>
     </div>
-    <p class="wallet-helper wallet-helper--spaced">Check your wallet to approve the request.</p>
+    <p class="wallet-helper wallet-helper--spaced" id="wallet-connecting-helper" aria-live="polite">
+      Check your wallet to approve the request.
+    </p>
     <div class="wallet-actions">
       <button class="wallet-btn wallet-btn--ghost" type="button" data-cancel>Cancel</button>
       ${

@@ -69,3 +69,11 @@
   border: 1px solid rgba(255, 255, 255, 0.35);
   box-sizing: border-box;
 }
+
+@media (prefers-reduced-motion: reduce) {
+  .wallet-qr__placeholder::after,
+  .wallet-qr__logo {
+    animation: none !important;
+    transition: none !important;
+  }
+}

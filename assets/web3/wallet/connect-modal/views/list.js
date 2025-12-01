@@ -80,7 +80,7 @@ export function renderListView(target, { connectors, onSelect, onOpenInfo }) {
       ${items}
     </div>
     <div class="wallet-helper">
-      <p>Use a browser wallet or WalletConnect on mobile.</p>
+      <p id="wallet-connect-helper">Use a browser wallet or WalletConnect on mobile.</p>
       <button type="button" class="wallet-helper-link" data-info-modal aria-controls="wallet-info-modal">
         Don't have a wallet yet?
       </button>
@@ -92,6 +92,19 @@ export function renderListView(target, { connectors, onSelect, onOpenInfo }) {
       const uid = btn.dataset.connectorUid;
       const targetConnector = connectors.find((c) => connectorUid(c) === uid);
       if (targetConnector) onSelect(targetConnector);
+    });
+
+    btn.addEventListener("keydown", (event) => {
+      if (event.key !== "ArrowDown" && event.key !== "ArrowUp") return;
+      event.preventDefault();
+      const buttons = Array.from(target.querySelectorAll("[data-connector-uid]"));
+      const currentIndex = buttons.indexOf(btn);
+      if (currentIndex === -1) return;
+      const nextIndex = event.key === "ArrowDown"
+        ? (currentIndex + 1) % buttons.length
+        : (currentIndex - 1 + buttons.length) % buttons.length;
+      const nextBtn = buttons[nextIndex];
+      if (nextBtn) nextBtn.focus();
     });
   });
 

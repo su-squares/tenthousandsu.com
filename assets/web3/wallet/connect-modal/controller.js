@@ -31,6 +31,7 @@ export function createConnectController(shell) {
 
     switch (state.view) {
       case "qr":
+        shell.setAria({ labelledBy: "wallet-qr-title", describedBy: undefined });
         shell.setBackHandler(() => {
           store.setState({ view: "list", qrUri: "", copied: false });
         });
@@ -44,6 +45,7 @@ export function createConnectController(shell) {
         });
         break;
       case "connecting":
+        shell.setAria({ labelledBy: "wallet-connecting-title", describedBy: "wallet-connecting-helper" });
         shell.setBackHandler(null);
         renderConnectingView(shell.content, {
           variant: state.connectingVariant || CONNECTING_VARIANT.DEFAULT,
@@ -54,6 +56,7 @@ export function createConnectController(shell) {
         });
         break;
       case "error":
+        shell.setAria({ labelledBy: "wallet-error-title", describedBy: "wallet-error-message" });
         shell.setBackHandler(null);
         renderErrorView(shell.content, {
           message: state.errorMessage,
@@ -61,11 +64,13 @@ export function createConnectController(shell) {
         });
         break;
       case "canceled":
+        shell.setAria({ labelledBy: "wallet-canceled-title", describedBy: "wallet-canceled-message" });
         shell.setBackHandler(null);
         renderCanceledView(shell.content, () => store.setState({ view: "list" }));
         break;
       case "list":
       default:
+        shell.setAria({ labelledBy: "wallet-connect-title", describedBy: "wallet-connect-helper" });
         shell.setBackHandler(null);
         renderListView(shell.content, {
           connectors,

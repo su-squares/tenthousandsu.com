@@ -6,9 +6,9 @@ export function renderCanceledView(target, onBack) {
   if (!target) return;
   target.innerHTML = `
     <div class="wallet-modal__header">
-      <h2>Request canceled</h2>
+      <h2 id="wallet-canceled-title">Request canceled</h2>
     </div>
-    <p class="wallet-helper">You denied the connection request.</p>
+    <p class="wallet-helper" id="wallet-canceled-message">You denied the connection request.</p>
     <div class="wallet-actions">
       <button class="wallet-btn" type="button" data-back>Back</button>
     </div>

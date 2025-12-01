@@ -9,6 +9,7 @@ const ensureShell = () => {
     id: "wallet-info-modal",
     onRequestClose: () => closeInfoModal(),
     onOverlayDismiss: () => closeInfoModal(),
+    mountImmediately: true,
   });
   return shell;
 };
@@ -24,9 +25,11 @@ function render(onBack) {
   const target = modalShell.content;
   if (!target) return;
 
+  modalShell.setAria({ labelledBy: "wallet-info-title", describedBy: "wallet-info-text" });
+
   target.innerHTML = `
     <div class="wallet-modal__header">
-      <h2>What does a wallet do?</h2>
+      <h2 id="wallet-info-title">What does a wallet do?</h2>
     </div>
 
     <div class="wallet-checklist">
@@ -36,7 +39,7 @@ function render(onBack) {
       <div class="wallet-checklist-item">Gives you an identity in the blockchain</div>
     </div>
 
-    <div class="wallet-info-text">
+    <div class="wallet-info-text" id="wallet-info-text">
       <p>You can get one as a standalone mobile app or a desktop browser extension.</p>
       <p>You need a wallet to own Squares.</p>
     </div>
@@ -67,3 +70,6 @@ export async function openInfoModal(onBack = null) {
     closeHandler = () => resolve();
   });
 }
+
+// Pre-mount the info modal shell so aria-controls references an existing element.
+ensureShell();

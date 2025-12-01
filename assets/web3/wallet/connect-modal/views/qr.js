@@ -9,7 +9,7 @@ export function renderQrView(target, state, actions) {
   if (!target) return;
   target.innerHTML = `
     <div class="wallet-modal__header">
-      <h2>Scan with wallet</h2>
+      <h2 id="wallet-qr-title">Scan with wallet</h2>
     </div>
     <div class="wallet-qr">
       <div class="wallet-qr__container">
@@ -20,7 +20,8 @@ export function renderQrView(target, state, actions) {
           id="wallet-qr-canvas"
           width="220"
           height="220"
-          aria-label="Wallet QR"
+          role="img"
+          aria-label="WalletConnect QR code for mobile wallet"
           style="display: none;"
         ></canvas>
         <img

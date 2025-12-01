@@ -141,6 +141,15 @@
   }
 }
 
+@media (prefers-reduced-motion: reduce) {
+  .wallet-overlay,
+  .wallet-modal,
+  .wallet-placeholder::after {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
 @media (max-width: 520px) {
   .wallet-actions {
     flex-direction: column;
