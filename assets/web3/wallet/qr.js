@@ -3,7 +3,7 @@
  * @module qr
  */
 
-const QR_LIB_URL = "https://cdn.jsdelivr.net/npm/qr-creator/dist/qr-creator.es6.min.js";
+const QR_LIB_URL = "/assets/web3/vendor/qr-creator-bundle.js";
 let qrLibPromise = null;
 
 async function loadQrLib() {
@@ -28,20 +28,23 @@ export async function renderQr(canvas, value) {
 
   const size = 220;
 
-  return QrCreator.render({
-    text: value,
-    size: size,
-    ecLevel: "H",
-    radius: 0.5,
-    fill: {
-      type: "linear-gradient",
-      position: [0, 0, 1, 1],
-      colorStops: [
-        [0, "#2d3c96"],
-        [1, "#d53392"]
-      ]
+  return QrCreator.render(
+    {
+      text: value,
+      size: size,
+      ecLevel: "M",
+      radius: 0.5,
+      fill: {
+        type: "linear-gradient",
+        position: [0, 0, 1, 1],
+        colorStops: [
+          [0, "#2d3c96"],
+          [1, "#d53392"]
+        ]
+      },
+      background: "#000000",
+      quiet: 2
     },
-    background: "#000000",
-    quiet: 2
-  }, canvas);
+    canvas
+  );
 }
