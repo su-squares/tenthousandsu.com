@@ -4,6 +4,9 @@
  * @module wc-store
  */
 
+const MOBILE_QUERY = "(max-width: 730px)";
+const SESSION_EVENT = "su-wc-session-change";
+
 const STORAGE_KEY = "su-wc-session";
 const TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
 
@@ -33,6 +36,30 @@ export function sanitizeUri(uri) {
   return uri;
 }
 
+function emitSessionChange(hasSession) {
+  try {
+    if (typeof window !== "undefined" && typeof window.dispatchEvent === "function") {
+      window.dispatchEvent(new CustomEvent(SESSION_EVENT, { detail: { hasSession } }));
+    }
+  } catch (_error) {
+    /* ignore event dispatch issues */
+  }
+}
+
+/** Basic mobile/touch capability check for WalletConnect deep links. */
+export function isWalletCapable() {
+  try {
+    const touch = typeof navigator !== "undefined" && navigator.maxTouchPoints > 0;
+    const media =
+      typeof window !== "undefined" &&
+      typeof window.matchMedia === "function" &&
+      window.matchMedia(MOBILE_QUERY).matches;
+    return Boolean(touch || media);
+  } catch (_error) {
+    return false;
+  }
+}
+
 /**
  * @returns {{ uri: string, topic: string | null, savedAt: number } | null}
  */
@@ -43,6 +70,7 @@ export function getStoredSession() {
     const parsed = JSON.parse(raw);
     if (!parsed?.savedAt || Date.now() - parsed.savedAt > TTL_MS) {
       localStorage.removeItem(STORAGE_KEY);
+      emitSessionChange(false);
       return null;
     }
     return {
@@ -65,6 +93,7 @@ export function rememberUri(uri) {
   const entry = { uri: sanitized, topic, savedAt: Date.now() };
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(entry));
+    emitSessionChange(true);
   } catch (_error) {
     /* ignore quota issues */
   }
@@ -80,6 +109,7 @@ export function rememberTopic(topic) {
   entry.savedAt = Date.now();
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(entry));
+    emitSessionChange(true);
   } catch (_error) {
     /* ignore */
   }
@@ -88,6 +118,7 @@ export function rememberTopic(topic) {
 export function clearStoredSession() {
   try {
     localStorage.removeItem(STORAGE_KEY);
+    emitSessionChange(false);
   } catch (_error) {
     /* ignore */
   }
@@ -96,12 +127,78 @@ export function clearStoredSession() {
 /**
  * Attempt to open the wallet app using the stored topic/uri.
  * @param {string=} fallbackUri
+ * @param {{ userInitiated?: boolean, failureTimeoutMs?: number }} [options]
  * @returns {boolean} true if we attempted a navigation
  */
-export function openWalletDeepLink(fallbackUri) {
+export function openWalletDeepLink(fallbackUri, options = {}) {
   const session = getStoredSession();
   const target = session?.uri || (session?.topic ? `wc:${session.topic}@2` : fallbackUri);
   if (!target) return false;
-  window.location.href = target;
+
+  const userInitiated = Boolean(options.userInitiated);
+  const failureTimeoutMs =
+    typeof options.failureTimeoutMs === "number" ? options.failureTimeoutMs : 1200;
+
+  let settled = false;
+  let timer = null;
+
+  const cleanup = () => {
+    if (timer) clearTimeout(timer);
+    window.removeEventListener("pagehide", handlePageHide);
+    document.removeEventListener("visibilitychange", handleVisibilityChange);
+  };
+
+  const handleFailure = () => {
+    if (settled) return;
+    settled = true;
+    if (userInitiated) {
+      window.alert(
+        "Mobile device not detected.\n\nThis button only works on mobile devices with wallet apps installed that can run WalletConnect.\n\nTo connect your wallet, please use a wallet browser extension instead or scan the QR with your mobile device."
+      );
+    } else {
+      console.info("WalletConnect deep link not handled by any registered app.");
+    }
+    cleanup();
+  };
+
+  const markSuccess = () => {
+    if (settled) return;
+    settled = true;
+    cleanup();
+  };
+
+  const handleVisibilityChange = () => {
+    if (document.visibilityState === "hidden") {
+      markSuccess();
+    }
+  };
+
+  const handlePageHide = () => {
+    markSuccess();
+  };
+
+  timer = window.setTimeout(() => {
+    if (!settled && document.visibilityState !== "hidden") {
+      handleFailure();
+    } else {
+      markSuccess();
+    }
+  }, failureTimeoutMs);
+
+  window.addEventListener("pagehide", handlePageHide);
+  document.addEventListener("visibilitychange", handleVisibilityChange);
+
+  try {
+    const link = document.createElement("a");
+    link.href = target;
+    link.style.display = "none";
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  } catch (_error) {
+    handleFailure();
+    return false;
+  }
+
   return true;
 }

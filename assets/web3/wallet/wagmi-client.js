@@ -104,7 +104,6 @@ export async function loadWagmiClient() {
 
     const mainnetRpc = [
       "https://eth.llamarpc.com",
-      "https://rpc.ankr.com/eth",
       "https://ethereum.publicnode.com",
       "https://cloudflare-eth.com",
     ];

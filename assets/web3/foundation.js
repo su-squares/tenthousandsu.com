@@ -146,8 +146,12 @@ export function clearCachedWalletSession() {
   clearStoredSession();
 }
 
+export function hasWalletConnectSession() {
+  return Boolean(getStoredSession());
+}
+
 export function openWalletFromStore() {
   const session = getStoredSession();
   if (!session) return false;
-  return openWalletDeepLink();
+  return openWalletDeepLink(undefined, { userInitiated: true });
 }

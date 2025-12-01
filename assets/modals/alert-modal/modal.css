@@ -10,7 +10,7 @@
   visibility: hidden;
   pointer-events: none;
   transition: opacity 0.3s ease, visibility 0.3s ease;
-  z-index: 10000;
+  z-index: 99999;
 }
 
 .su-alert-backdrop.is-visible {

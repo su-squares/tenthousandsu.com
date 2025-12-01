@@ -14,6 +14,15 @@ if (connectWalletButton) {
   let lastEnsAddress = null;
   let cachedEnsName = null;
 
+  const isWalletModalOpen = () => Boolean(document.querySelector(".wallet-overlay.is-visible"));
+  const releaseButtonIfIdle = () => {
+    if (!isWalletModalOpen()) {
+      connectWalletButton.disabled = false;
+    }
+  };
+
+  document.addEventListener("wallet:modal-closed", releaseButtonIfIdle);
+
   const updateButton = (account) => {
     if (!account?.isConnected) {
       connectWalletButton.innerText = "Connect\nWallet";
@@ -78,7 +87,7 @@ if (connectWalletButton) {
     } catch (error) {
       console.error(error);
     } finally {
-      connectWalletButton.disabled = false;
+      releaseButtonIfIdle();
     }
   });
 }

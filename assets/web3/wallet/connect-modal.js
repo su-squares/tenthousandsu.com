@@ -1,7 +1,7 @@
 import { loadWagmiClient } from "./wagmi-client.js";
 import { attemptNetworkSwitch } from "./network.js";
 import { renderQr as renderQrCanvas } from "./qr.js";
-import { rememberUri, rememberTopic, openWalletDeepLink } from "./wc-store.js";
+import { rememberUri, rememberTopic, openWalletDeepLink, isWalletCapable } from "./wc-store.js";
 import { openInfoModal } from "./info-modal.js";
 import {
   CONNECTING_VARIANT,
@@ -17,8 +17,6 @@ let connectorsRef = [];
 let onSelectRef = () => {};
 let onCloseRef = () => {};
 let backBtn = null;
-
-const MOBILE_QUERY = "(max-width: 730px)";
 
 const STATE = {
   view: "list",
@@ -36,10 +34,6 @@ const log = (...args) => {
 
 /** WalletConnect icon path */
 const WALLETCONNECT_ICON = "/assets/images/walletconnect.png";
-
-function isMobile() {
-  return window.matchMedia && window.matchMedia(MOBILE_QUERY).matches;
-}
 
 function ensureElements() {
   if (overlayEl) return;
@@ -77,6 +71,7 @@ function showOverlay() {
 
 export function closeConnectModal() {
   if (!overlayEl) return;
+  const wasVisible = overlayEl.classList.contains("is-visible");
   overlayEl.classList.remove("is-visible");
   STATE.view = "list";
   STATE.qrUri = "";
@@ -84,6 +79,11 @@ export function closeConnectModal() {
   STATE.connectingName = "";
   STATE.connectingVariant = CONNECTING_VARIANT.DEFAULT;
   STATE.errorMessage = "";
+  if (wasVisible) {
+    document.dispatchEvent(
+      new CustomEvent("wallet:modal-closed", { detail: { modal: "connect" } })
+    );
+  }
   if (closeHandler) closeHandler();
 }
 
@@ -327,7 +327,7 @@ function render(connectors = [], onSelect = () => {}, onClose = () => {}) {
             navigator.clipboard.writeText(STATE.qrUri).then(() => setCopied(true));
           }
         },
-        () => openWalletDeepLink(STATE.qrUri)
+        () => openWalletDeepLink(STATE.qrUri, { userInitiated: true })
       );
       break;
     case "connecting":
@@ -339,7 +339,7 @@ function render(connectors = [], onSelect = () => {}, onClose = () => {}) {
           setView("list");
           onCloseRef();
         },
-        onOpenWallet: () => openWalletDeepLink(STATE.qrUri),
+        onOpenWallet: () => openWalletDeepLink(STATE.qrUri, { userInitiated: true }),
         onShowQr: () => setView("qr"),
       });
       break;
@@ -426,7 +426,7 @@ export async function openConnectModal() {
     let removeDisplayListener = null;
     try {
       const isWalletConnect = connector.id === "walletConnect";
-      const mobile = isMobile();
+      const mobileCapable = isWalletCapable();
 
       if (isWalletConnect) {
         const provider = await connector.getProvider();
@@ -436,8 +436,8 @@ export async function openConnectModal() {
             const stored = rememberUri(uri);
             setQr(stored.uri);
             rememberTopic(stored.topic);
-            if (mobile) {
-              openWalletDeepLink(stored.uri);
+            if (mobileCapable) {
+              openWalletDeepLink(stored.uri, { userInitiated: false });
               setView("connecting");
             } else {
               setView("qr");
@@ -453,8 +453,10 @@ export async function openConnectModal() {
           };
         }
 
-        setConnectingVariant(mobile ? CONNECTING_VARIANT.WALLETCONNECT : CONNECTING_VARIANT.DEFAULT);
-        if (mobile) {
+        setConnectingVariant(
+          mobileCapable ? CONNECTING_VARIANT.WALLETCONNECT : CONNECTING_VARIANT.DEFAULT
+        );
+        if (mobileCapable) {
           setView("connecting");
         } else {
           setView("qr");

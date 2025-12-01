@@ -53,7 +53,13 @@ function showOverlay() {
 
 export function closeAccountModal() {
   if (!overlayEl) return;
+  const wasVisible = overlayEl.classList.contains("is-visible");
   overlayEl.classList.remove("is-visible");
+  if (wasVisible) {
+    document.dispatchEvent(
+      new CustomEvent("wallet:modal-closed", { detail: { modal: "account" } })
+    );
+  }
 }
 
 async function fetchDisplayData(wagmi) {
@@ -209,7 +215,7 @@ function render({ account, network, ensName, balance }, options = {}) {
     closeAccountModal();
   });
   contentEl.querySelector("[data-open-wallet]")?.addEventListener("click", () => {
-    openWalletDeepLink();
+    openWalletDeepLink(undefined, { userInitiated: true });
   });
   const switchBtn = contentEl.querySelector("[data-switch-network]");
   if (switchBtn) {
