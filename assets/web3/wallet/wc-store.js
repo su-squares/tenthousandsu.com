@@ -9,6 +9,10 @@ const SESSION_EVENT = "su-wc-session-change";
 
 const STORAGE_KEY = "su-wc-session";
 const TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+const DEBUG = Boolean(typeof window !== "undefined" && window?.suWeb3?.debug);
+const log = (...args) => {
+  if (DEBUG) console.debug("[wc-store]", ...args);
+};
 
 /**
  * @param {string} uri
@@ -25,14 +29,16 @@ export function extractTopic(uri) {
 }
 
 /**
+ * Normalize a WalletConnect URI to a topic-only form for storage.
+ * Keeps query params/symKey out of persistence.
  * @param {string} uri
  * @returns {string}
  */
 export function sanitizeUri(uri) {
   if (!uri) return uri;
-  if (uri.startsWith("wc:") && !uri.includes("http")) return uri;
   const topic = extractTopic(uri);
   if (topic) return `wc:${topic}@2`;
+  if (uri.startsWith("wc:") && !uri.includes("http")) return uri;
   return uri;
 }
 
@@ -69,6 +75,7 @@ export function getStoredSession() {
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     if (!parsed?.savedAt || Date.now() - parsed.savedAt > TTL_MS) {
+      log("session expired, clearing");
       localStorage.removeItem(STORAGE_KEY);
       emitSessionChange(false);
       return null;
@@ -88,16 +95,19 @@ export function getStoredSession() {
  * @returns {{ uri: string, topic: string | null, savedAt: number }}
  */
 export function rememberUri(uri) {
-  const sanitized = sanitizeUri(uri);
-  const topic = extractTopic(sanitized);
-  const entry = { uri: sanitized, topic, savedAt: Date.now() };
+  // Keep the full URI available to immediate callers (for pairing),
+  // but only persist a topic-only version to storage.
+  const persistedUri = sanitizeUri(uri);
+  const topic = extractTopic(uri);
+  const entry = { uri: persistedUri, topic, savedAt: Date.now() };
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(entry));
+    log("remembered session", { topic: topic ? topic.slice(0, 8) : null, persisted: true });
     emitSessionChange(true);
   } catch (_error) {
     /* ignore quota issues */
   }
-  return entry;
+  return { ...entry, uri: uri || persistedUri };
 }
 
 /** @param {string|null} topic */
@@ -109,6 +119,7 @@ export function rememberTopic(topic) {
   entry.savedAt = Date.now();
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(entry));
+    log("updated session topic", { topic: topic ? topic.slice(0, 8) : null });
     emitSessionChange(true);
   } catch (_error) {
     /* ignore */
@@ -118,6 +129,7 @@ export function rememberTopic(topic) {
 export function clearStoredSession() {
   try {
     localStorage.removeItem(STORAGE_KEY);
+    log("cleared session from storage");
     emitSessionChange(false);
   } catch (_error) {
     /* ignore */
@@ -132,7 +144,8 @@ export function clearStoredSession() {
  */
 export function openWalletDeepLink(fallbackUri, options = {}) {
   const session = getStoredSession();
-  const target = session?.uri || (session?.topic ? `wc:${session.topic}@2` : fallbackUri);
+  // Prefer the provided URI (with symKey) when available, otherwise fall back to stored/topic-only.
+  const target = fallbackUri || session?.uri || (session?.topic ? `wc:${session.topic}@2` : null);
   if (!target) return false;
 
   const userInitiated = Boolean(options.userInitiated);
@@ -187,6 +200,12 @@ export function openWalletDeepLink(fallbackUri, options = {}) {
 
   window.addEventListener("pagehide", handlePageHide);
   document.addEventListener("visibilitychange", handleVisibilityChange);
+
+  log("attempting deep link", {
+    source: fallbackUri ? "fallback" : session?.uri ? "stored" : "topic-only",
+    hasTopic: Boolean(session?.topic || extractTopic(fallbackUri)),
+    userInitiated,
+  });
 
   try {
     const link = document.createElement("a");

@@ -5,13 +5,14 @@ import {
   loadWagmiClient,
   truncateAddress,
 } from "../wagmi-client.js";
+import { clearAllWalletStorage } from "../../foundation.js";
 import {
   PREFERRED_CHAIN_LABEL,
   attemptNetworkSwitch,
   canSwitchNetwork,
   isAllowedChain,
 } from "../network.js";
-import { clearStoredSession, getStoredSession, openWalletDeepLink } from "../wc-store.js";
+import { getStoredSession, openWalletDeepLink } from "../wc-store.js";
 import { createModalShell } from "../base/modal-shell.js";
 
 let shell = null;
@@ -197,7 +198,7 @@ function render({ account, network, ensName, balance }, options = {}) {
     } catch (error) {
       console.warn("Disconnect failed", error);
     }
-    clearStoredSession();
+    clearAllWalletStorage();
     lastDisplayData = null;
     closeAccountModal();
   });
