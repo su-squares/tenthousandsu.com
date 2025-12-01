@@ -36,8 +36,8 @@ export function createModalShell(options = {}) {
   let lastFocusedElement = null;
   const hide = () => {
     overlay.classList.remove("is-visible");
-    overlay.setAttribute("aria-hidden", "true");
-    overlay.hidden = true;
+
+    // Restore focus FIRST, before setting aria-hidden
     if (lastFocusedElement && typeof lastFocusedElement.focus === "function") {
       try {
         lastFocusedElement.focus();
@@ -45,6 +45,10 @@ export function createModalShell(options = {}) {
         /* ignore focus errors */
       }
     }
+
+    // Now safe to hide from assistive tech
+    overlay.setAttribute("aria-hidden", "true");
+    overlay.hidden = true;
   };
   let onRequestClose = options.onRequestClose || hide;
 
