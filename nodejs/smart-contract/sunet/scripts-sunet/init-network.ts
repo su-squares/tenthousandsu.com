@@ -103,6 +103,9 @@ async function init() {
   initGenesis();
   cloneBlockscoutIfMissing();
 
+  const blockscoutPort = process.env.BLOCKSCOUT_PORT || '4001';
+  console.log(chalk.gray(`Blockscout will be exposed on host port ${blockscoutPort} (mapping ${blockscoutPort}:80).`));
+
   console.log(chalk.green('\n✅ SuNet setup complete.'));
   console.log(chalk.cyan('\nNext steps:'));
   console.log(chalk.white('  pnpm run sunet:start:node      # start Besu only'));

@@ -8,12 +8,9 @@ function qbftExtraData(validators: string[]) {
   const validatorsBytes = validators.map((v) => ethers.getBytes(ethers.getAddress(v)));
   
   // QBFT extra data format: [vanity, [validators], votes, round, seals]
-  // - votes must be an empty LIST (not empty bytes)
-  // - round is 0 encoded as empty bytes (RLP encoding of 0 is 0x80)
-  // - seals must be an empty LIST (not empty bytes)
-  const votes: string[] = [];           // Empty list encodes to 0xc0
-  const round = new Uint8Array(0);      // 0 encodes as empty bytes in RLP
-  const seals: string[] = [];           // Empty list encodes to 0xc0
+  const votes: string[] = [];
+  const round = new Uint8Array(0);
+  const seals: string[] = [];
   
   return ethers.encodeRlp([vanity, validatorsBytes, votes, round, seals]);
 }
@@ -47,6 +44,8 @@ export function generateGenesis() {
 
   const requestTimeout = Math.max(blockTime * 3, 10);
 
+  // Pre-merge genesis for QBFT consensus (no terminalTotalDifficulty, no shanghaiTime/cancunTime)
+  // This lets QBFT drive block production without needing an external consensus client
   const genesis = {
     config: {
       chainId,
@@ -60,12 +59,7 @@ export function generateGenesis() {
       istanbulBlock: 0,
       berlinBlock: 0,
       londonBlock: 0,
-      arrowGlacierBlock: 0,
-      grayGlacierBlock: 0,
-      mergeNetsplitBlock: 0,
-      shanghaiTime: 0,
-      cancunTime: 0,
-      terminalTotalDifficulty: 0,
+      zeroBaseFee: true,
       qbft: {
         blockperiodseconds: blockTime,
         epochlength: 30000,
@@ -78,9 +72,8 @@ export function generateGenesis() {
     timestamp: `0x${genesisTimestamp.toString(16)}`,
     gasLimit: '0x1c9c380',
     difficulty: '0x1',
-    mixHash: '0x63746963616c2d62792042657375',
+    mixHash: '0x63746963616c2062797a616e74696e65206661756c7420746f6c6572616e6365',
     coinbase: '0x0000000000000000000000000000000000000000',
-    baseFeePerGas: '0x3b9aca00',
     alloc,
     extraData
   };

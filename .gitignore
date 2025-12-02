@@ -19,3 +19,6 @@ nodejs/smart-contract/sunet/data
 nodejs/smart-contract/sunet/data/besu
 nodejs/smart-contract/sunet/config
 nodejs/smart-contract/sunet/blockscout
+nodejs/smart-contract/contracts-deployed/
+nodejs/smart-contract/artifacts/
+nodejs/smart-contract/cache/

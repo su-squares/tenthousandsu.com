@@ -170,7 +170,7 @@ services:
       file: ../blockscout/docker-compose/services/nginx.yml
       service: proxy
     ports:
-      - "${BLOCKSCOUT_PORT:-4000}:80"
+      - "${BLOCKSCOUT_PORT:-4001}:80"
     networks:
       - sunet
 

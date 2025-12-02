@@ -20,12 +20,25 @@
     "sunet:generate:genesis": "ts-node sunet/scripts-sunet/generate-genesis.ts",
     "sunet:reveal:key": "ts-node sunet/scripts-sunet/reveal-key.ts",
     "sunet:reveal:address": "ts-node sunet/scripts-sunet/reveal-address.ts",
-    "--- Smart Contract Scripts ---": ":"
+    "--- Smart Contract Scripts ---": ":",
+    "hardhat": "hardhat",
+    "compile": "hardhat compile",
+    "clean": "hardhat clean",
+    "deploy:sepolia:primary": "hardhat run scripts/deploy-primary.ts --network sepolia",
+    "deploy:sepolia:underlay": "hardhat run scripts/deploy-underlay.ts --network sepolia",
+    "deploy:sepolia:all": "hardhat run scripts/deploy-all.ts --network sepolia",
+    "deploy:sunet:primary": "hardhat run scripts/deploy-primary.ts --network sunet",
+    "deploy:sunet:underlay": "hardhat run scripts/deploy-underlay.ts --network sunet",
+    "deploy:sunet:all": "hardhat run scripts/deploy-all.ts --network sunet"
   },
   "devDependencies": {
+    "@nomicfoundation/hardhat-ethers": "^3.0.6",
+    "@nomicfoundation/hardhat-verify": "^2.0.8",
     "@types/fs-extra": "^11.0.4",
     "@types/node": "^20.10.0",
     "@types/prompts": "^2.4.9",
+    "hardhat": "^2.22.8",
+    "hardhat-gas-reporter": "^1.0.10",
     "ts-node": "^10.9.1",
     "typescript": "^5.3.0"
   },
