@@ -7,5 +7,15 @@ Gemfile.lock
 # Ignore node_modules from nodejs workspace
 **/node_modules/
 
+### Builder workspace ###
+
 # Ignore builder output
 /nodejs/builder/dist/
+
+
+### Smart Contract workspace ###
+.env
+nodejs/smart-contract/sunet/data
+nodejs/smart-contract/sunet/data/besu
+nodejs/smart-contract/sunet/config
+nodejs/smart-contract/sunet/blockscout

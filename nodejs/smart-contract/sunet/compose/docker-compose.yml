@@ -1,0 +1,184 @@
+services:
+  besu:
+    image: hyperledger/besu:25.11.0
+    container_name: sunet-besu
+    command: >
+      --data-path=/data
+      --genesis-file=/config/genesis.json
+      --rpc-http-enabled
+      --rpc-http-host=0.0.0.0
+      --rpc-http-port=${RPC_PORT:-8545}
+      --rpc-http-api=ETH,NET,WEB3,DEBUG,TRACE,TXPOOL
+      --rpc-ws-enabled
+      --rpc-ws-host=0.0.0.0
+      --rpc-ws-port=${RPC_WS_PORT:-8546}
+      --rpc-ws-api=ETH,NET,WEB3,DEBUG,TRACE,TXPOOL
+      --host-allowlist=*
+      --rpc-http-cors-origins=*
+      --p2p-port=${P2P_PORT:-30303}
+      --p2p-host=0.0.0.0
+      --discovery-enabled=false
+      --min-gas-price=0
+      --sync-mode=FULL
+      --data-storage-format=FOREST
+      --node-private-key-file=/config/keys/validator.key
+      --logging=INFO
+    volumes:
+      - ../data/besu:/data
+      - ../config:/config:ro
+    ports:
+      - "${RPC_PORT:-8545}:8545"
+      - "${RPC_WS_PORT:-8546}:8546"
+      - "${P2P_PORT:-30303}:30303"
+    environment:
+      - LOCAL_CHAIN_ID=${LOCAL_CHAIN_ID:-1337}
+      - BLOCK_TIME=${BLOCK_TIME:-5}
+    networks:
+      - sunet
+
+  redis-db:
+    extends:
+      file: ../blockscout/docker-compose/services/redis.yml
+      service: redis-db
+    networks:
+      - sunet
+
+  db-init:
+    extends:
+      file: ../blockscout/docker-compose/services/db.yml
+      service: db-init
+    networks:
+      - sunet
+
+  db:
+    depends_on:
+      db-init:
+        condition: service_completed_successfully
+    extends:
+      file: ../blockscout/docker-compose/services/db.yml
+      service: db
+    networks:
+      - sunet
+
+  backend:
+    depends_on:
+      - db
+      - redis-db
+      - besu
+    extends:
+      file: ../blockscout/docker-compose/services/backend.yml
+      service: backend
+    build:
+      context: ../blockscout
+      dockerfile: ./docker/Dockerfile
+      args:
+        RELEASE_VERSION: ${BLOCKSCOUT_TAG:-v9.2.2}
+    links:
+      - db:database
+    environment:
+      - ETHEREUM_JSONRPC_HTTP_URL=http://besu:8545
+      - ETHEREUM_JSONRPC_TRACE_URL=http://besu:8545
+      - ETHEREUM_JSONRPC_WS_URL=ws://besu:8546
+      - CHAIN_ID=${LOCAL_CHAIN_ID:-1337}
+      - NETWORK=${NETWORK_NAME:-SuNet Devnet}
+      - SUBNETWORK=${SUBNETWORK:-Local}
+      - COIN=${COIN_NAME:-SUNE}
+      - COIN_SYMBOL=${COIN_SYMBOL:-SUNE}
+    networks:
+      - sunet
+
+  nft_media_handler:
+    depends_on:
+      - backend
+    extends:
+      file: ../blockscout/docker-compose/services/nft_media_handler.yml
+      service: nft_media_handler
+    build:
+      context: ../blockscout
+      dockerfile: ./docker/Dockerfile
+      args:
+        RELEASE_VERSION: ${BLOCKSCOUT_TAG:-v9.2.2}
+    networks:
+      - sunet
+
+  visualizer:
+    extends:
+      file: ../blockscout/docker-compose/services/visualizer.yml
+      service: visualizer
+    networks:
+      - sunet
+
+  sig-provider:
+    extends:
+      file: ../blockscout/docker-compose/services/sig-provider.yml
+      service: sig-provider
+    networks:
+      - sunet
+
+  frontend:
+    depends_on:
+      - backend
+    extends:
+      file: ../blockscout/docker-compose/services/frontend.yml
+      service: frontend
+    networks:
+      - sunet
+
+  stats-db-init:
+    extends:
+      file: ../blockscout/docker-compose/services/stats.yml
+      service: stats-db-init
+    networks:
+      - sunet
+
+  stats-db:
+    depends_on:
+      stats-db-init:
+        condition: service_completed_successfully
+    extends:
+      file: ../blockscout/docker-compose/services/stats.yml
+      service: stats-db
+    networks:
+      - sunet
+
+  stats:
+    depends_on:
+      - stats-db
+      - backend
+    extends:
+      file: ../blockscout/docker-compose/services/stats.yml
+      service: stats
+    networks:
+      - sunet
+
+  user-ops-indexer:
+    depends_on:
+      - db
+      - backend
+    extends:
+      file: ../blockscout/docker-compose/services/user-ops-indexer.yml
+      service: user-ops-indexer
+    networks:
+      - sunet
+
+  proxy:
+    depends_on:
+      - backend
+      - frontend
+      - stats
+    extends:
+      file: ../blockscout/docker-compose/services/nginx.yml
+      service: proxy
+    ports:
+      - "${BLOCKSCOUT_PORT:-4000}:80"
+    networks:
+      - sunet
+
+networks:
+  sunet:
+    driver: bridge
+
+volumes:
+  blockscout-db-data:
+  redis-data:
+  stats-db-data:
