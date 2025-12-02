@@ -160,6 +160,14 @@
   gap: .5rem;
 }
 
+/* Narrow variant with 500px max-width for focused square lookup pages.
+   This variant centers the component when needed to align with other centered elements. */
+.square-lookup--narrow {
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
 .square-lookup__controls {
   display: flex;
   flex-wrap: wrap;

@@ -12,6 +12,9 @@ layout: null
   <link rel="stylesheet" href="assets/css/main.css">
   <link rel="stylesheet" href="assets/css/square.css">
   <link rel="stylesheet" href="assets/css/chooser.css">
+  <link rel="stylesheet" href="/assets/modals/leaving-modal/modal.css">
+  <script src="/assets/modals/leaving-modal/modal-core.js"></script>
+  <script src="/assets/modals/leaving-modal/link-guard.js"></script>
   {% include nav-menu-head.html %}
   {% include alert-modal-head.html %}
   {% include offline-modal-head.html %}
@@ -37,6 +40,11 @@ layout: null
       </dl>
     </div>
 
+    <div id="etherscan-button-wrapper" style="text-align:center; margin: 1.5rem 0;">
+      <a id="view-etherscan" class="btn btn-lg square-lookup__submit" href="#" target="_blank" rel="noopener"
+        style="display:none;">View NFT on Etherscan</a>
+    </div>
+
     <h2>Location</h2>
     <div style="position:relative;height:1000px; zoom: 0.5">
       <img id="theImage" src="build/wholeSquare.webp" alt="All Su Squares" style="height:1000px; width:1000px">
@@ -48,7 +56,7 @@ layout: null
     <button class="btn" id="copy-emojified">Copy</button>
   </article>
 
-  {% include square-lookup.html %}
+  {% include square-lookup.html variant="narrow" %}
 
   <footer>
     <small>
@@ -65,6 +73,8 @@ layout: null
     const squareNumber = parseInt(window.location.hash.substring(1));
     const personalizations = fetch('build/squarePersonalizations.json').then(response => response.json());
     const extras = fetch('build/squareExtra.json').then(response => response.json());
+    const CONTRACT_ADDRESS = '0xE9e3F9cfc1A64DFca53614a0182CFAD56c10624F';
+    const ETHERSCAN_BASE = 'https://etherscan.io';
 
     Promise.all([personalizations, extras]).then(([personalizations, extras]) => {
       // Each personalization is [title, href] or null
@@ -75,16 +85,45 @@ layout: null
       elSquareNumber.innerText = squareNumber;
 
       const elMinted = document.getElementById('minted');
-      elMinted.innerText = extras[squareNumber - 1] ? `Block ${extras[squareNumber - 1][0]}` : 'Not minted';
+      const elViewEtherscan = document.getElementById('view-etherscan');
+      const mintedData = extras[squareNumber - 1];
+      const isMinted = Boolean(mintedData);
+      if (isMinted) {
+        const mintedBlock = mintedData[0];
+        elMinted.innerHTML = `<a href="${ETHERSCAN_BASE}/block/${mintedBlock}" target="_blank" rel="noopener">Block ${mintedBlock}</a>`;
+        elViewEtherscan.href = `${ETHERSCAN_BASE}/token/${CONTRACT_ADDRESS}?a=${squareNumber}`;
+        elViewEtherscan.style.display = 'inline-block';
+      } else {
+        elMinted.innerText = 'Not minted';
+        elViewEtherscan.style.display = 'none';
+      }
 
       const elPersonalized = document.getElementById('personalized');
-      elPersonalized.innerText = extras[squareNumber - 1] ? `Block ${extras[squareNumber - 1][1]}` : 'Not personalized';
+      if (isMinted && mintedData[2]) {
+        const personalizedBlock = mintedData[1];
+        elPersonalized.innerHTML = `<a href="${ETHERSCAN_BASE}/block/${personalizedBlock}" target="_blank" rel="noopener">Block ${personalizedBlock}</a>`;
+      } else {
+        elPersonalized.innerText = 'Not personalized';
+      }
 
+      const personalization = personalizations[squareNumber - 1];
       const elTitle = document.getElementById('title');
-      elTitle.innerText = personalizations[squareNumber - 1] ? personalizations[squareNumber - 1][0] : 'Not personalized';
+      elTitle.innerText = personalization ? personalization[0] : 'Not personalized';
 
       const elLink = document.getElementById('link');
-      elLink.innerText = personalizations[squareNumber - 1] ? personalizations[squareNumber - 1][1] : 'Not personalized';
+      const hasPersonalizationLink = isMinted && personalization && personalization[1];
+      if (hasPersonalizationLink) {
+        const href = personalization[1];
+        elLink.innerHTML = `<a id="square-out-link" href="${href}" target="_blank" rel="noopener">${href}</a>`;
+        const guardedAnchor = document.getElementById('square-out-link');
+        if (window.SuLeavingLinkGuard && typeof window.SuLeavingLinkGuard.guardLink === 'function') {
+          window.SuLeavingLinkGuard.guardLink(guardedAnchor);
+        } else if (window.SuLeavingModal && typeof window.SuLeavingModal.gateAnchor === 'function') {
+          window.SuLeavingModal.gateAnchor(guardedAnchor);
+        }
+      } else {
+        elLink.innerText = 'Not personalized';
+      }
 
       const elEmojified = document.getElementById('emojified');
 
