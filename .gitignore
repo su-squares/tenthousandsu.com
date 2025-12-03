@@ -15,6 +15,8 @@ Gemfile.lock
 
 ### Smart Contract workspace ###
 .env
+.env.sunet
+.env.contract
 nodejs/smart-contract/sunet/data
 nodejs/smart-contract/sunet/data/besu
 nodejs/smart-contract/sunet/config

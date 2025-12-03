@@ -23,6 +23,11 @@ services:
       --data-storage-format=FOREST
       --node-private-key-file=/config/keys/validator.key
       --logging=INFO
+      --rpc-http-max-active-connections=500
+      --rpc-http-max-batch-size=1000
+      --tx-pool=sequenced
+      --tx-pool-max-size=20000
+      --tx-pool-limit-by-account-percentage=1.0
     volumes:
       - ../data/besu:/data
       - ../config:/config:ro

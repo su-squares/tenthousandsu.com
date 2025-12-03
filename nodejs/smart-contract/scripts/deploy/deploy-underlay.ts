@@ -1,11 +1,12 @@
+import chalk from "chalk";
 import { ethers, network } from "hardhat";
 import {
   readDeployment,
   verifyContractIfPossible,
   writeDeployment,
-} from "./helpers/deployments";
-import { ensureNetworkIsReachable, ensureSunetReady } from "./helpers/network";
-import { SunetEnv } from "./helpers/env";
+} from "@script-utils/deployments";
+import { ensureNetworkIsReachable, ensureSunetReady } from "@script-utils/network";
+import { SunetEnv } from "@script-utils/env";
 
 type DeployUnderlayOptions = {
   primaryAddress?: string;
@@ -37,7 +38,7 @@ export async function deployUnderlay(
     primaryAddress = primaryDeployment?.address;
     if (!primaryAddress) {
       throw new Error(
-        `Primary contract is not deployed for ${network.name}. Deploy primary first or run scripts/deploy-all.ts.`,
+        `Primary contract is not deployed for ${network.name}. Deploy primary first or run scripts/deploy/deploy-all.ts.`,
       );
     }
   }
@@ -50,7 +51,9 @@ export async function deployUnderlay(
 
   const [deployer] = await ethers.getSigners();
   console.log(
-    `Deploying SuSquaresUnderlay to ${network.name} (chainId ${chainId}) using primary at ${primaryAddress}`,
+    chalk.cyan(
+      `Deploying SuSquaresUnderlay to ${chalk.bold(network.name)} (chainId ${chainId}) using primary at ${chalk.bold(primaryAddress)}`,
+    ),
   );
 
   const contract = await ethers.deployContract("SuSquaresUnderlay", [primaryAddress]);
@@ -59,7 +62,7 @@ export async function deployUnderlay(
   await contract.waitForDeployment();
 
   const address = await contract.getAddress();
-  console.log(`SuSquaresUnderlay deployed at ${address}`);
+  console.log(chalk.green(`SuSquaresUnderlay deployed at ${chalk.bold(address)}`));
 
   const verification = await verifyContractIfPossible({
     contractName: "SuSquaresUnderlay",
@@ -90,7 +93,7 @@ async function main(): Promise<void> {
 
 if (require.main === module) {
   main().catch((error) => {
-    console.error(error);
-    process.exitCode = 1;
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exit(1);
   });
 }

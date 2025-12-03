@@ -11,7 +11,7 @@ export function requireSunetEnv(): SunetEnv {
   const env = loadSunetEnv({ required: true });
   if (!env) {
     throw new Error(
-      `SuNet .env is missing or empty. Run pnpm run sunet:setup and read ${SUNET_README_PATH}.`,
+      `SuNet .env.sunet is missing or empty. Run pnpm run sunet:setup and read ${SUNET_README_PATH}.`,
     );
   }
   return env;

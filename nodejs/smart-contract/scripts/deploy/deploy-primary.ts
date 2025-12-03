@@ -1,7 +1,8 @@
+import chalk from "chalk";
 import { ethers, network } from "hardhat";
-import { verifyContractIfPossible, writeDeployment } from "./helpers/deployments";
-import { ensureNetworkIsReachable, ensureSunetReady } from "./helpers/network";
-import { SunetEnv } from "./helpers/env";
+import { verifyContractIfPossible, writeDeployment } from "@script-utils/deployments";
+import { ensureNetworkIsReachable, ensureSunetReady } from "@script-utils/network";
+import { SunetEnv } from "@script-utils/env";
 
 type DeployResult = {
   address: string;
@@ -22,7 +23,9 @@ export async function deployPrimary(): Promise<DeployResult> {
   const chainId = Number(chain.chainId);
 
   console.log(
-    `Deploying SuMain to ${network.name} (chainId ${chainId}) with deployer ${deployer.address}`,
+    chalk.cyan(
+      `Deploying SuMain to ${chalk.bold(network.name)} (chainId ${chainId}) with deployer ${chalk.bold(deployer.address)}`,
+    ),
   );
 
   const contract = await ethers.deployContract("SuMain");
@@ -31,7 +34,7 @@ export async function deployPrimary(): Promise<DeployResult> {
   await contract.waitForDeployment();
 
   const address = await contract.getAddress();
-  console.log(`SuMain deployed at ${address}`);
+  console.log(chalk.green(`SuMain deployed at ${chalk.bold(address)}`));
 
   const verification = await verifyContractIfPossible({
     contractName: "SuMain",
@@ -61,7 +64,7 @@ async function main(): Promise<void> {
 
 if (require.main === module) {
   main().catch((error) => {
-    console.error(error);
-    process.exitCode = 1;
+    console.error(error instanceof Error ? error.message : String(error));
+    process.exit(1);
   });
 }

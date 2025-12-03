@@ -4,7 +4,7 @@ import dotenv from 'dotenv';
 import chalk from 'chalk';
 
 export const sunetRoot = path.join(__dirname, '..');
-export const envPath = path.join(sunetRoot, '.env');
+export const envPath = path.join(sunetRoot, '.env.sunet');
 export const configDir = path.join(sunetRoot, 'config');
 export const dataDir = path.join(sunetRoot, 'data');
 export const keysDir = path.join(configDir, 'keys');
@@ -23,13 +23,13 @@ export function ensureBaseDirs() {
 
 export function ensureEnvFile() {
   if (!fs.existsSync(envPath)) {
-    const examplePath = path.join(sunetRoot, '.env.example');
+    const examplePath = path.join(sunetRoot, '.env.sunet.example');
     if (!fs.existsSync(examplePath)) {
-      console.error(chalk.red('Missing .env.example; cannot bootstrap .env'));
+      console.error(chalk.red('Missing .env.sunet.example; cannot bootstrap .env.sunet'));
       process.exit(1);
     }
     fs.copyFileSync(examplePath, envPath);
-    console.log(chalk.yellow('Created .env from .env.example'));
+    console.log(chalk.yellow('Created .env.sunet from .env.sunet.example'));
   }
 }
 

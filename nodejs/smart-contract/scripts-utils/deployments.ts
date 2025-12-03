@@ -20,7 +20,7 @@ export type DeploymentRecord = {
   };
 };
 
-const DEPLOYMENTS_DIR = path.join(__dirname, "..", "..", "contracts-deployed");
+const DEPLOYMENTS_DIR = path.join(__dirname, "..", "contracts-deployed");
 
 export function deploymentFilePath(
   contract: ContractKey,
@@ -125,7 +125,7 @@ export async function verifyContractIfPossible(options: {
     ) {
       if (isBlockscout) {
         console.warn(
-          `Blockscout for ${networkName} is unreachable${explorerHint ? ` (${explorerHint})` : ""}. Start SuNet with Blockscout (pnpm run sunet:start) and ensure BLOCKSCOUT_PORT in nodejs/smart-contract/sunet/.env matches the running port.`,
+          `Blockscout for ${networkName} is unreachable${explorerHint ? ` (${explorerHint})` : ""}. Start SuNet with Blockscout (pnpm run sunet:start) and ensure BLOCKSCOUT_PORT in nodejs/smart-contract/sunet/.env.sunet matches the running port.`,
         );
       } else {
         console.warn(

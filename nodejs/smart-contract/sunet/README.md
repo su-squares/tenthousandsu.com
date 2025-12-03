@@ -1,6 +1,6 @@
 # SuNet (Besu QBFT + Blockscout)
 
-Local one-validator QBFT network using Hyperledger Besu with optional Blockscout explorer. Designed to mimic the ritoswap local-blockchain UX: `.env`-driven scripts, split compose files, and helper scripts in TypeScript.
+Local one-validator QBFT network using Hyperledger Besu with optional Blockscout explorer. Designed to mimic the ritoswap local-blockchain UX: `.env.sunet`-driven scripts, split compose files, and helper scripts in TypeScript.
 
 ## Prerequisites
 - **Docker Desktop** (Windows/macOS) or **Docker Engine** (Linux)  
@@ -48,21 +48,30 @@ Access:
 - Blockscout: http://localhost:4001 (when started)
 
 ## Scripts
-- `sunet:setup` — create `.env` (if missing), generate validator key, write genesis, init Besu data, clone Blockscout repo.
+- `sunet:setup` — create `.env.sunet` (if missing), generate validator key, write genesis, init Besu data, clone Blockscout repo.
 - `sunet:start` — bring up Besu + Blockscout stack (`compose/docker-compose.yml`).
 - `sunet:start:node` — Besu only (`compose/docker-compose.besu.yml`).
 - `sunet:stop` / `sunet:stop:node` — stop stacks.
 - `sunet:clean` — prompt + remove data and docker volumes.
 - `sunet:logs`, `sunet:logs:node`, `sunet:logs:blockscout`, `sunet:status` — observability helpers.
-- `sunet:generate:genesis` — regenerate genesis from `.env`.
+- `sunet:generate:genesis` — regenerate genesis from `.env.sunet`.
 - `sunet:reveal:address` / `sunet:reveal:key` — print validator info (dev-use only).
 
 ## Config
-- `.env.example` holds defaults (Chain ID 1337, 5s blocks, SuNet naming). `sunet:setup` will create `.env` if missing and fill in validator keys.
+- `.env.sunet.example` holds defaults (Chain ID 1337, 5s blocks, SuNet naming). `sunet:setup` will create `.env.sunet` if missing and fill in validator keys.
 - Genesis includes Cancun/Shanghai at time 0, archive-style node (pruning disabled) so Blockscout traces work.
 - Data lives in `sunet/data` (bind-mounted). Config and keys live in `sunet/config`.
 
-> Set the `TEST_ACCOUNT` environment variable in `.env` to the address you want to use for sending transactions. This account will be pre-funded in the genesis file so you can deploy and interact with contracts immediately.
+> Set the `TEST_ACCOUNT` environment variable in `.env.sunet` to the address you want to use for sending transactions. This account will be pre-funded in the genesis file so you can deploy and interact with contracts immediately. Add `TEST_ACCOUNT_PRIVATE_KEY` if you want local scripts to sign as that account; otherwise scripts like `buy.ts` will sign with `VALIDATOR_PRIVATE_KEY`.
+>
+> Set `VALIDATOR_ACCOUNT_BALANCE` in `.env.sunet` to override the validator's prefund in the genesis file. If left blank, it defaults to 50,000 ETH (in wei).
+
+### Buying tokens with the script
+
+- PowerShell: `$env:BUY_TOKENS="1-10,50"; pnpm --filter smart-contract buy:sunet`
+- cmd.exe: `set BUY_TOKENS=1-10,50 && pnpm --filter smart-contract buy:sunet`
+- If `BUY_TOKENS` is omitted, the script attempts token `1` only (no brute force). Use range syntax like `5-10,42,100-120` to queue multiple purchases.
+- Control burst size with `BUY_CONCURRENCY` (default 5) to avoid overwhelming the RPC (e.g. `BUY_CONCURRENCY=10 BUY_TOKENS="1-50" pnpm --filter smart-contract buy:sunet`).
 
 ## Blockscout
 - `sunet:setup` clones the Blockscout repo into `sunet/blockscout` at `BLOCKSCOUT_TAG` (default `v9.2.2`).

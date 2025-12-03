@@ -55,7 +55,7 @@ function ensureValidatorKey() {
   if (!hasKeyFile && pk) {
     fs.writeFileSync(validatorKeyPath, strip0x(pk), { mode: 0o600 });
     process.env.VALIDATOR_PRIVATE_KEY = pk;
-    console.log(chalk.green('✓ Wrote validator key from .env to config/keys/validator.key'));
+    console.log(chalk.green('✓ Wrote validator key from .env.sunet to config/keys/validator.key'));
   }
 
   if (hasKeyFile && !pk) {

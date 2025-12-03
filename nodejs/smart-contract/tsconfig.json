@@ -8,8 +8,12 @@
     "strict": true,
     "skipLibCheck": true,
     "types": ["node", "hardhat"],
-    "outDir": "dist"
+    "outDir": "dist",
+    "baseUrl": ".",
+    "paths": {
+      "@script-utils/*": ["scripts-utils/*"]
+    }
   },
-  "include": ["hardhat.config.ts", "scripts/**/*.ts", "contracts/**/*.sol"],
+  "include": ["hardhat.config.ts", "scripts/**/*.ts", "scripts-utils/**/*.ts", "contracts/**/*.sol"],
   "exclude": ["sunet/**"]
 }

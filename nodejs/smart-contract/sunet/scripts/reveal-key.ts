@@ -8,7 +8,7 @@ function revealKey() {
   const envKey = process.env.VALIDATOR_PRIVATE_KEY;
   if (envKey) {
     console.log(chalk.yellow('⚠️  Development key - do not use on public networks.'));
-    console.log(chalk.green(`Private key (from .env): ${to0x(strip0x(envKey))}`));
+    console.log(chalk.green(`Private key (from .env.sunet): ${to0x(strip0x(envKey))}`));
     return;
   }
 

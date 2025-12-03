@@ -1,3 +1,4 @@
+import "tsconfig-paths/register";
 import path from "path";
 import * as dotenv from "dotenv";
 import { HardhatUserConfig } from "hardhat/config";
@@ -5,9 +6,9 @@ import "@nomicfoundation/hardhat-ethers";
 import "@nomicfoundation/hardhat-verify";
 import "hardhat-gas-reporter";
 
-import { loadSunetEnv } from "./scripts/helpers/env";
+import { loadSunetEnv } from "@script-utils/env";
 
-dotenv.config({ path: path.join(__dirname, ".env") });
+dotenv.config({ path: path.join(__dirname, ".env.contract") });
 
 const argv = process.argv.slice(2);
 const requestedNetwork =
@@ -25,10 +26,12 @@ const blockscoutApiUrl = sunetEnv?.blockscoutApiUrl ?? "http://127.0.0.1:4001/ap
 
 if (requestedNetworkLower === "sepolia") {
   if (!process.env.SEPOLIA_RPC_URL) {
-    console.warn("SEPOLIA_RPC_URL is not set. Sepolia deployments will fail until it is provided.");
+    console.warn(
+      "SEPOLIA_RPC_URL is not set. Sepolia deployments will fail until it is provided in nodejs/smart-contract/.env.contract.",
+    );
   }
   if (!process.env.SEPOLIA_PRIVATE_KEY) {
-    console.warn("SEPOLIA_PRIVATE_KEY is not set. Add it to nodejs/smart-contract/.env before deploying to Sepolia.");
+    console.warn("SEPOLIA_PRIVATE_KEY is not set. Add it to nodejs/smart-contract/.env.contract before deploying to Sepolia.");
   }
 }
 

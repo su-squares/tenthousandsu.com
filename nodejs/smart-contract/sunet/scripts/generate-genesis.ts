@@ -3,6 +3,8 @@ import chalk from 'chalk';
 import { ethers } from 'ethers';
 import { ensureBaseDirs, loadEnv, genesisPath, strip0x, to0x } from './utils';
 
+const DEFAULT_VALIDATOR_BALANCE = '50000000000000000000000'; // 50,000 ETH
+
 function qbftExtraData(validators: string[]) {
   const vanity = new Uint8Array(32);
   const validatorsBytes = validators.map((v) => ethers.getBytes(ethers.getAddress(v)));
@@ -33,7 +35,8 @@ export function generateGenesis() {
   const extraData = qbftExtraData(validators);
 
   const alloc: Record<string, { balance: string }> = {};
-  const validatorBalance = '10000000000000000000000'; // 10,000 ETH
+  const envValidatorBalance = process.env.VALIDATOR_ACCOUNT_BALANCE?.trim();
+  const validatorBalance = envValidatorBalance || DEFAULT_VALIDATOR_BALANCE;
   alloc[to0x(strip0x(validatorAddress).toLowerCase())] = { balance: validatorBalance };
 
   const testAccount = process.env.TEST_ACCOUNT;
