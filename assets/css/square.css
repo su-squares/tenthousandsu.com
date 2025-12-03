@@ -53,6 +53,8 @@
 
 #emojified {
   text-align: center;
+  display: inline-block;
+  line-height: calc(1em + 0.3rem);
 }
 
 #copy-emojified {
