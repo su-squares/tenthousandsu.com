@@ -1,9 +1,6 @@
-import { enableSepolia } from "./config.js";
-import {
-  MAINNET_CHAIN_ID,
-  SEPOLIA_CHAIN_ID,
-  loadWagmiClient,
-} from "./wallet/wagmi-client.js";
+import { getWeb3Config } from "./config/index.js";
+import { createDebugLogger } from "./config/logger.js";
+import { loadWagmiClient } from "./client/wagmi.js";
 import { openConnectModal } from "./wallet/connect-modal/index.js";
 import {
   clearStoredSession,
@@ -11,16 +8,14 @@ import {
   openWalletDeepLink,
 } from "./wallet/wc-store.js";
 
+const appConfig = getWeb3Config();
 let cachedClients = null;
 const readyCallbacks = [];
 const wagmiLocalStorageKey = "wagmi.store";
 let disconnectWatcher = null;
 const wagmiKeys = [wagmiLocalStorageKey, "wagmi.wallet", "wagmi.connected"];
 const wcKeyPrefixes = ["wc@2:client:", "wc@2:", "walletconnect"];
-const DEBUG = Boolean(typeof window !== "undefined" && window?.suWeb3?.debug);
-const log = (...args) => {
-  if (DEBUG) console.debug("[web3-foundation]", ...args);
-};
+const log = createDebugLogger("web3-foundation");
 
 function removeWalletConnectKeys({ onlyEmpty = false } = {}) {
   try {
@@ -47,9 +42,7 @@ function removeWalletConnectKeys({ onlyEmpty = false } = {}) {
       }
     }
     toRemove.forEach((key) => localStorage.removeItem(key));
-    if (DEBUG && toRemove.length) {
-      log(`removed WC keys (${onlyEmpty ? "empty only" : "all"}):`, toRemove.length);
-    }
+    if (toRemove.length) log(`removed WC keys (${onlyEmpty ? "empty only" : "all"}):`, toRemove.length);
   } catch (_error) {
     /* ignore */
   }
@@ -63,7 +56,7 @@ export function clearAllWalletStorage() {
   }
   try {
     wagmiKeys.forEach((key) => localStorage.removeItem(key));
-    if (DEBUG) log("cleared wagmi keys", wagmiKeys);
+    log("cleared wagmi keys", wagmiKeys);
   } catch (_error) {
     /* ignore */
   }
@@ -78,7 +71,7 @@ export function pruneWalletStorage() {
   // Enforce TTL on our own WC session and drop empty WC client records.
   try {
     const session = getStoredSession();
-    if (DEBUG) log("pruneWalletStorage", { hasSession: Boolean(session) });
+    log("pruneWalletStorage", { hasSession: Boolean(session) });
   } catch (_error) {
     /* ignore */
   }
@@ -99,10 +92,13 @@ function hasPersistedWagmiConnection() {
     if (raw) {
       const parsed = JSON.parse(raw);
       const connections = parsed?.state?.connections;
+      const account = parsed?.state?.data?.account;
+      if (account) return true;
       if (Array.isArray(connections) && connections.length > 0) return true;
-      if (connections && typeof connections === "object" && Object.keys(connections).length > 0)
-        return true;
+      if (connections && typeof connections === "object" && Object.keys(connections).length > 0) return true;
     }
+    const connectedFlag = localStorage.getItem("wagmi.connected");
+    if (connectedFlag === "true") return true;
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       if (key && wcKeyPrefixes.some((prefix) => key.startsWith(prefix))) {
@@ -125,7 +121,7 @@ export function shouldEagerLoadWeb3() {
   if (config?.autoLoad === true) return true;
   if (config?.autoLoad === false) return false;
   const persisted = hasPersistedWagmiConnection();
-  if (DEBUG) log("shouldEagerLoadWeb3", { persisted, configAutoLoad: config?.autoLoad });
+  log("shouldEagerLoadWeb3", { persisted, configAutoLoad: config?.autoLoad });
   return persisted;
 }
 
@@ -136,7 +132,7 @@ export async function loadWeb3() {
     try {
       disconnectWatcher = cachedClients.watchAccount((account) => {
         if (!account.isConnected) {
-          if (DEBUG) log("account disconnected; clearing wallet storage");
+          log("account disconnected; clearing wallet storage");
           clearAllWalletStorage();
         }
       });
@@ -195,23 +191,22 @@ export async function ensureConnected(action) {
   });
 }
 
-export async function ensureMainnetOrWarn(clients) {
+export async function ensureCorrectNetwork(clients) {
   const wagmi = clients || (await loadWeb3());
+  const desiredChainId = appConfig.activeNetwork.chainId;
   try {
     const network = wagmi.getNetwork();
     const chainId = network?.chain?.id;
-    const isAllowedChain =
-      chainId === MAINNET_CHAIN_ID || (enableSepolia && chainId === SEPOLIA_CHAIN_ID);
-    if (isAllowedChain) return wagmi;
+    if (chainId === desiredChainId) return wagmi;
     if (wagmi.switchNetwork) {
-      await wagmi.switchNetwork({ chainId: MAINNET_CHAIN_ID });
+      await wagmi.switchNetwork({ chainId: desiredChainId });
       return wagmi;
     }
   } catch (error) {
     console.warn("Network switch failed", error);
   }
-  alert("Please switch to Ethereum mainnet to continue.");
-  throw new Error("Not on mainnet");
+  alert(`Please switch to ${appConfig.activeNetwork.label || "the correct network"} to continue.`);
+  throw new Error("Unsupported network");
 }
 
 export function clearCachedWalletSession() {

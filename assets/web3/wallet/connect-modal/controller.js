@@ -9,12 +9,10 @@ import { renderQrView } from "./views/qr.js";
 import { renderConnectingView } from "./views/connecting.js";
 import { renderErrorView } from "./views/error.js";
 import { renderCanceledView } from "./views/canceled.js";
-import { loadWagmiClient } from "../wagmi-client.js";
+import { loadWagmiClient } from "../../client/wagmi.js";
+import { createDebugLogger } from "../../config/logger.js";
 
-const DEBUG = Boolean(window?.suWeb3?.debug);
-const log = (...args) => {
-  if (DEBUG) console.debug("[wallet-connect]", ...args);
-};
+const log = createDebugLogger("wallet-connect");
 
 export function createConnectController(shell) {
   const store = createConnectStore();

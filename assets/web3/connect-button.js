@@ -5,7 +5,7 @@ import {
 } from "./foundation.js";
 import { openConnectModal } from "./wallet/connect-modal/index.js";
 import { openAccountModal } from "./wallet/account-modal/index.js";
-import { truncateAddress } from "./wallet/wagmi-client.js";
+import { truncateAddress } from "./client/wagmi.js";
 
 const connectWalletButton = document.getElementById("connect-wallet");
 

@@ -1,10 +1,5 @@
-import { enableSepolia } from "../../config.js";
-import {
-  MAINNET_CHAIN_ID,
-  SEPOLIA_CHAIN_ID,
-  loadWagmiClient,
-  truncateAddress,
-} from "../wagmi-client.js";
+import { ChainKey, NETWORK_PRESETS, getWeb3Config } from "../../config/index.js";
+import { loadWagmiClient, truncateAddress } from "../../client/wagmi.js";
 import { clearAllWalletStorage } from "../../foundation.js";
 import {
   PREFERRED_CHAIN_LABEL,
@@ -18,6 +13,40 @@ import { createModalShell } from "../base/modal-shell.js";
 let shell = null;
 let wagmiClient = null;
 let lastDisplayData = null;
+const appConfig = getWeb3Config();
+const ENS_CHAIN_ID = NETWORK_PRESETS[ChainKey.MAINNET].chainId;
+
+function getChainIcon(chainId) {
+  if (chainId === NETWORK_PRESETS[ChainKey.MAINNET].chainId) {
+    return {
+      src: `${window.location.origin}/assets/images/ethereum_logo.png`,
+      alt: "Ethereum logo",
+    };
+  }
+  if (chainId === NETWORK_PRESETS[ChainKey.SEPOLIA].chainId) {
+    return {
+      src: `${window.location.origin}/assets/images/sepolia-logo.png`,
+      alt: "Sepolia logo",
+    };
+  }
+  if (chainId === appConfig.activeNetwork.chainId) {
+    return {
+      src: `${window.location.origin}/assets/images/logomark-su-squares.png`,
+      alt: `${appConfig.activeNetwork.label} logo`,
+    };
+  }
+  return {
+    src: `${window.location.origin}/assets/images/ethereum_logo.png`,
+    alt: "Network logo",
+  };
+}
+
+function describeChain(chainId) {
+  if (chainId === NETWORK_PRESETS[ChainKey.MAINNET].chainId) return NETWORK_PRESETS[ChainKey.MAINNET].label;
+  if (chainId === NETWORK_PRESETS[ChainKey.SEPOLIA].chainId) return NETWORK_PRESETS[ChainKey.SEPOLIA].label;
+  if (chainId === appConfig.activeNetwork.chainId) return appConfig.activeNetwork.label;
+  return "Unsupported network";
+}
 
 const ensureShell = () => {
   if (shell) return shell;
@@ -56,16 +85,12 @@ async function fetchDisplayData(wagmi) {
   try {
     if (account?.address) {
       try {
-        if (chainId === MAINNET_CHAIN_ID) {
-          ensName = await wagmi.fetchEnsName({
-            address: account.address,
-            chainId: MAINNET_CHAIN_ID,
-          });
-          if (!ensName) {
-            console.warn("Account modal: ENS lookup returned empty result for address", account.address);
-          }
-        } else {
-          console.warn("Account modal: ENS lookup skipped because chain is not mainnet", chainId);
+        ensName = await wagmi.fetchEnsName({
+          address: account.address,
+          chainId: ENS_CHAIN_ID,
+        });
+        if (!ensName) {
+          console.warn("Account modal: ENS lookup returned empty result for address", account.address);
         }
       } catch (error) {
         console.warn("Account modal: ENS lookup failed", error);
@@ -73,12 +98,12 @@ async function fetchDisplayData(wagmi) {
       try {
         balance = await wagmi.fetchBalance({
           address: account.address,
-          chainId: chainId || MAINNET_CHAIN_ID,
+          chainId: chainId || appConfig.activeNetwork.chainId || ENS_CHAIN_ID,
         });
         if (!balance) {
           console.warn("Account modal: Balance lookup returned empty result", {
             address: account.address,
-            chainId: chainId || MAINNET_CHAIN_ID,
+            chainId: chainId || appConfig.activeNetwork.chainId || ENS_CHAIN_ID,
           });
         }
       } catch (error) {
@@ -98,10 +123,9 @@ function render({ account, network, ensName, balance }, options = {}) {
 
   const { loadingEns = false, loadingBalance = false } = options;
   const chainId = network?.chain?.id;
-  const onMainnet = chainId === MAINNET_CHAIN_ID;
-  const onSepolia = enableSepolia && chainId === SEPOLIA_CHAIN_ID;
   const chainMismatch = !isAllowedChain(chainId);
-  const ethLogo = `${window.location.origin}/assets/images/ethereum_logo.png`;
+  const chainLabel = describeChain(chainId);
+  const chainIcon = getChainIcon(chainId);
   const ensLoading = loadingEns && !!account?.address && !ensName;
   const balanceLoading = loadingBalance && !!account?.address && !balance;
   const addressDisplay =
@@ -126,18 +150,18 @@ function render({ account, network, ensName, balance }, options = {}) {
       </div>
     </div>
     <div class="wallet-status wallet-fade">
-      <div class="wallet-status__details wallet-status__details--chain">
-        <div class="wallet-chain">
-          <div class="wallet-chain__icon ${chainMismatch ? "wallet-chain__icon--mismatch" : ""}">
-            <img src="${ethLogo}" alt="Ethereum logo">
-            ${chainMismatch ? '<span class="wallet-chain__cross" aria-hidden="true"></span>' : ""}
-          </div>
-          <div>
-            <div>${onMainnet ? "Ethereum Mainnet" : onSepolia ? "Sepolia" : "Unsupported network"}</div>
-            <div class="wallet-small">Chain ID: ${chainId ?? "unknown"}</div>
+        <div class="wallet-status__details wallet-status__details--chain">
+          <div class="wallet-chain">
+            <div class="wallet-chain__icon ${chainMismatch ? "wallet-chain__icon--mismatch" : ""}">
+              <img src="${chainIcon.src}" alt="${chainIcon.alt}" style="height: 24px; width: auto;">
+              ${chainMismatch ? '<span class="wallet-chain__cross" aria-hidden="true"></span>' : ""}
+            </div>
+            <div>
+              <div>${chainLabel}</div>
+              <div class="wallet-small">Chain ID: ${chainId ?? "unknown"}</div>
+            </div>
           </div>
         </div>
-      </div>
       <div class="wallet-status__aside">
         ${
           chainMismatch && switchable

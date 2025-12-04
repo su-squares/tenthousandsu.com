@@ -10,6 +10,10 @@
     "install:storybook": "pnpm --filter storybook install",
     "install:vitest": "pnpm --filter vitest install",
     "install:smart-contract": "pnpm --filter smart-contract install",
-    "install:all": "pnpm install"
+    "install:all": "pnpm install",
+    "gen:site-config": "node scripts/gen-site-config.js"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.5"
   }
 }

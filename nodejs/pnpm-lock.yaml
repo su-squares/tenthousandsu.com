@@ -6,7 +6,11 @@ settings:
 
 importers:
 
-  .: {}
+  .:
+    dependencies:
+      dotenv:
+        specifier: ^16.4.5
+        version: 16.6.1
 
   builder:
     dependencies:

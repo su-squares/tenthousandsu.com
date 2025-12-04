@@ -24,3 +24,5 @@ nodejs/smart-contract/sunet/blockscout
 nodejs/smart-contract/contracts-deployed/
 nodejs/smart-contract/artifacts/
 nodejs/smart-contract/cache/
+nodejs/.env.site
+assets/web3/config/runtime.generated.js

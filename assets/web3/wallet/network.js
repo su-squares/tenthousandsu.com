@@ -1,22 +1,19 @@
-import { enableSepolia } from "../config.js";
-import { MAINNET_CHAIN_ID, SEPOLIA_CHAIN_ID } from "./wagmi-client.js";
+import { getWeb3Config } from "../config/index.js";
+import { createDebugLogger } from "../config/logger.js";
 
-const DEBUG = Boolean(window?.suWeb3?.debug);
-const log = (...args) => {
-  if (DEBUG) console.debug("[wallet-network]", ...args);
-};
+const appConfig = getWeb3Config();
+const log = createDebugLogger("wallet-network");
 
-export const PREFERRED_CHAIN_ID = MAINNET_CHAIN_ID;
-export const PREFERRED_CHAIN_LABEL = "Ethereum Mainnet";
+export const PREFERRED_CHAIN_ID = appConfig.activeNetwork.chainId;
+export const PREFERRED_CHAIN_LABEL = appConfig.activeNetwork.label || "Ethereum";
 
 /**
  * @param {number | null | undefined} chainId
  * @returns {boolean}
  */
 export function isAllowedChain(chainId) {
-  if (chainId === MAINNET_CHAIN_ID) return true;
-  if (enableSepolia && chainId === SEPOLIA_CHAIN_ID) return true;
-  return false;
+  if (typeof chainId !== "number") return false;
+  return chainId === PREFERRED_CHAIN_ID;
 }
 
 /**
