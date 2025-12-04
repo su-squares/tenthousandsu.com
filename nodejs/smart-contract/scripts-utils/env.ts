@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import dotenv from "dotenv";
-import { isAddress } from "ethers";
+import { getAddress, isAddress } from "ethers";
 
 export const CONTRACT_ENV_PATH = path.join(__dirname, "..", ".env.contract");
 export const CONTRACT_ENV_EXAMPLE_PATH = "nodejs/smart-contract/.env.contract.example";
@@ -29,6 +29,12 @@ export type SunetEnv = {
   blockscoutBrowserUrl: string;
 };
 
+export type TransferEnv = {
+  tokenId: number;
+  recipient: string;
+  unsafeTransfer: boolean;
+};
+
 type LoadOptions = {
   required?: boolean;
   requireKeys?: (keyof ContractEnv)[];
@@ -42,6 +48,51 @@ const sunetRequiredKeys = [
   "BLOCKSCOUT_PORT",
   "VALIDATOR_PRIVATE_KEY",
 ] as const;
+
+export function loadTransferEnv(options: { required?: boolean } = {}): TransferEnv | null {
+  const { required = true } = options;
+  const tokenIdRaw = (process.env.TRANSFER_TOKENID || "").trim();
+  const recipientRaw = (process.env.RECIPIENT_ADDRESS || "").trim();
+  const unsafeRaw = (process.env.UNSAFE_TRANSFER || "").trim().toLowerCase();
+
+  const missing: string[] = [];
+  if (!tokenIdRaw) {
+    missing.push("TRANSFER_TOKENID");
+  }
+  if (!recipientRaw) {
+    missing.push("RECIPIENT_ADDRESS");
+  }
+
+  if (missing.length > 0) {
+    if (required) {
+      throw new Error(
+        `Missing env vars: ${missing.join(", ")}. Set them in ${CONTRACT_ENV_PATH} (see ${CONTRACT_ENV_EXAMPLE_PATH}).`,
+      );
+    }
+    return null;
+  }
+
+  const tokenId = Number(tokenIdRaw);
+  if (!Number.isInteger(tokenId) || tokenId <= 0) {
+    if (required) {
+      throw new Error("TRANSFER_TOKENID must be a positive integer.");
+    }
+    return null;
+  }
+
+  if (!isAddress(recipientRaw)) {
+    if (required) {
+      throw new Error("RECIPIENT_ADDRESS must be a valid 0x-prefixed address.");
+    }
+    return null;
+  }
+
+  return {
+    tokenId,
+    recipient: getAddress(recipientRaw),
+    unsafeTransfer: ["true", "1", "yes", "y", "on"].includes(unsafeRaw),
+  };
+}
 
 export function loadContractEnv(options: LoadOptions = {}): ContractEnv | null {
   const { required = false, requireKeys = contractRequiredKeys } = options;
