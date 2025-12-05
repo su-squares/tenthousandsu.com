@@ -2,7 +2,7 @@ import chalk from "chalk";
 import { ethers, network } from "hardhat";
 import { verifyContractIfPossible, writeDeployment } from "@script-utils/deployments";
 import { ensureNetworkIsReachable, ensureSunetReady } from "@script-utils/network";
-import { SunetEnv, resolveTokenUriBase } from "@script-utils/env";
+import { SunetEnv, loadContractPricingEnv, resolveTokenUriBase } from "@script-utils/env";
 
 type DeployResult = {
   address: string;
@@ -23,6 +23,7 @@ export async function deployPrimary(): Promise<DeployResult> {
   const chainId = Number(chain.chainId);
 
   const tokenUriBase = resolveTokenUriBase(network.name);
+  const pricing = loadContractPricingEnv();
 
   console.log(
     chalk.cyan(
@@ -30,7 +31,12 @@ export async function deployPrimary(): Promise<DeployResult> {
     ),
   );
 
-  const contract = await ethers.deployContract("SuMain", [tokenUriBase]);
+  const contract = await ethers.deployContract("SuMain", [
+    tokenUriBase,
+    pricing.salePriceWei,
+    pricing.promoCreationLimit,
+    pricing.personalizationPriceWei,
+  ]);
   const deploymentTx = contract.deploymentTransaction();
   const receipt = deploymentTx ? await deploymentTx.wait(1) : undefined;
   await contract.waitForDeployment();
@@ -41,7 +47,12 @@ export async function deployPrimary(): Promise<DeployResult> {
   const verification = await verifyContractIfPossible({
     contractName: "SuMain",
     address,
-    constructorArguments: [tokenUriBase],
+    constructorArguments: [
+      tokenUriBase,
+      pricing.salePriceWei,
+      pricing.promoCreationLimit,
+      pricing.personalizationPriceWei,
+    ],
     networkName: network.name,
     explorerHint: network.name === "sunet" ? sunetEnv?.blockscoutBrowserUrl : undefined,
     isBlockscout: network.name === "sunet",

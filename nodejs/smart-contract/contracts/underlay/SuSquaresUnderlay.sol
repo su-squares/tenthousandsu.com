@@ -10,7 +10,7 @@ interface SuSquares {
 /// @author William Entriken (https://phor.net)
 contract SuSquaresUnderlay is AccessControlTwoOfficers {
     SuSquares public immutable suSquares;
-    uint256 public constant pricePerSquare = 1e15; // 1 Finney
+    uint256 public immutable pricePerSquare;
 
     struct Personalization {
         uint256 squareId;
@@ -26,9 +26,10 @@ contract SuSquaresUnderlay is AccessControlTwoOfficers {
         string href
     );
 
-    constructor(address suSquaresAddress) {
+    constructor(address suSquaresAddress, uint256 pricePerSquareWei) {
         require(suSquaresAddress != address(0), "SuSquares address required");
         suSquares = SuSquares(suSquaresAddress);
+        pricePerSquare = pricePerSquareWei;
     }
 
     /// @notice Update the contents of your Square on the underlay

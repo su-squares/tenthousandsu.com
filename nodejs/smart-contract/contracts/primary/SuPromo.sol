@@ -6,7 +6,11 @@ import "./AccessControl.sol";
 /// @title A limited pre-sale and promotional giveaway
 /// @author William Entriken (https://phor.net)
 contract SuPromo is AccessControl, SuNFT {
-    uint256 constant PROMO_CREATION_LIMIT = 5000;
+    uint256 public promoCreationLimit;
+
+    constructor(uint256 _promoCreationLimit) internal {
+        promoCreationLimit = _promoCreationLimit;
+    }
 
     /// @notice How many promo squares were granted
     uint256 public promoCreatedCount;
@@ -19,7 +23,7 @@ contract SuPromo is AccessControl, SuNFT {
         mustBeValidToken(_tokenId)
         mustBeOwnedByThisContract(_tokenId)
     {
-        require(promoCreatedCount < PROMO_CREATION_LIMIT);
+        require(promoCreatedCount < promoCreationLimit);
         promoCreatedCount++;
         _transfer(_tokenId, _newOwner);
     }

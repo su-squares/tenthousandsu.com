@@ -1,7 +1,7 @@
 import fs from "fs";
 import path from "path";
 import dotenv from "dotenv";
-import { getAddress, isAddress } from "ethers";
+import { getAddress, isAddress, parseEther } from "ethers";
 
 export const CONTRACT_ENV_PATH = path.join(__dirname, "..", ".env.contract");
 export const CONTRACT_ENV_EXAMPLE_PATH = "nodejs/smart-contract/.env.contract.example";
@@ -35,6 +35,13 @@ export type TransferEnv = {
   unsafeTransfer: boolean;
 };
 
+export type ContractPricingEnv = {
+  salePriceWei: bigint;
+  promoCreationLimit: bigint;
+  personalizationPriceWei: bigint;
+  underlayPersonalizationPriceWei: bigint;
+};
+
 type TokenUriBaseOptions = {
   allowEmpty?: boolean;
 };
@@ -52,6 +59,11 @@ const sunetRequiredKeys = [
   "BLOCKSCOUT_PORT",
   "VALIDATOR_PRIVATE_KEY",
 ] as const;
+
+const DEFAULT_SALE_PRICE_ETH = "0.5";
+const DEFAULT_PROMO_CREATION_LIMIT = 5000;
+const DEFAULT_PERSONALIZATION_PRICE_ETH = "0.01";
+const DEFAULT_UNDERLAY_PERSONALIZATION_PRICE_ETH = "0.001";
 
 export function loadTransferEnv(options: { required?: boolean } = {}): TransferEnv | null {
   const { required = true } = options;
@@ -215,6 +227,59 @@ export function loadSunetEnv(options: LoadOptions = {}): SunetEnv | null {
     rpcUrl: `http://127.0.0.1:${rpcPort}`,
     blockscoutApiUrl: `http://127.0.0.1:${blockscoutPort}/api`,
     blockscoutBrowserUrl: `http://127.0.0.1:${blockscoutPort}`,
+  };
+}
+
+export function loadContractPricingEnv(): ContractPricingEnv {
+  const hasFile = fs.existsSync(CONTRACT_ENV_PATH);
+  const source: Record<string, string | undefined> = hasFile
+    ? dotenv.parse(fs.readFileSync(CONTRACT_ENV_PATH))
+    : process.env;
+
+  const salePriceRaw = (source.SALE_PRICE_ETH || "").trim();
+  const promoLimitRaw = (source.PROMO_CREATION_LIMIT || "").trim();
+  const personalizationRaw = (source.PERSONALIZATION_PRICE_ETH || "").trim();
+
+  let salePriceWei: bigint;
+  try {
+    salePriceWei = parseEther(salePriceRaw || DEFAULT_SALE_PRICE_ETH);
+  } catch (error) {
+    throw new Error(
+      `Invalid SALE_PRICE_ETH value${hasFile ? ` in ${CONTRACT_ENV_PATH}` : ""}. Use a numeric ETH amount (e.g. ${DEFAULT_SALE_PRICE_ETH}).`,
+    );
+  }
+  if (salePriceWei <= 0n) {
+    throw new Error(
+      `SALE_PRICE_ETH must be greater than zero${hasFile ? ` in ${CONTRACT_ENV_PATH}` : ""}.`,
+    );
+  }
+
+  const promoLimitValue = promoLimitRaw ? Number(promoLimitRaw) : DEFAULT_PROMO_CREATION_LIMIT;
+  if (!Number.isInteger(promoLimitValue) || promoLimitValue < 0) {
+    throw new Error(
+      `PROMO_CREATION_LIMIT must be a non-negative integer${hasFile ? ` in ${CONTRACT_ENV_PATH}` : ""}.`,
+    );
+  }
+  const promoCreationLimit = BigInt(promoLimitValue);
+
+  let personalizationPriceWei: bigint;
+  try {
+    personalizationPriceWei = parseEther(personalizationRaw || DEFAULT_PERSONALIZATION_PRICE_ETH);
+  } catch (error) {
+    throw new Error(
+      `Invalid PERSONALIZATION_PRICE_ETH value${hasFile ? ` in ${CONTRACT_ENV_PATH}` : ""}. Use a numeric ETH amount (e.g. ${DEFAULT_PERSONALIZATION_PRICE_ETH}).`,
+    );
+  }
+
+  const underlayPersonalizationPriceWei = personalizationRaw
+    ? personalizationPriceWei
+    : parseEther(DEFAULT_UNDERLAY_PERSONALIZATION_PRICE_ETH);
+
+  return {
+    salePriceWei,
+    promoCreationLimit,
+    personalizationPriceWei,
+    underlayPersonalizationPriceWei,
   };
 }
 

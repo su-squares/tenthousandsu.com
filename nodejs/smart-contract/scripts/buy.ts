@@ -5,7 +5,6 @@ import { readDeployment } from "@script-utils/deployments";
 import { SUNET_ENV_PATH, SunetEnv, loadSunetEnv, selectSunetSignerKey } from "@script-utils/env";
 import { ensureNetworkIsReachable, ensureSunetReady } from "@script-utils/network";
 
-const SALE_PRICE_WEI = ethers.parseEther("0.5");
 const TOKEN_INPUT_ENV = "BUY_TOKENS";
 const DEFAULT_TOKEN_ID = 1;
 
@@ -147,15 +146,16 @@ async function main(): Promise<void> {
   const buyer = await resolveBuyerSigner(networkName, sunetEnv);
   const buyerAddress = await buyer.getAddress();
   const contract = await ethers.getContractAt("SuMain", deployment.address, buyer);
+  const salePriceWei = await contract.salePrice();
 
   const tokenIds = expandRange(tokenInputRaw);
-  const totalCostWei = SALE_PRICE_WEI * BigInt(tokenIds.length);
+  const totalCostWei = salePriceWei * BigInt(tokenIds.length);
   const buyerBalance = await ethers.provider.getBalance(buyerAddress);
 
   // Estimate gas ONCE at the start using an available token
   console.log(`Estimating gas for purchase()...`);
   const sampleToken = await findAvailableTokenForEstimation(contract, tokenIds);
-  const gasLimit = await estimateGasForPurchase(contract, sampleToken, SALE_PRICE_WEI);
+  const gasLimit = await estimateGasForPurchase(contract, sampleToken, salePriceWei);
   console.log(`Gas estimate: ${gasLimit} (includes ${GAS_BUFFER_PERCENT}% buffer) ✓`);
 
   console.log(`\n========== BULK BUY CONFIGURATION ==========`);
@@ -164,7 +164,7 @@ async function main(): Promise<void> {
   console.log(`Buyer: ${buyerAddress}`);
   console.log(`Tokens to buy: ${summarizeIds(tokenIds)}`);
   console.log(`Total tokens: ${tokenIds.length}`);
-  console.log(`Price per token: ${ethers.formatEther(SALE_PRICE_WEI)} ETH`);
+  console.log(`Price per token: ${ethers.formatEther(salePriceWei)} ETH`);
   console.log(`Total cost: ${ethers.formatEther(totalCostWei)} ETH`);
   console.log(`Buyer balance: ${ethers.formatEther(buyerBalance)} ETH`);
   console.log(`Gas limit per tx: ${gasLimit}`);
@@ -201,7 +201,7 @@ async function main(): Promise<void> {
     try {
       // Send transaction with explicit nonce AND pre-calculated gas limit
       const tx = await contract.purchase(tokenId, {
-        value: SALE_PRICE_WEI,
+        value: salePriceWei,
         nonce: nonce,
         gasLimit: gasLimit,
       });

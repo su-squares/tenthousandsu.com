@@ -6,7 +6,7 @@ import {
   writeDeployment,
 } from "@script-utils/deployments";
 import { ensureNetworkIsReachable, ensureSunetReady } from "@script-utils/network";
-import { SunetEnv } from "@script-utils/env";
+import { SunetEnv, loadContractPricingEnv } from "@script-utils/env";
 
 type DeployUnderlayOptions = {
   primaryAddress?: string;
@@ -28,6 +28,8 @@ export async function deployUnderlay(
   } else {
     await ensureNetworkIsReachable(network.name);
   }
+
+  const pricing = loadContractPricingEnv();
 
   const chain = await ethers.provider.getNetwork();
   const chainId = Number(chain.chainId);
@@ -56,7 +58,10 @@ export async function deployUnderlay(
     ),
   );
 
-  const contract = await ethers.deployContract("SuSquaresUnderlay", [primaryAddress]);
+  const contract = await ethers.deployContract("SuSquaresUnderlay", [
+    primaryAddress,
+    pricing.underlayPersonalizationPriceWei,
+  ]);
   const deploymentTx = contract.deploymentTransaction();
   const receipt = deploymentTx ? await deploymentTx.wait(1) : undefined;
   await contract.waitForDeployment();
@@ -67,7 +72,7 @@ export async function deployUnderlay(
   const verification = await verifyContractIfPossible({
     contractName: "SuSquaresUnderlay",
     address,
-    constructorArguments: [primaryAddress],
+    constructorArguments: [primaryAddress, pricing.underlayPersonalizationPriceWei],
     networkName: network.name,
     explorerHint: network.name === "sunet" ? sunetEnv?.blockscoutBrowserUrl : undefined,
     isBlockscout: network.name === "sunet",
