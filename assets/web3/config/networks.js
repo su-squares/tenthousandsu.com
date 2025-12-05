@@ -11,6 +11,7 @@ export const NETWORK_PRESETS = {
     key: ChainKey.MAINNET,
     chainId: 1,
     label: "Ethereum Mainnet",
+    explorerName: "Etherscan",
     explorerBaseUrl: "https://etherscan.io",
     explorerTxPath: "/tx/",
     defaultRpcUrls: [
@@ -24,6 +25,7 @@ export const NETWORK_PRESETS = {
     key: ChainKey.SEPOLIA,
     chainId: 11155111,
     label: "Sepolia",
+    explorerName: "Sepolia Etherscan",
     explorerBaseUrl: "https://sepolia.etherscan.io",
     explorerTxPath: "/tx/",
     defaultRpcUrls: [
@@ -36,6 +38,7 @@ export const NETWORK_PRESETS = {
     key: ChainKey.SUNET,
     chainId: 1337,
     label: "Sunet",
+    explorerName: "Blockscout",
     explorerBaseUrl: "http://localhost:4001",
     explorerTxPath: "/tx/",
     defaultRpcUrls: ["http://127.0.0.1:8545"],

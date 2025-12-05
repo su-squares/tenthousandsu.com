@@ -2,7 +2,7 @@ import chalk from "chalk";
 import { ethers, network } from "hardhat";
 import { verifyContractIfPossible, writeDeployment } from "@script-utils/deployments";
 import { ensureNetworkIsReachable, ensureSunetReady } from "@script-utils/network";
-import { SunetEnv } from "@script-utils/env";
+import { SunetEnv, resolveTokenUriBase } from "@script-utils/env";
 
 type DeployResult = {
   address: string;
@@ -22,13 +22,15 @@ export async function deployPrimary(): Promise<DeployResult> {
   const chain = await ethers.provider.getNetwork();
   const chainId = Number(chain.chainId);
 
+  const tokenUriBase = resolveTokenUriBase(network.name);
+
   console.log(
     chalk.cyan(
       `Deploying SuMain to ${chalk.bold(network.name)} (chainId ${chainId}) with deployer ${chalk.bold(deployer.address)}`,
     ),
   );
 
-  const contract = await ethers.deployContract("SuMain");
+  const contract = await ethers.deployContract("SuMain", [tokenUriBase]);
   const deploymentTx = contract.deploymentTransaction();
   const receipt = deploymentTx ? await deploymentTx.wait(1) : undefined;
   await contract.waitForDeployment();
@@ -39,7 +41,7 @@ export async function deployPrimary(): Promise<DeployResult> {
   const verification = await verifyContractIfPossible({
     contractName: "SuMain",
     address,
-    constructorArguments: [],
+    constructorArguments: [tokenUriBase],
     networkName: network.name,
     explorerHint: network.name === "sunet" ? sunetEnv?.blockscoutBrowserUrl : undefined,
     isBlockscout: network.name === "sunet",

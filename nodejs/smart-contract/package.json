@@ -10,6 +10,17 @@
   ],
   "author": "ritorhymes",
   "scripts": {
+    "--- Site Scripts ---": ":",
+    "update:assets": "node site-scripts/update-assets.mjs",
+    "update:assets:sunet": "node site-scripts/update-assets.mjs --network=sunet",
+    "update:assets:sepolia": "node site-scripts/update-assets.mjs --network=sepolia",
+    "listen:sepolia": "cross-env NETWORK=sepolia node site-scripts/event-listener.mjs",
+    "listen:sunet": "cross-env NETWORK=sunet node site-scripts/event-listener.mjs",
+    "gen:site-config": "node site-scripts/gen-site-config.js",
+    "delete:sunet": "node -e \"const fs=require('fs');['../../build-sunet','../../erc721-sunet'].forEach(p=>fs.rmSync(p,{recursive:true,force:true}))\"",
+    "delete:sepolia": "node -e \"const fs=require('fs');['../../build-sepolia','../../erc721-sepolia'].forEach(p=>fs.rmSync(p,{recursive:true,force:true}))\"",
+    "delete:runtime-config": "node -e \"require('fs').rmSync('../../assets/web3/config/runtime.generated.js', {force: true})\"",
+    "delete:all": "node -e \"const fs=require('fs');['../../build-sunet','../../build-sepolia','../../erc721-sunet','../../erc721-sepolia','../../assets/web3/config/runtime.generated.js'].forEach(p=>fs.rmSync(p,{recursive:true,force:true}))\"",
     "--- Blockchain Scripts ---": ":",
     "sunet:setup": "ts-node sunet/scripts/init-network.ts",
     "sunet:start": "cd sunet && docker compose -f compose/docker-compose.yml up -d",
@@ -77,9 +88,11 @@
   },
   "dependencies": {
     "chalk": "^4.1.2",
+    "cli-progress": "^3.12.0",
     "dotenv": "^16.3.1",
     "ethers": "^6.15.0",
     "fs-extra": "^11.2.0",
-    "prompts": "^2.4.2"
+    "prompts": "^2.4.2",
+    "sharp": "^0.34.2"
   }
 }

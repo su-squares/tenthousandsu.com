@@ -24,5 +24,13 @@ nodejs/smart-contract/sunet/blockscout
 nodejs/smart-contract/contracts-deployed/
 nodejs/smart-contract/artifacts/
 nodejs/smart-contract/cache/
-nodejs/.env.site
+nodejs/smart-contract/.env.site
 assets/web3/config/runtime.generated.js
+build-sunet/
+build-sepolia/
+erc721-sunet/
+erc721-sepolia/
+
+# Windows reserved device names
+nul
+NUL

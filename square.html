@@ -1,62 +1,88 @@
 ---
 layout: null
+image: "{{ site.baseurl }}/assets/images/su-OG.png"
 ---
 <!doctype html>
 <html lang="en">
 
 <head>
+  <script>window.SITE_BASEURL = "{{ site.baseurl }}";</script>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>Su Squares, cute squares you own and personalize</title>
+  {% include pwa-meta-tags.html %}
+  {% seo %}
+  <title>See information about a Square</title>
   <meta name="description" content="The first ERC-721 NFT. Cute squares you own and personalize.">
-  <link rel="stylesheet" href="assets/css/main.css">
-  <link rel="stylesheet" href="assets/css/square.css">
-  <link rel="stylesheet" href="assets/css/chooser.css">
-  <link rel="stylesheet" href="/assets/modals/leaving-modal/modal.css">
-  <script src="/assets/modals/leaving-modal/modal-core.js"></script>
-  <script src="/assets/modals/leaving-modal/link-guard.js"></script>
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/main.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/billboard/billboard.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/square.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/billboard/wrappers/square-location.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/square-lookup/styles.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/modals/leaving-modal/modal.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/modals/blocked-modal/blocked-modal.css">
+  <script src="{{ site.baseurl }}/assets/modals/blocked-modal/blocked-modal.js"></script>
+  <script src="{{ site.baseurl }}/assets/modals/leaving-modal/modal-core.js"></script>
+  <script src="{{ site.baseurl }}/assets/modals/leaving-modal/link-guard.js"></script>
   {% include nav-menu-head.html %}
   {% include alert-modal-head.html %}
   {% include offline-modal-head.html %}
+  {% include jsonld-nav.html %}
+  {% include jsonld/pages/square.html %}
 </head>
 
-<body>
+<body class="square-body">
   {% include nav-header.html %}
 
-  <article class="square-page">
-    <h1>Square #<span id="square-number">...</span></h1>
-    <div id="image"></div>
+  <main id="main-content" class="fade-target square-main">
+    <section class="square-default-state" id="square-default-state">
+      <h1>Look up <span style="white-space: nowrap;">Su Squares</span></h1>
+      <p class="square-default-state__description">
+        Enter a minted Square number to review its appearance and history.
+      </p>
+    </section>
 
-    <div class="dl-wrapper">
-      <dl class="dl-styled">
-        <dt>Minted</dt>
-        <dd id="minted"></dd>
-        <dt>Personalized</dt>
-        <dd id="personalized"></dd> <!-- also show #X most recent -->
-        <dt>Title</dt>
-        <dd id="title"></dd>
-        <dt>Link</dt>
-        <dd id="link"></dd>
-      </dl>
-    </div>
+    <article class="square-page square-page--hidden" id="square-details" aria-hidden="true">
+      <h1>Square #<span id="square-number">...</span></h1>
+      <div id="image"></div>
 
-    <div id="etherscan-button-wrapper" style="text-align:center; margin: 1.5rem 0;">
-      <a id="view-etherscan" class="btn btn-lg square-lookup__submit" href="#" target="_blank" rel="noopener"
-        style="display:none;">View NFT on Etherscan</a>
-    </div>
+      <div class="dl-wrapper">
+        <dl class="dl-styled" data-testid="square-nft-table">
+          <dt>Minted</dt>
+          <dd id="minted"></dd>
+          <dt>Personalized</dt>
+          <dd id="personalized"></dd> <!-- also show #X most recent -->
+          <dt>Title</dt>
+          <dd id="title"></dd>
+          <dt>Link</dt>
+          <dd id="link"></dd>
+        </dl>
+      </div>
 
-    <h2>Location</h2>
-    <div style="position:relative;height:1000px; zoom: 0.5">
-      <img id="theImage" src="build/wholeSquare.webp" alt="All Su Squares" style="height:1000px; width:1000px">
-      <img id="arrow" src="assets/images/dr.png" alt="Location" style="height:100px; width:100px; position:absolute">
-    </div>
+      <div id="etherscan-button-wrapper" style="text-align:center; margin: 1.5rem 0;">
+        <a id="view-etherscan" class="btn btn-lg square-lookup__submit" href="#" target="_blank" rel="noopener"
+          style="display:none;">View NFT on Etherscan</a>
+      </div>
 
-    <h2>Emojified</h2>
-    <pre id="emojified"></pre>
-    <button class="btn" id="copy-emojified">Copy</button>
-  </article>
+      <h2>Location</h2>
+      <div class="square-location-wrapper">
+        <div class="square-location">
+          <div class="square-location__canvas">
+            <img id="theImage" class="square-location__image"
+              src="data:image/gif;base64,R0lGODlhAQABAIAAAP///wAAACH5BAEAAAAALAAAAAABAAEAAAICRAEAOw==" alt="All Su Squares">
+            <img id="arrow" class="square-location__arrow" src="{{ site.baseurl }}/assets/images/dr.png" alt="Location">
+          </div>
+        </div>
+        <p class="square-location__mobile-hint">Pinch to zoom, drag to pan.</p>
+        <button type="button" class="square-location__reset-btn" id="location-reset-btn" style="display:none;">Reset zoom</button>
+      </div>
 
-  {% include square-lookup.html variant="narrow" %}
+      <h2>Emojified</h2>
+      <pre id="emojified" data-testid="square-emojified"></pre>
+      <button class="btn" id="copy-emojified">Copy</button>
+    </article>
+
+    {% include square-lookup.html variant="narrow" %}
+  </main>
 
   <footer>
     <small>
@@ -68,188 +94,258 @@ layout: null
       United States.
     </small>
   </footer>
-  <script>
-    // Get URL fragment
-    const squareNumber = parseInt(window.location.hash.substring(1));
-    const personalizations = fetch('build/squarePersonalizations.json').then(response => response.json());
-    const extras = fetch('build/squareExtra.json').then(response => response.json());
-    const CONTRACT_ADDRESS = '0xE9e3F9cfc1A64DFca53614a0182CFAD56c10624F';
-    const ETHERSCAN_BASE = 'https://etherscan.io';
+  <script type="module">
+    import { buildBlockUrl, buildTokenUrl, getExplorerName } from "{{ site.baseurl }}/assets/web3/services/explorer-links.js";
+    import { getWeb3Config } from "{{ site.baseurl }}/assets/web3/config/index.js";
+    import { initSquareLocation } from "{{ site.baseurl }}/assets/billboard/wrappers/square-location.js";
+    import { renderSafeLink } from "{{ site.baseurl }}/assets/js/link-utils.js";
 
-    Promise.all([personalizations, extras]).then(([personalizations, extras]) => {
-      // Each personalization is [title, href] or null
-      // Each extra is [mintedBlock, updatedBlock, mainIsPersonalized, version] or null
-      // Arrays are zero indexed, but the first Su Square number is 1!
+    document.addEventListener("DOMContentLoaded", () => {
+      const baseurl = window.SITE_BASEURL || '';
 
-      const elSquareNumber = document.getElementById("square-number");
-      elSquareNumber.innerText = squareNumber;
-
-      const elMinted = document.getElementById('minted');
-      const elViewEtherscan = document.getElementById('view-etherscan');
-      const mintedData = extras[squareNumber - 1];
-      const isMinted = Boolean(mintedData);
-      if (isMinted) {
-        const mintedBlock = mintedData[0];
-        elMinted.innerHTML = `<a href="${ETHERSCAN_BASE}/block/${mintedBlock}" target="_blank" rel="noopener">Block ${mintedBlock}</a>`;
-        elViewEtherscan.href = `${ETHERSCAN_BASE}/token/${CONTRACT_ADDRESS}?a=${squareNumber}`;
-        elViewEtherscan.style.display = 'inline-block';
-      } else {
-        elMinted.innerText = 'Not minted';
-        elViewEtherscan.style.display = 'none';
+      // Fade-in animation trigger for main content only
+      const mainContent = document.getElementById('main-content');
+      if (mainContent) {
+        setTimeout(() => {
+          mainContent.classList.add('fade-visible');
+        }, 500); // 0.5s delay before fade-in
       }
 
-      const elPersonalized = document.getElementById('personalized');
-      if (isMinted && mintedData[2]) {
-        const personalizedBlock = mintedData[1];
-        elPersonalized.innerHTML = `<a href="${ETHERSCAN_BASE}/block/${personalizedBlock}" target="_blank" rel="noopener">Block ${personalizedBlock}</a>`;
-      } else {
-        elPersonalized.innerText = 'Not personalized';
+      const runtimeCfg = window.suWeb3 || window.SU_WEB3 || {};
+      const runtimeChain =
+        (runtimeCfg.chain || runtimeCfg.CHAIN || runtimeCfg.network || runtimeCfg.NETWORK || "mainnet").toString().toLowerCase();
+      const runtimeAssetBases = runtimeCfg.assetBases || {};
+      let assetBase = String(runtimeAssetBases[runtimeChain] || "/build").replace(/\/+$/, "");
+      if (baseurl && !assetBase.startsWith(baseurl)) {
+        assetBase = baseurl + assetBase;
       }
+      const assetPath = (rel) => `${assetBase}/${String(rel).replace(/^\/+/, "")}`;
 
-      const personalization = personalizations[squareNumber - 1];
-      const elTitle = document.getElementById('title');
-      elTitle.innerText = personalization ? personalization[0] : 'Not personalized';
+      const detailSection = document.getElementById("square-details");
+      const defaultSection = document.getElementById("square-default-state");
 
-      const elLink = document.getElementById('link');
-      const hasPersonalizationLink = isMinted && personalization && personalization[1];
-      if (hasPersonalizationLink) {
-        const href = personalization[1];
-        elLink.innerHTML = `<a id="square-out-link" href="${href}" target="_blank" rel="noopener">${href}</a>`;
-        const guardedAnchor = document.getElementById('square-out-link');
-        if (window.SuLeavingLinkGuard && typeof window.SuLeavingLinkGuard.guardLink === 'function') {
-          window.SuLeavingLinkGuard.guardLink(guardedAnchor);
-        } else if (window.SuLeavingModal && typeof window.SuLeavingModal.gateAnchor === 'function') {
-          window.SuLeavingModal.gateAnchor(guardedAnchor);
+      const hideDetails = () => {
+        if (detailSection) {
+          detailSection.classList.add("square-page--hidden");
+          detailSection.setAttribute("aria-hidden", "true");
         }
-      } else {
-        elLink.innerText = 'Not personalized';
-      }
-
-      const elEmojified = document.getElementById('emojified');
-
-      // Set image
-      const row = Math.floor((squareNumber - 1) / 100); // 0 indexed
-      const col = (squareNumber - 1) % 100; // 0 indexed
-      const elImage = document.getElementById('image');
-      elImage.style.backgroundImage = 'url("build/wholeSquare.webp")';
-      elImage.style.backgroundPosition = `-${col * 10}px -${row * 10}px`;
-      elImage.style.height = '10px';
-      elImage.style.width = '10px';
-      elImage.style.display = 'inline-block';
-      elImage.style.zoom = '20';
-      elImage.style.imageRendering = 'pixelated';
-
-      // Set arrow location, based on quadrant
-      const elArrow = document.getElementById('arrow');
-      const elCanvas = document.querySelector('.square-location__canvas');
-
-      const updateArrowPosition = () => {
-        // Get actual rendered size and calculate scale factor
-        const actualWidth = elCanvas.offsetWidth;
-        const originalSize = 1000; // Original image is 1000x1000px
-        const dynamicScale = actualWidth / originalSize;
-
-        const scalePosition = (value) => `${value * dynamicScale}px`;
-        const setArrow = (src, topPx, leftPx) => {
-          elArrow.src = src;
-          elArrow.style.top = scalePosition(topPx);
-          elArrow.style.left = scalePosition(leftPx);
-        };
-        elArrow.style.width = `${100 * dynamicScale}px`;
-        elArrow.style.height = `${100 * dynamicScale}px`;
-
-        if (row < 50) {
-          if (col < 50) {
-            setArrow('assets/images/ul.png', row * 10 + 10, col * 10 + 10);
-          } else {
-            setArrow('assets/images/ur.png', row * 10 + 10, col * 10 - 100);
-          }
-        } else {
-          if (col < 50) {
-            setArrow('assets/images/dl.png', row * 10 - 100, col * 10 + 10);
-          } else {
-            setArrow('assets/images/dr.png', row * 10 - 100, col * 10 - 100);
-          }
+        if (defaultSection) {
+          defaultSection.hidden = false;
         }
       };
 
-      // Initial positioning
-      updateArrowPosition();
-
-      // Update on window resize
-      window.addEventListener('resize', updateArrowPosition);
-
-      // Emoji squares and RGB values for ⬛⬜🟥🟧🟨🟩🟦🟪🟫
-      const emojis = [
-        { "emoji": "⬛", "red": 0, "green": 0, "blue": 0 },
-        { "emoji": "⬜", "red": 255, "green": 255, "blue": 255 },
-        { "emoji": "🟥", "red": 255, "green": 0, "blue": 0 },
-        { "emoji": "🟧", "red": 255, "green": 165, "blue": 0 },
-        { "emoji": "🟨", "red": 255, "green": 255, "blue": 0 },
-        { "emoji": "🟩", "red": 0, "green": 128, "blue": 0 },
-        { "emoji": "🟦", "red": 0, "green": 0, "blue": 255 },
-        { "emoji": "🟪", "red": 128, "green": 0, "blue": 128 },
-        { "emoji": "🟫", "red": 139, "green": 69, "blue": 19 },
-      ]
-
-      // Create canvas
-      const canvas = document.createElement('canvas');
-      canvas.width = 10;
-      canvas.height = 10;
-      // Add wholeSquare to canvas
-      const context = canvas.getContext('2d');
-      const image = new Image();
-      image.src = 'build/wholeSquare.webp';
-      image.onload = function () {
-        context.drawImage(image, col * 10, row * 10, 10, 10, 0, 0, 10, 10);
-        // Get pixels
-        const imageData = context.getImageData(0, 0, 10, 10);
-        const pixels = imageData.data;
-        // Loop pixels
-        let emojiString = '';
-        for (let i = 0; i < pixels.length; i += 4) {
-          // Get pixel color
-          const red = pixels[i];
-          const green = pixels[i + 1];
-          const blue = pixels[i + 2];
-          // Find closest emoji
-          let closestEmoji = emojis[0];
-          let closestDistance = 195075;
-          for (let j = 0; j < emojis.length; j++) {
-            const emoji = emojis[j];
-            const distance = Math.sqrt(
-              Math.pow(emoji.red - red, 2) +
-              Math.pow(emoji.green - green, 2) +
-              Math.pow(emoji.blue - blue, 2)
-            );
-            if (distance < closestDistance) {
-              closestEmoji = emoji;
-              closestDistance = distance;
-            }
-          }
-          emojiString += closestEmoji.emoji;
-          // Add line break
-          if (i % 40 === 36) {
-            emojiString += "<br>";
-          }
+      const revealDetails = () => {
+        if (detailSection) {
+          detailSection.classList.remove("square-page--hidden");
+          detailSection.removeAttribute("aria-hidden");
         }
-        // Set emoji string
-        elEmojified.innerHTML = emojiString;
+        if (defaultSection) {
+          defaultSection.hidden = true;
+        }
+      };
+
+      const hashValue = window.location.hash.replace(/^#/, "").trim();
+      const isNumericHash = /^\d+$/.test(hashValue);
+      const squareNumber = isNumericHash ? parseInt(hashValue, 10) : NaN;
+      const hasValidHash = Number.isInteger(squareNumber) && squareNumber >= 1 && squareNumber <= 10000;
+
+      if (!hasValidHash) {
+        hideDetails();
+        return;
       }
 
-      // Copy emojified
-      const elCopyEmojified = document.getElementById('copy-emojified');
-      elCopyEmojified.addEventListener('click', () => {
-        const range = document.createRange();
-        range.selectNode(elEmojified);
-        window.getSelection().removeAllRanges();
-        window.getSelection().addRange(range);
-        document.execCommand('copy');
-        window.getSelection().removeAllRanges();
+      revealDetails();
+
+      const personalizations = fetch(assetPath('squarePersonalizations.json')).then(response => response.json());
+      const extras = fetch(assetPath('squareExtra.json')).then(response => response.json());
+      const explorerName = getExplorerName();
+      const { contracts } = getWeb3Config();
+
+      Promise.all([personalizations, extras]).then(([personalizations, extras]) => {
+        // Each personalization is [title, href] or null
+        // Each extra is [mintedBlock, updatedBlock, mainIsPersonalized, version] or null
+        // Arrays are zero indexed, but the first Su Square number is 1!
+
+        const personalization = personalizations[squareNumber - 1];
+
+        const elSquareNumber = document.getElementById("square-number");
+        elSquareNumber.innerText = squareNumber;
+
+        const elMinted = document.getElementById('minted');
+        const elViewEtherscan = document.getElementById('view-etherscan');
+        const mintedData = extras[squareNumber - 1];
+        const isMinted = Boolean(mintedData);
+        if (isMinted) {
+          const mintedBlock = mintedData[0];
+          const blockUrl = buildBlockUrl(mintedBlock);
+          elMinted.textContent = "";
+          if (blockUrl) {
+            const mintedAnchor = document.createElement("a");
+            mintedAnchor.href = blockUrl;
+            mintedAnchor.target = "_blank";
+            mintedAnchor.rel = "noopener";
+            mintedAnchor.textContent = `Block ${mintedBlock}`;
+            elMinted.appendChild(mintedAnchor);
+          } else {
+            elMinted.textContent = `Block ${mintedBlock}`;
+          }
+
+          const tokenUrl = buildTokenUrl(contracts.primary, squareNumber);
+          if (tokenUrl) {
+            elViewEtherscan.href = tokenUrl;
+            elViewEtherscan.textContent = `View NFT on ${explorerName}`;
+            elViewEtherscan.style.display = 'inline-block';
+          }
+        } else {
+          elMinted.innerText = 'Not minted';
+          elViewEtherscan.style.display = 'none';
+        }
+
+        const elPersonalized = document.getElementById('personalized');
+        const hasPersonalization = Boolean(personalization && (personalization[0] || personalization[1])) || Boolean(mintedData && mintedData[2]);
+        if (isMinted && hasPersonalization) {
+          const personalizedBlock = mintedData ? mintedData[1] : null;
+          if (personalizedBlock) {
+            const personalizedBlockUrl = buildBlockUrl(personalizedBlock);
+            elPersonalized.textContent = "";
+            if (personalizedBlockUrl) {
+              const personalizedAnchor = document.createElement("a");
+              personalizedAnchor.href = personalizedBlockUrl;
+              personalizedAnchor.target = "_blank";
+              personalizedAnchor.rel = "noopener";
+              personalizedAnchor.textContent = `Block ${personalizedBlock}`;
+              elPersonalized.appendChild(personalizedAnchor);
+            } else {
+              elPersonalized.textContent = `Block ${personalizedBlock}`;
+            }
+          } else {
+            elPersonalized.innerText = 'Personalized';
+          }
+        } else {
+          elPersonalized.innerText = 'Not personalized';
+        }
+
+        const elTitle = document.getElementById('title');
+        elTitle.innerText = personalization ? personalization[0] : 'Not personalized';
+
+        const elLink = document.getElementById('link');
+        const hasPersonalizationLink = isMinted && personalization && personalization[1];
+        if (hasPersonalizationLink) {
+          const hrefRaw = personalization[1];
+          const guardedAnchor = renderSafeLink(elLink, hrefRaw, { anchorId: "square-out-link" });
+          if (guardedAnchor) {
+            if (window.SuLeavingLinkGuard && typeof window.SuLeavingLinkGuard.guardLink === 'function') {
+              window.SuLeavingLinkGuard.guardLink(guardedAnchor);
+            } else if (window.SuLeavingModal && typeof window.SuLeavingModal.gateAnchor === 'function') {
+              window.SuLeavingModal.gateAnchor(guardedAnchor);
+            }
+          }
+        } else {
+          elLink.innerText = 'Not personalized';
+        }
+
+        const elEmojified = document.getElementById('emojified');
+
+        // Set image
+        const row = Math.floor((squareNumber - 1) / 100); // 0 indexed
+        const col = (squareNumber - 1) % 100; // 0 indexed
+        const elImage = document.getElementById('image');
+        elImage.style.backgroundImage = `url("${assetPath('wholeSquare.webp')}")`;
+        elImage.style.backgroundPosition = `-${col * 10}px -${row * 10}px`;
+        elImage.style.height = '10px';
+        elImage.style.width = '10px';
+        elImage.style.display = 'inline-block';
+        elImage.style.zoom = '20';
+        elImage.style.imageRendering = 'pixelated';
+
+        // Initialize location view with arrow positioning
+        const mapImage = document.getElementById('theImage');
+        if (mapImage) {
+          mapImage.src = assetPath('wholeSquare.webp');
+        }
+
+        initSquareLocation({
+          canvas: document.querySelector('.square-location__canvas'),
+          image: mapImage,
+          arrow: document.getElementById('arrow'),
+          resetButton: document.getElementById('location-reset-btn'),
+          squareNumber,
+          arrowBasePath: 'assets/images',
+        });
+
+        // Emoji squares and RGB values for ⬛⬜🟥🟧🟨🟩🟦🟪🟫
+        const emojis = [
+          { "emoji": "⬛", "red": 0, "green": 0, "blue": 0 },
+          { "emoji": "⬜", "red": 255, "green": 255, "blue": 255 },
+          { "emoji": "🟥", "red": 255, "green": 0, "blue": 0 },
+          { "emoji": "🟧", "red": 255, "green": 165, "blue": 0 },
+          { "emoji": "🟨", "red": 255, "green": 255, "blue": 0 },
+          { "emoji": "🟩", "red": 0, "green": 128, "blue": 0 },
+          { "emoji": "🟦", "red": 0, "green": 0, "blue": 255 },
+          { "emoji": "🟪", "red": 128, "green": 0, "blue": 128 },
+          { "emoji": "🟫", "red": 139, "green": 69, "blue": 19 },
+        ]
+
+        // Create canvas
+        const canvas = document.createElement('canvas');
+        canvas.width = 10;
+        canvas.height = 10;
+        // Add wholeSquare to canvas
+        const context = canvas.getContext('2d');
+        const image = new Image();
+        image.src = assetPath('wholeSquare.webp');
+        image.onload = function () {
+          context.drawImage(image, col * 10, row * 10, 10, 10, 0, 0, 10, 10);
+          // Get pixels
+          const imageData = context.getImageData(0, 0, 10, 10);
+          const pixels = imageData.data;
+          // Loop pixels
+          let emojiString = '';
+          for (let i = 0; i < pixels.length; i += 4) {
+            // Get pixel color
+            const red = pixels[i];
+            const green = pixels[i + 1];
+            const blue = pixels[i + 2];
+            // Find closest emoji
+            let closestEmoji = emojis[0];
+            let closestDistance = 195075;
+            for (let j = 0; j < emojis.length; j++) {
+              const emoji = emojis[j];
+              const distance = Math.sqrt(
+                Math.pow(emoji.red - red, 2) +
+                Math.pow(emoji.green - green, 2) +
+                Math.pow(emoji.blue - blue, 2)
+              );
+              if (distance < closestDistance) {
+                closestEmoji = emoji;
+                closestDistance = distance;
+              }
+            }
+            emojiString += closestEmoji.emoji;
+            // Add line break
+            if (i % 40 === 36) {
+              emojiString += "<br>";
+            }
+          }
+          // Set emoji string
+          elEmojified.innerHTML = emojiString;
+        }
+
+        // Copy emojified
+        const elCopyEmojified = document.getElementById('copy-emojified');
+        elCopyEmojified.addEventListener('click', () => {
+          const range = document.createRange();
+          range.selectNode(elEmojified);
+          window.getSelection().removeAllRanges();
+          window.getSelection().addRange(range);
+          document.execCommand('copy');
+          window.getSelection().removeAllRanges();
+        });
       });
     });
   </script>
-  <script type="module" src="/assets/js/square-lookup.js"></script>
+  <script type="module" src="{{ site.baseurl }}/assets/square-lookup/index.js"></script>
+  <script src="{{ site.baseurl }}/assets/js/pwa-init.js"></script>
 </body>
 
 </html>

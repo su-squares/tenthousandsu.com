@@ -35,6 +35,10 @@ export type TransferEnv = {
   unsafeTransfer: boolean;
 };
 
+type TokenUriBaseOptions = {
+  allowEmpty?: boolean;
+};
+
 type LoadOptions = {
   required?: boolean;
   requireKeys?: (keyof ContractEnv)[];
@@ -136,6 +140,25 @@ export function loadContractEnv(options: LoadOptions = {}): ContractEnv | null {
   }
 
   return env;
+}
+
+export function resolveTokenUriBase(networkName: string, options: TokenUriBaseOptions = {}): string {
+  const { allowEmpty = false } = options;
+  const upper = (networkName || "mainnet").toUpperCase();
+  const key = `TOKEN_URI_BASE_${upper}`;
+  const raw = (process.env[key] || process.env.TOKEN_URI_BASE || "").trim();
+  if (raw) {
+    return raw.endsWith("/") ? raw : `${raw}/`;
+  }
+  if (upper === "MAINNET") {
+    return "https://tenthousandsu.com/erc721/";
+  }
+  if (allowEmpty) {
+    return "";
+  }
+  throw new Error(
+    `TOKEN_URI_BASE not set for ${networkName}. Add ${key} to ${CONTRACT_ENV_PATH} (see ${CONTRACT_ENV_EXAMPLE_PATH}).`,
+  );
 }
 
 export function loadSunetEnv(options: LoadOptions = {}): SunetEnv | null {

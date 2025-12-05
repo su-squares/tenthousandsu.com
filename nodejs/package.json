@@ -5,13 +5,23 @@
   "description": "Workspaces for Tenthousandsu.com build support and test tooling",
   "keywords": ["tenthousandsu", "support", "builder", "vitest", "storybook", "playwright", "smart-contract"],
   "scripts": {
+    
     "install:builder": "pnpm --filter builder install",
     "install:playwright": "pnpm --filter playwright install",
     "install:storybook": "pnpm --filter storybook install",
     "install:vitest": "pnpm --filter vitest install",
     "install:smart-contract": "pnpm --filter smart-contract install",
     "install:all": "pnpm install",
-    "gen:site-config": "node scripts/gen-site-config.js"
+    "--- Site Scripts ---": ":",
+    "gen:site-config": "pnpm --filter smart-contract run gen:site-config",
+    "assets:update:sunet": "pnpm --filter smart-contract run update:assets:sunet",
+    "assets:update:sepolia": "pnpm --filter smart-contract run update:assets:sepolia",
+    "listen:sunet": "pnpm --filter smart-contract run listen:sunet",
+    "listen:sepolia": "pnpm --filter smart-contract run listen:sepolia",
+    "delete:sunet": "pnpm --filter smart-contract run delete:sunet",
+    "delete:sepolia": "pnpm --filter smart-contract run delete:sepolia",
+    "delete:runtime-config": "pnpm --filter smart-contract run delete:runtime-config",
+    "delete:all": "pnpm --filter smart-contract run delete:all"
   },
   "dependencies": {
     "dotenv": "^16.4.5"

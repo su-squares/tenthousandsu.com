@@ -208,6 +208,8 @@ contract SuNFT is ERC165, ERC721, ERC721Metadata, ERC721Enumerable, SupportsInte
 
     // COMPLIANCE WITH ERC721Metadata //////////////////////////////////////////
 
+    string internal tokenUriBase;
+
     /// @notice A descriptive name for a collection of NFTs in this contract
     function name() external pure returns (string) {
         return "Su Squares";
@@ -228,14 +230,38 @@ contract SuNFT is ERC165, ERC721, ERC721Metadata, ERC721Enumerable, SupportsInte
         mustBeValidToken(_tokenId)
         returns (string _tokenURI)
     {
-        _tokenURI = "https://tenthousandsu.com/erc721/00000.json";
-        bytes memory _tokenURIBytes = bytes(_tokenURI);
-        _tokenURIBytes[33] = byte(48+(_tokenId / 10000) % 10);
-        _tokenURIBytes[34] = byte(48+(_tokenId / 1000) % 10);
-        _tokenURIBytes[35] = byte(48+(_tokenId / 100) % 10);
-        _tokenURIBytes[36] = byte(48+(_tokenId / 10) % 10);
-        _tokenURIBytes[37] = byte(48+(_tokenId / 1) % 10);
+        bytes memory _base = bytes(tokenUriBase);
+        require(_base.length > 0);
 
+        bool hasTrailingSlash = _base[_base.length - 1] == "/";
+        bytes memory suffix = ".json";
+        uint256 len = _base.length + (hasTrailingSlash ? 0 : 1) + 5 + suffix.length;
+        bytes memory output = new bytes(len);
+        uint256 i = 0;
+
+        // copy base
+        for (i = 0; i < _base.length; i++) {
+            output[i] = _base[i];
+        }
+
+        uint256 offset = _base.length;
+        if (!hasTrailingSlash) {
+            output[offset] = "/";
+            offset += 1;
+        }
+
+        output[offset + 0] = byte(48+(_tokenId / 10000) % 10);
+        output[offset + 1] = byte(48+(_tokenId / 1000) % 10);
+        output[offset + 2] = byte(48+(_tokenId / 100) % 10);
+        output[offset + 3] = byte(48+(_tokenId / 10) % 10);
+        output[offset + 4] = byte(48+(_tokenId / 1) % 10);
+
+        offset += 5;
+        for (i = 0; i < suffix.length; i++) {
+            output[offset + i] = suffix[i];
+        }
+
+        _tokenURI = string(output);
     }
 
     // COMPLIANCE WITH ERC721Enumerable ////////////////////////////////////////
@@ -367,7 +393,7 @@ contract SuNFT is ERC165, ERC721, ERC721Metadata, ERC721Enumerable, SupportsInte
     // address[] private nftIds;
     // mapping (uint256 => uint256) private nftIndexOfId;
 
-    constructor() internal {
+    constructor(string _tokenUriBase) internal {
         // Publish interfaces with ERC-165
         supportedInterfaces[0x80ac58cd] = true; // ERC721
         supportedInterfaces[0x5b5e139f] = true; // ERC721Metadata
@@ -390,6 +416,10 @@ contract SuNFT is ERC165, ERC721, ERC721Metadata, ERC721Enumerable, SupportsInte
         // for (uint256 i = 1; i <= TOTAL_SUPPLY; i++) {
         //     _ownedTokensIndexWithSubstitutions[i] = i - 1;
         // }
+
+        bytes memory incoming = bytes(_tokenUriBase);
+        require(incoming.length > 0);
+        tokenUriBase = _tokenUriBase;
     }
 
     /// @dev Actually perform the safeTransferFrom

@@ -1,4 +1,5 @@
 import { loadSquareData } from "../square-data.js";
+import { assetPath } from "../asset-base.js";
 
 const GRID_DIMENSION = 100;
 
@@ -121,7 +122,7 @@ export function attachCanvasChooser({
     imgWrapper.className = "su-canvas__wrapper";
 
     image = document.createElement("img");
-    image.src = "/build/wholeSquare.png";
+    image.src = assetPath("wholeSquare.png");
     image.alt = "All Su Squares";
     image.className = "su-canvas__image";
 

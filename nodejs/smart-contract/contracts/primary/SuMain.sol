@@ -9,6 +9,6 @@ import "./SuVending.sol";
 /// @title The features that deed owners can use
 /// @author William Entriken (https://phor.net)
 contract SuMain is AccessControl, SuNFT, SuOperation, SuVending, SuPromo {
-    constructor() public {
+    constructor(string _tokenUriBase) public SuNFT(_tokenUriBase) {
     }
 }

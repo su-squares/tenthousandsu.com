@@ -26,6 +26,20 @@ function readWindowConfig() {
   return window.suWeb3 || window.SU_WEB3 || {};
 }
 
+function normalizeAssetBases(raw) {
+  const bases = raw && typeof raw === "object" ? raw : {};
+  const pick = (key, fallback) => {
+    const val = bases[key];
+    if (!val || typeof val !== "string") return fallback;
+    return val;
+  };
+  return {
+    [ChainKey.MAINNET]: pick(ChainKey.MAINNET, "/build"),
+    [ChainKey.SEPOLIA]: pick(ChainKey.SEPOLIA, "/build-sepolia"),
+    [ChainKey.SUNET]: pick(ChainKey.SUNET, "/build-sunet"),
+  };
+}
+
 /**
  * Resolve runtime flags from the browser (window.suWeb3) with sane defaults.
  * @returns {{
@@ -33,6 +47,7 @@ function readWindowConfig() {
  *   debug: boolean,
  *   walletConnectProjectId: string,
  *   addresses: Record<string, { primary?: string|null, underlay?: string|null }>,
+ *   assetBases: Record<string, string>,
  *   overrides: { sunetChainId?: number, sunetExplorerBaseUrl?: string, sunetRpcUrls?: string[] }
  * }}
  */
@@ -42,6 +57,7 @@ export function getRuntimeFlags() {
   const debug = parseBool(raw.debug ?? raw.DEBUG, false);
   const walletConnectProjectId =
     raw.walletConnectProjectId || raw.WALLETCONNECT_PROJECT_ID || DEFAULT_WALLETCONNECT_PROJECT_ID;
+  const assetBases = normalizeAssetBases(raw.assetBases);
 
   const addresses = {
     [ChainKey.MAINNET]: {
@@ -68,6 +84,7 @@ export function getRuntimeFlags() {
     chain,
     debug,
     walletConnectProjectId,
+    assetBases,
     addresses,
     overrides: {
       sunetChainId,
