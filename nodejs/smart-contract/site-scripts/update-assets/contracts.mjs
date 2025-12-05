@@ -2,6 +2,8 @@ import fs from "fs";
 import path from "path";
 import { Contract, ethers } from "ethers";
 
+export const SETTLE_BLOCKS = 1; // Shared between event-listener and update-assets
+
 const MAINNET_PRIMARY = "0xE9e3F9cfc1A64DFca53614a0182CFAD56c10624F";
 const MAINNET_UNDERLAY = "0x992bDEC05cD423B73085586f7DcbbDaB953E0DCd";
 const MAINNET_DEPLOY_BLOCK = 6645906;

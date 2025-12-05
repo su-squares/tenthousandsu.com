@@ -10,7 +10,7 @@ import path from "path";
 import { fileURLToPath } from "url";
 import dotenv from "dotenv";
 import chalk from "chalk";
-import { loadContractsConfig } from "./update-assets/contracts.mjs";
+import { loadContractsConfig, SETTLE_BLOCKS } from "./update-assets/contracts.mjs";
 import { createImagePipeline } from "./update-assets/image-processing.mjs";
 import { publishMetadataJson } from "./update-assets/metadata.mjs";
 import { NUM_SQUARES } from "./update-assets/geometry.mjs";
@@ -64,7 +64,6 @@ async function main() {
   const numberOfBlocksToProcess = blocksToProcess || 1_000_000;
   const pipeline = createImagePipeline({ repoRoot, buildDir: paths.buildDir, metadataDir: paths.metadataDir });
 
-  const SETTLE_BLOCKS = 10;
   const nonpersonalizedPixelData = Buffer.from("E6".repeat(300), "hex"); // Gray
   const blackPixelData = Buffer.from("00".repeat(300), "hex"); // Black
 
