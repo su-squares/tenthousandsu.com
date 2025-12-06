@@ -1,0 +1,227 @@
+.su-tx-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  z-index: 90000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease;
+}
+
+.su-tx-overlay.is-visible {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.su-tx-card {
+  width: 100%;
+  background-image: linear-gradient(135deg, #2d3c96, #d53392);
+  border: 1px solid #ffd700;
+  border-radius: 10px;
+  color: #ffd700;
+  padding: 1rem;
+  box-sizing: border-box;
+  display: grid;
+  gap: 0.75rem;
+  box-shadow: 0 16px 34px rgba(0, 0, 0, 0.4);
+}
+
+.su-tx-card--modal {
+  max-width: 520px;
+}
+
+.su-tx-card__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+}
+
+.su-tx-card__title {
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.su-tx-card__note {
+  color: rgba(255, 215, 0, 0.85);
+  font-size: 0.95rem;
+  margin: 0;
+}
+
+.su-tx-card__section {
+  background: rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  border-radius: 8px;
+  padding: 0.75rem;
+}
+
+.su-tx-price {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.su-tx-price__item {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  color: #fff;
+}
+
+.su-tx-price__label {
+  font-weight: 700;
+  color: #ffd700;
+}
+
+.su-tx-bar {
+  position: relative;
+  overflow: hidden;
+  border-radius: 6px;
+  border: 1px solid rgba(255, 255, 255, 0.35);
+  padding: 0.65rem 0.75rem;
+  text-align: center;
+  font-weight: 700;
+  color: #fff;
+}
+
+.su-tx-bar--processing {
+  background: linear-gradient(135deg, rgba(45, 60, 150, 0.9), rgba(213, 51, 146, 0.85));
+}
+
+.su-tx-bar--processing::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+  animation: suTxShimmer 1.2s linear infinite;
+  pointer-events: none;
+}
+
+.su-tx-bar--success {
+  background: #2d3c96;
+}
+
+.su-tx-bar--error {
+  background: #b00020;
+}
+
+.su-tx-card__section--status {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.su-tx-message {
+  margin-top: 0.6rem;
+  max-height: 200px;
+  overflow-y: auto;
+  color: #fff;
+  line-height: 1.4;
+  padding-right: 0.25rem;
+  word-break: break-word;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+.su-tx-message::-webkit-scrollbar {
+  width: 8px;
+}
+
+.su-tx-message::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.45);
+  border-radius: 6px;
+}
+
+.su-tx-list {
+  display: grid;
+  gap: 0.35rem;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.su-tx-list__item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+  color: #fff;
+}
+
+.su-tx-list__badge {
+  padding: 0.1rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+}
+
+.su-tx-list__badge--pending {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.su-tx-list__badge--success {
+  background: rgba(0, 255, 160, 0.12);
+  border-color: rgba(0, 255, 160, 0.35);
+}
+
+.su-tx-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.su-tx-btn {
+  padding: 0.55rem 0.9rem;
+  border-radius: 8px;
+  border: 1px solid #ffd700;
+  background: rgba(0, 0, 0, 0.15);
+  color: #ffd700;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.su-tx-btn--ghost {
+  border-color: rgba(255, 255, 255, 0.35);
+  color: #fff;
+}
+
+.su-tx-help {
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.su-tx-divider {
+  height: 1px;
+  background: rgba(255, 255, 255, 0.2);
+  border: none;
+  margin: 0.25rem 0;
+}
+
+@keyframes suTxShimmer {
+  0% {
+    transform: translateX(-120%);
+  }
+  100% {
+    transform: translateX(120%);
+  }
+}
+
+@media (max-width: 540px) {
+  .su-tx-card__header {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+  .su-tx-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .su-tx-btn {
+    width: 100%;
+    text-align: center;
+  }
+}

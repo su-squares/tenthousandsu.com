@@ -1,5 +1,6 @@
 import { getWeb3Config } from "../config/index.js";
 import { createDebugLogger } from "../config/logger.js";
+import { getMintPriceWei } from "./pricing.js";
 
 const log = createDebugLogger("service-primary");
 
@@ -80,9 +81,16 @@ const PRIMARY_ABI = [
     stateMutability: "view",
     type: "function",
   },
+  {
+    constant: true,
+    inputs: [],
+    name: "salePrice",
+    outputs: [{ name: "", type: "uint256" }],
+    payable: false,
+    stateMutability: "view",
+    type: "function",
+  },
 ];
-
-const PURCHASE_PRICE_WEI = 500000000000000000n; // 0.5 ETH
 
 /**
  * Purchase a Square on the primary contract.
@@ -93,12 +101,13 @@ const PURCHASE_PRICE_WEI = 500000000000000000n; // 0.5 ETH
 export async function purchaseSquare(squareId, wagmi) {
   const { contracts } = getWeb3Config();
   log("purchaseSquare", { squareId, address: contracts.primary });
+  const value = await getMintPriceWei(wagmi);
   return wagmi.writeContract({
     address: contracts.primary,
     abi: PRIMARY_ABI,
     functionName: "purchase",
     args: [squareId],
-    value: PURCHASE_PRICE_WEI,
+    value,
   });
 }
 

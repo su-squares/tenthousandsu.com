@@ -21,6 +21,15 @@ function parseIntish(value, fallback) {
   return fallback;
 }
 
+function parseFloatish(value, fallback) {
+  if (typeof value === "number" && Number.isFinite(value)) return value;
+  if (typeof value === "string" && value.trim() !== "") {
+    const parsed = Number.parseFloat(value);
+    if (Number.isFinite(parsed)) return parsed;
+  }
+  return fallback;
+}
+
 function readWindowConfig() {
   if (typeof window === "undefined") return {};
   return window.suWeb3 || window.SU_WEB3 || {};
@@ -40,6 +49,15 @@ function normalizeAssetBases(raw) {
   };
 }
 
+function normalizePricing(raw) {
+  const pricing = raw && typeof raw === "object" ? raw : {};
+  return {
+    mintPriceEth: parseFloatish(pricing.mintPriceEth, 0.5),
+    personalizePriceEth: parseFloatish(pricing.personalizePriceEth, 0.001),
+    personalizeFreeCount: 3,
+  };
+}
+
 /**
  * Resolve runtime flags from the browser (window.suWeb3) with sane defaults.
  * @returns {{
@@ -48,7 +66,8 @@ function normalizeAssetBases(raw) {
  *   walletConnectProjectId: string,
  *   addresses: Record<string, { primary?: string|null, underlay?: string|null }>,
  *   assetBases: Record<string, string>,
- *   overrides: { sunetChainId?: number, sunetExplorerBaseUrl?: string, sunetRpcUrls?: string[] }
+ *   overrides: { sunetChainId?: number, sunetExplorerBaseUrl?: string, sunetRpcUrls?: string[] },
+ *   pricing: { mintPriceEth: number, personalizePriceEth: number, personalizeFreeCount: number }
  * }}
  */
 export function getRuntimeFlags() {
@@ -91,5 +110,6 @@ export function getRuntimeFlags() {
       sunetExplorerBaseUrl,
       sunetRpcUrls: [sunetRpcUrl].filter(Boolean),
     },
+    pricing: normalizePricing(raw.pricing),
   };
 }

@@ -1,5 +1,6 @@
 import { getWeb3Config } from "../config/index.js";
 import { createDebugLogger } from "../config/logger.js";
+import { getPersonalizePriceWei } from "./pricing.js";
 
 const log = createDebugLogger("service-underlay");
 
@@ -16,9 +17,14 @@ const UNDERLAY_ABI = [
     stateMutability: "payable",
     type: "function",
   },
+  {
+    inputs: [],
+    name: "pricePerSquare",
+    outputs: [{ internalType: "uint256", name: "", type: "uint256" }],
+    stateMutability: "view",
+    type: "function",
+  },
 ];
-
-const PERSONALIZE_PRICE_WEI = 1000000000000000n; // 0.001 ETH
 
 /**
  * Personalize a single Square on the underlay contract.
@@ -30,13 +36,14 @@ export async function personalizeUnderlay(args, wagmi) {
   const { squareId, imagePixelsHex, title, url } = args;
   const { contracts } = getWeb3Config();
   log("personalizeUnderlay", { squareId, address: contracts.underlay });
+  const value = await getPersonalizePriceWei(wagmi);
   return wagmi.writeContract({
     address: contracts.underlay,
     abi: UNDERLAY_ABI,
     functionName: "personalizeSquareUnderlay",
     args: [squareId, imagePixelsHex, title, url],
-    value: PERSONALIZE_PRICE_WEI,
+    value,
   });
 }
 
-export { UNDERLAY_ABI, PERSONALIZE_PRICE_WEI };
+export { UNDERLAY_ABI };

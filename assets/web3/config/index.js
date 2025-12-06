@@ -39,7 +39,8 @@ function buildNetworks(flags) {
  *   walletConnectProjectId: string,
  *   networks: Record<string, { chainId: number, label: string, explorerBaseUrl?: string, explorerTxPath?: string, rpcUrls: string[] }>,
  *   activeNetwork: { chainId: number, label: string, explorerBaseUrl?: string, explorerTxPath?: string, rpcUrls: string[] },
- *   contracts: { primary: string, underlay: string }
+ *   contracts: { primary: string, underlay: string },
+ *   pricing: { mintPriceEth: number, personalizePriceEth: number, personalizeFreeCount: number }
  * }}
  */
 export function getWeb3Config() {
@@ -58,6 +59,7 @@ export function getWeb3Config() {
     networks,
     activeNetwork,
     contracts,
+    pricing: flags.pricing,
   };
 
   return cachedConfig;
