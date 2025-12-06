@@ -3,7 +3,7 @@
  * @module qr
  */
 
-const QR_LIB_URL = "/assets/web3/vendor/qr-creator-bundle.js";
+const QR_LIB_URL = (window.SITE_BASEURL || '') + "/assets/web3/vendor/qr-creator-bundle.js";
 let qrLibPromise = null;
 
 async function loadQrLib() {

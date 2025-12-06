@@ -7,6 +7,7 @@ import { renderQr as renderQrCanvas } from "../../qr.js";
  */
 export function renderQrView(target, state, actions) {
   if (!target) return;
+  const baseurl = window.SITE_BASEURL || '';
   target.innerHTML = `
     <div class="wallet-modal__header">
       <h2 id="wallet-qr-title">Scan with wallet</h2>
@@ -25,7 +26,7 @@ export function renderQrView(target, state, actions) {
           style="display: none;"
         ></canvas>
         <img
-          src="${window.location.origin}/assets/images/logo-su-squares.png"
+          src="${window.location.origin}${baseurl}/assets/images/logo-su-squares.png"
           alt="Su Squares"
           class="wallet-qr__logo"
         />

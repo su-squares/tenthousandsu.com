@@ -1,6 +1,6 @@
-import { attachListChooser } from "/assets/js/choosers/list-chooser.js";
-import { attachCanvasChooser } from "/assets/js/choosers/canvas-chooser.js";
-import { loadSquareData } from "/assets/js/square-data.js";
+import { attachListChooser } from "./choosers/list-chooser.js";
+import { attachCanvasChooser } from "./choosers/canvas-chooser.js";
+import { loadSquareData } from "./square-data.js";
 
 const input = document.getElementById("square-lookup-input");
 const chooseButton = document.getElementById("square-lookup-choose");
@@ -16,13 +16,14 @@ if (input && chooseButton && submitButton) {
   }
 
   const goToSquare = (id) => {
+    const baseurl = window.SITE_BASEURL || '';
     const targetHash = `#${id}`;
     if (isSquarePage) {
       window.scrollTo(0, 0);
       window.location.hash = targetHash;
       window.location.reload();
     } else {
-      window.location.href = `/square${targetHash}`;
+      window.location.href = `${baseurl}/square${targetHash}`;
     }
   };
 

@@ -6,19 +6,20 @@ layout: null
 <html lang="en">
 
 <head>
+    <script>window.SITE_BASEURL = "{{ site.baseurl }}";</script>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     {% include pwa-meta-tags.html %}
-    <meta http-equiv="refresh" content="0; url=/">
+    <meta http-equiv="refresh" content="0; url={{ site.baseurl }}/">
     <script type="text/javascript">
-        window.location.href = "/";
+        window.location.href = "{{ site.baseurl }}/";
     </script>
     <title>Page Not Found</title>
 </head>
 
 <body>
-    <p>If you are not redirected automatically, follow this <a href="/">link to the homepage</a>.</p>
-    <script src="/assets/js/pwa-init.js"></script>
+    <p>If you are not redirected automatically, follow this <a href="{{ site.baseurl }}/">link to the homepage</a>.</p>
+    <script src="{{ site.baseurl }}/assets/js/pwa-init.js"></script>
 </body>
 
 </html>

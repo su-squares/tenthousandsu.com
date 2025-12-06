@@ -2,20 +2,21 @@ import { getStoredSession, openWalletDeepLink } from "../wc-store.js";
 import { truncateAddress } from "../../client/wagmi.js";
 
 function getChainIcon(activeNetwork, presets) {
+  const baseurl = window.SITE_BASEURL || '';
   if (activeNetwork.chainId === presets.mainnet) {
     return {
-      src: `${window.location.origin}/assets/images/ethereum_logo.png`,
+      src: `${window.location.origin}${baseurl}/assets/images/ethereum_logo.png`,
       alt: "Ethereum logo",
     };
   }
   if (activeNetwork.chainId === presets.sepolia) {
     return {
-      src: `${window.location.origin}/assets/images/sepolia-logo.png`,
+      src: `${window.location.origin}${baseurl}/assets/images/sepolia-logo.png`,
       alt: "Sepolia logo",
     };
   }
   return {
-    src: `${window.location.origin}/assets/images/logomark-su-squares.png`,
+    src: `${window.location.origin}${baseurl}/assets/images/logomark-su-squares.png`,
     alt: `${activeNetwork.label} logo`,
   };
 }

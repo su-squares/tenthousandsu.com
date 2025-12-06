@@ -1,6 +1,7 @@
 (function () {
-  const DEFAULT_STYLESHEET_HREF = "/assets/modals/leaving-modal/modal.css";
-  const DEFAULT_ALLOWLIST_URL = "/assets/modals/leaving-modal/allowlist.json";
+  const baseurl = window.SITE_BASEURL || '';
+  const DEFAULT_STYLESHEET_HREF = baseurl + "/assets/modals/leaving-modal/modal.css";
+  const DEFAULT_ALLOWLIST_URL = baseurl + "/assets/modals/leaving-modal/allowlist.json";
   const TEMPLATE_HTML = `
     <div class="su-leaving-backdrop" aria-hidden="true">
       <div class="su-leaving" role="dialog" aria-modal="true" aria-label="Leaving this site">

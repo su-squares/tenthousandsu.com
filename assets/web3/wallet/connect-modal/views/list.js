@@ -69,9 +69,10 @@ export function renderListView(target, { connectors, onSelect, onOpenInfo }) {
     })
     .join("");
 
+  const baseurl = window.SITE_BASEURL || '';
   target.innerHTML = `
     <div class="wallet-modal__logo">
-      <img src="${window.location.origin}/assets/images/logo-su-squares.png" alt="Su Squares">
+      <img src="${window.location.origin}${baseurl}/assets/images/logo-su-squares.png" alt="Su Squares">
     </div>
     <div class="wallet-modal__header">
       <h2 id="wallet-connect-title">Connect your wallet</h2>

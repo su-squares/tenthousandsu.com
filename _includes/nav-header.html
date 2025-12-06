@@ -1,11 +1,11 @@
 <header class="su-nav-header">
-  <a class="su-nav-logo" href="/">
-    <img src="/assets/images/logo-su-squares.svg" alt="Su Squares logo">
+  <a class="su-nav-logo" href="{{ site.baseurl }}/">
+    <img src="{{ site.baseurl }}/assets/images/logo-su-squares.svg" alt="Su Squares logo">
   </a>
 
   <div class="su-nav-actions">
     {% if include.desktop_button_one_label and include.desktop_button_one_href %}
-    <a class="btn su-nav-desktop-extra" href="{{ include.desktop_button_one_href }}">{{ include.desktop_button_one_label }}</a>
+    <a class="btn su-nav-desktop-extra" href="{{ site.baseurl }}{{ include.desktop_button_one_href }}">{{ include.desktop_button_one_label }}</a>
     {% endif %}
     <span class="su-nav-desktop-tagline">The first ERC-721 NFT</span>
     <button id="connect-wallet" class="btn su-nav-connect" type="button" aria-label="Connect Wallet">Connect&#10;Wallet</button>
@@ -45,14 +45,14 @@
 
     <nav aria-label="Main navigation">
       <div class="su-nav-buttons">
-        <a class="su-nav-btn" data-nav-path="/" href="/">Home</a>
-        <a class="su-nav-btn" data-nav-path="/buy" href="/buy">Mint</a>
+        <a class="su-nav-btn" data-nav-path="{{ site.baseurl }}/" href="{{ site.baseurl }}/">Home</a>
+        <a class="su-nav-btn" data-nav-path="{{ site.baseurl }}/buy" href="{{ site.baseurl }}/buy">Mint</a>
         <div class="su-nav-buttons-row">
-          <a class="su-nav-btn" data-nav-path="/personalize" href="/personalize">Personalize</a>
-          <a class="su-nav-btn su-nav-btn--batch" data-nav-path="/personalize-batch" href="/personalize-batch">Batch mode</a>
+          <a class="su-nav-btn" data-nav-path="{{ site.baseurl }}/personalize" href="{{ site.baseurl }}/personalize">Personalize</a>
+          <a class="su-nav-btn su-nav-btn--batch" data-nav-path="{{ site.baseurl }}/personalize-batch" href="{{ site.baseurl }}/personalize-batch">Batch mode</a>
         </div>
-        <a class="su-nav-btn" data-nav-path="/white-paper" href="/white-paper">About us</a>
-        <a class="su-nav-btn" data-nav-path="/faq" href="/faq">FAQ</a>
+        <a class="su-nav-btn" data-nav-path="{{ site.baseurl }}/white-paper" href="{{ site.baseurl }}/white-paper">About us</a>
+        <a class="su-nav-btn" data-nav-path="{{ site.baseurl }}/faq" href="{{ site.baseurl }}/faq">FAQ</a>
         <button class="su-nav-btn su-nav-btn-articles" data-nav-path="/articles" type="button" aria-controls="su-nav-articles-modal">
           Articles
           <svg class="su-nav-arrow-right" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#ffd700" stroke-width="2">

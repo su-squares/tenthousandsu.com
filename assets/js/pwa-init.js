@@ -1,7 +1,8 @@
 // PWA initialization
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/service-worker.js')
+    const swPath = (window.SITE_BASEURL || '') + '/service-worker.js';
+    navigator.serviceWorker.register(swPath)
       .then(registration => {
         console.log('SW registered:', registration);
       })

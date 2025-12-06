@@ -1,7 +1,8 @@
-import { getRuntimeFlags } from "/assets/web3/config/runtime.js";
+import { getRuntimeFlags } from "../web3/config/runtime.js";
 
 function normalizeBase(base) {
-  if (!base) return "/build";
+  const baseurl = window.SITE_BASEURL || '';
+  if (!base) return baseurl + "/build";
   // Ensure leading slash and no trailing slash
   let normalized = base.trim();
   if (!normalized.startsWith("/")) {
@@ -12,7 +13,8 @@ function normalizeBase(base) {
 
 export function getAssetBase() {
   const { chain, assetBases } = getRuntimeFlags();
-  const base = assetBases?.[chain] || "/build";
+  const baseurl = window.SITE_BASEURL || '';
+  const base = assetBases?.[chain] || (baseurl + "/build");
   return normalizeBase(base);
 }
 

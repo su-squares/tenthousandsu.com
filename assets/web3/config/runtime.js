@@ -37,10 +37,15 @@ function readWindowConfig() {
 
 function normalizeAssetBases(raw) {
   const bases = raw && typeof raw === "object" ? raw : {};
+  const baseurl = window.SITE_BASEURL || '';
   const pick = (key, fallback) => {
     const val = bases[key];
-    if (!val || typeof val !== "string") return fallback;
-    return val;
+    const path = (val && typeof val === "string") ? val : fallback;
+    // Prepend baseurl if path doesn't already include it
+    if (baseurl && !path.startsWith(baseurl)) {
+      return baseurl + path;
+    }
+    return path;
   };
   return {
     [ChainKey.MAINNET]: pick(ChainKey.MAINNET, "/build"),

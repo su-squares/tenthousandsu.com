@@ -1,5 +1,6 @@
 (function () {
-  const STYLESHEET_HREF = "/assets/modals/leaving-modal/modal.css";
+  const baseurl = window.SITE_BASEURL || '';
+  const STYLESHEET_HREF = baseurl + "/assets/modals/leaving-modal/modal.css";
   const TEMPLATE_HTML = `
     <div class="su-leaving-backdrop" aria-hidden="true">
       <div class="su-leaving" role="dialog" aria-modal="true" aria-label="Leaving this site">
@@ -122,7 +123,7 @@
 
     allowlistLoaded = true;
 
-    return fetch("/assets/modals/leaving-modal/allowlist.json")
+    return fetch(baseurl + "/assets/modals/leaving-modal/allowlist.json")
       .then(function (response) {
         if (!response.ok) {
           throw new Error("Allowlist fetch failed");

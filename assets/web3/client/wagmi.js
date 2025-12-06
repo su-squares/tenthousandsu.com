@@ -8,7 +8,7 @@ import { createDebugLogger } from "../config/logger.js";
 import { waitForProviders, startEIP6963Discovery } from "../wallet/eip6963.js";
 
 const log = createDebugLogger("wagmi-loader");
-const BUNDLE_URL = "/assets/web3/vendor/wagmi-bundle.js";
+const BUNDLE_URL = (window.SITE_BASEURL || '') + "/assets/web3/vendor/wagmi-bundle.js";
 
 export const MAINNET_CHAIN_ID = NETWORK_PRESETS[ChainKey.MAINNET].chainId;
 export const SEPOLIA_CHAIN_ID = NETWORK_PRESETS[ChainKey.SEPOLIA].chainId;
@@ -137,11 +137,12 @@ export async function loadWagmiClient() {
       const chainList = buildChains(core, appConfig.activeNetwork, appConfig.networks);
       const { chains, publicClient, webSocketPublicClient } = configureChains(chainList, [publicProvider()]);
 
+      const baseurl = window.SITE_BASEURL || '';
       const metadata = {
         name: "Su Squares",
         description: "Su Squares wallet connection",
         url: window.location.origin,
-        icons: [`${window.location.origin}/assets/images/ethereum_logo.png`],
+        icons: [`${window.location.origin}${baseurl}/assets/images/ethereum_logo.png`],
       };
 
       const connectors = [];

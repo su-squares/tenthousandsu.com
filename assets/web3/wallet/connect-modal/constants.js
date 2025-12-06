@@ -3,4 +3,4 @@ export const CONNECTING_VARIANT = {
   WALLETCONNECT: "walletConnectMobile",
 };
 
-export const WALLETCONNECT_ICON = "/assets/images/walletconnect.png";
+export const WALLETCONNECT_ICON = (window.SITE_BASEURL || '') + "/assets/images/walletconnect.png";
