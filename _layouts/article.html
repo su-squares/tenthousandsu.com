@@ -4,6 +4,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% include pwa-meta-tags.html %}
   <title>{{ page.title | escape }}</title>
   <link rel="canonical" href="{{ site.url | escape }}{{ page.permalink | escape }}" />
   <link rel="stylesheet" href="/assets/css/main.css">
@@ -37,6 +38,7 @@
       anchors.add();
     });
   </script>
+  <script src="/assets/js/pwa-init.js"></script>
 </body>
 
 </html>

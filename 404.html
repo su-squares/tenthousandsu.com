@@ -7,6 +7,8 @@ layout: null
 
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    {% include pwa-meta-tags.html %}
     <meta http-equiv="refresh" content="0; url=/">
     <script type="text/javascript">
         window.location.href = "/";
@@ -16,6 +18,7 @@ layout: null
 
 <body>
     <p>If you are not redirected automatically, follow this <a href="/">link to the homepage</a>.</p>
+    <script src="/assets/js/pwa-init.js"></script>
 </body>
 
 </html>

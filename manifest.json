@@ -1,0 +1,23 @@
+{
+  "name": "Su Squares",
+  "short_name": "10kSu",
+  "description": "Collect and personalize your Su Squares on the blockchain",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#2d3c96",
+  "theme_color": "#2d3c96",
+  "icons": [
+    {
+      "src": "/assets/images/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/assets/images/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
