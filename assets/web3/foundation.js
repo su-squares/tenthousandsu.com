@@ -7,6 +7,8 @@ import {
   getStoredSession,
   openWalletDeepLink,
 } from "./wallet/wc-store.js";
+import { isAllowedChain, getCurrentChainId } from "./wallet/network.js";
+import { clearAllEnsCache } from "./wallet/ens-store.js";
 
 const appConfig = getWeb3Config();
 let cachedClients = null;
@@ -51,6 +53,11 @@ function removeWalletConnectKeys({ onlyEmpty = false } = {}) {
 export function clearAllWalletStorage() {
   try {
     clearStoredSession();
+  } catch (_error) {
+    /* ignore */
+  }
+  try {
+    clearAllEnsCache();
   } catch (_error) {
     /* ignore */
   }
@@ -191,22 +198,42 @@ export async function ensureConnected(action) {
   });
 }
 
+/**
+ * Check if currently on the correct network.
+ * This is informational only - it doesn't try to switch.
+ * 
+ * MetaMask and WalletConnect both handle network switching automatically
+ * during transactions, so we don't need to force a switch here.
+ * 
+ * @param {object} clients - The wagmi client bundle
+ * @returns {Promise<{ onCorrectNetwork: boolean, currentChainId: number|null }>}
+ */
 export async function ensureCorrectNetwork(clients) {
   const wagmi = clients || (await loadWeb3());
-  const desiredChainId = appConfig.activeNetwork.chainId;
-  try {
-    const network = wagmi.getNetwork();
-    const chainId = network?.chain?.id;
-    if (chainId === desiredChainId) return wagmi;
-    if (wagmi.switchNetwork) {
-      await wagmi.switchNetwork({ chainId: desiredChainId });
-      return wagmi;
-    }
-  } catch (error) {
-    console.warn("Network switch failed", error);
-  }
-  alert(`Please switch to ${appConfig.activeNetwork.label || "the correct network"} to continue.`);
-  throw new Error("Unsupported network");
+  
+  const currentChainId = getCurrentChainId(wagmi);
+  const onCorrectNetwork = isAllowedChain(currentChainId);
+  
+  log("ensureCorrectNetwork check", { 
+    currentChainId, 
+    expectedChainId: appConfig.activeNetwork.chainId,
+    onCorrectNetwork 
+  });
+  
+  // Just return the status - don't try to switch
+  // Wallets handle this automatically during transactions
+  return { onCorrectNetwork, currentChainId };
+}
+
+/**
+ * Check if currently on the correct network.
+ * @param {object} [wagmi] - Optional wagmi client (will load if not provided)
+ * @returns {Promise<boolean>}
+ */
+export async function isOnCorrectNetwork(wagmi) {
+  const clients = wagmi || (await loadWeb3());
+  const currentChainId = getCurrentChainId(clients);
+  return isAllowedChain(currentChainId);
 }
 
 export function clearCachedWalletSession() {

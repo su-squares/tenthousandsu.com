@@ -100,6 +100,7 @@ const PRIMARY_ABI = [
  */
 export async function purchaseSquare(squareId, wagmi) {
   const { contracts } = getWeb3Config();
+  const chainId = getWeb3Config().activeNetwork.chainId;
   log("purchaseSquare", { squareId, address: contracts.primary });
   const value = await getMintPriceWei(wagmi);
   return wagmi.writeContract({
@@ -108,6 +109,7 @@ export async function purchaseSquare(squareId, wagmi) {
     functionName: "purchase",
     args: [squareId],
     value,
+    chainId,
   });
 }
 

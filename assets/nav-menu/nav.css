@@ -7,6 +7,7 @@
   align-items: center;
   box-sizing: border-box;
   gap: 2rem;
+  position: relative;
 }
 
 .su-nav-logo {
@@ -43,21 +44,50 @@
   align-items: center;
   justify-content: center;
   padding: 0.5rem 0.85rem;
+  margin: 0 20px;
   font-weight: 700;
   text-decoration: none;
   color: var(--color-accent, #ffd700);
 }
 
+.su-nav-desktop-tagline {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  font-style: italic;
+  color: var(--color-accent, #ffd700);
+  white-space: nowrap;
+  pointer-events: none;
+}
+
 .su-nav-connect {
   min-width: 100px;
   padding: 5px 10px;
-  display: inline-flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
   white-space: pre-line;
   line-height: 1.2;
   flex-shrink: 0;
+}
+
+.su-nav-connect-label {
+  display: inline-block;
+}
+
+.su-nav-connect-label--fade {
+  opacity: 0;
+  animation: suNavEnsFade 0.8s ease forwards;
+}
+
+@keyframes suNavEnsFade {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .su-nav-hamburger {
@@ -99,6 +129,10 @@
 
 @media (max-width: 1007px) {
   .su-nav-desktop-extra {
+    display: none;
+  }
+
+  .su-nav-desktop-tagline {
     display: none;
   }
 

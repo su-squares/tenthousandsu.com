@@ -48,7 +48,8 @@ async function readPrice({ wagmi, address, abi, functionName, fallback }) {
   const cached = priceCache.get(key);
   if (typeof cached === "bigint") return cached;
   try {
-    const price = await wagmi.readContract({ address, abi, functionName });
+    const { activeNetwork } = getWeb3Config();
+    const price = await wagmi.readContract({ address, abi, functionName, chainId: activeNetwork.chainId });
     if (typeof price === "bigint") {
       priceCache.set(key, price);
       return price;

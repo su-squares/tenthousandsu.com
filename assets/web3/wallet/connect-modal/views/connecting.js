@@ -38,11 +38,11 @@ export function renderConnectingView(target, options = {}) {
       ${
         isWalletConnect
           ? `
-            <button class="wallet-btn" type="button" data-open-wallet>Open wallet app</button>
+            <button class="wallet-btn" type="button" data-open-wallet>Open mobile wallet</button>
             <button class="wallet-btn" type="button" data-show-qr>Show QR</button>
           `
           : hasUri
-          ? `<button class="wallet-btn" type="button" data-open-wallet>Open wallet app</button>`
+          ? `<button class="wallet-btn" type="button" data-open-wallet>Open mobile wallet</button>`
           : ""
       }
     </div>

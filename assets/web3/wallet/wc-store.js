@@ -164,13 +164,7 @@ export function openWalletDeepLink(fallbackUri, options = {}) {
   const handleFailure = () => {
     if (settled) return;
     settled = true;
-    if (userInitiated) {
-      window.alert(
-        "Mobile device not detected.\n\nThis button only works on mobile devices with wallet apps installed that can run WalletConnect.\n\nTo connect your wallet, please use a wallet browser extension instead or scan the QR with your mobile device."
-      );
-    } else {
-      console.info("WalletConnect deep link not handled by any registered app.");
-    }
+    // Disabled mobile detection modal; leave unhandled for now.
     cleanup();
   };
 

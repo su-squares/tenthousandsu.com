@@ -101,7 +101,7 @@ function main() {
     }
   }
 
-  const sunetChainId = parseIntish(env.SUNET_CHAIN_ID, 1337);
+  const sunetChainId = parseIntish(env.SUNET_CHAIN_ID, 99999991);
   const mintPriceEth = parseFloatish(env.MINT_PRICE_ETH, 0.5);
   const personalizePriceEth = parseFloatish(env.PERSONALIZE_PRICE_ETH, 0.001);
   const configPayload = pruneUndefined({
@@ -115,8 +115,8 @@ function main() {
     sunetPrimaryAddress: addresses.sunet.primary,
     sunetUnderlayAddress: addresses.sunet.underlay,
     sunetChainId,
-    sunetBlockExplorerUrl: env.SUNET_BLOCK_EXPLORER_URL || "http://localhost:4001",
-    sunetRpcUrl: env.SUNET_RPC_URL || "http://127.0.0.1:8545",
+    sunetBlockExplorerUrl: env.SUNET_BLOCK_EXPLORER_URL || "http://192.168.1.40:4001",
+    sunetRpcUrl: env.SUNET_RPC_URL || "http://192.168.1.40:8545",
     assetBases,
     pricing: {
       mintPriceEth,

@@ -3,3 +3,9 @@
   margin-top: 0.5em;
   margin-bottom: 0.5em;
 }
+.wallet-actions .btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}

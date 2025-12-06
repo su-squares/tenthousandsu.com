@@ -38,16 +38,31 @@ export function createModalShell(options = {}) {
     overlay.classList.remove("is-visible");
 
     // Restore focus FIRST, before setting aria-hidden
+    let restored = false;
     if (lastFocusedElement && typeof lastFocusedElement.focus === "function") {
       try {
         lastFocusedElement.focus();
+        restored = true;
       } catch (_error) {
         /* ignore focus errors */
       }
     }
 
+    // If focus is still inside the overlay, move it to body before hiding
+    const active = document.activeElement;
+    if (!restored && active && overlay.contains(active)) {
+      document.body.setAttribute("tabindex", "-1");
+      try {
+        document.body.focus({ preventScroll: true });
+      } catch (_error) {
+        /* ignore focus errors */
+      }
+      document.body.removeAttribute("tabindex");
+    }
+
     // Now safe to hide from assistive tech
     overlay.setAttribute("aria-hidden", "true");
+    overlay.inert = true;
     overlay.hidden = true;
   };
   let onRequestClose = options.onRequestClose || hide;
@@ -133,6 +148,7 @@ export function createModalShell(options = {}) {
     ensureMounted();
     lastFocusedElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
     overlay.hidden = false;
+    overlay.inert = false;
     overlay.setAttribute("aria-hidden", "false");
     overlay.classList.add("is-visible");
     modal.focus({ preventScroll: true });

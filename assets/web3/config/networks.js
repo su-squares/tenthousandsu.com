@@ -36,12 +36,12 @@ export const NETWORK_PRESETS = {
   },
   [ChainKey.SUNET]: {
     key: ChainKey.SUNET,
-    chainId: 1337,
+    chainId: 99999991,
     label: "Sunet",
     explorerName: "Blockscout",
     explorerBaseUrl: "http://localhost:4001",
     explorerTxPath: "/tx/",
-    defaultRpcUrls: ["http://127.0.0.1:8545"],
+    defaultRpcUrls: ["http://localhost:8545"],
     isTestnet: true,
   },
 };

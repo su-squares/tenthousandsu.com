@@ -34,7 +34,7 @@ const UNDERLAY_ABI = [
  */
 export async function personalizeUnderlay(args, wagmi) {
   const { squareId, imagePixelsHex, title, url } = args;
-  const { contracts } = getWeb3Config();
+  const { contracts, activeNetwork } = getWeb3Config();
   log("personalizeUnderlay", { squareId, address: contracts.underlay });
   const value = await getPersonalizePriceWei(wagmi);
   return wagmi.writeContract({
@@ -43,6 +43,7 @@ export async function personalizeUnderlay(args, wagmi) {
     functionName: "personalizeSquareUnderlay",
     args: [squareId, imagePixelsHex, title, url],
     value,
+    chainId: activeNetwork.chainId,
   });
 }
 

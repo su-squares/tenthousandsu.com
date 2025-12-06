@@ -1,4 +1,3 @@
-import { attemptNetworkSwitch } from "../network.js";
 import { openInfoModal } from "../info-modal/index.js";
 import { isWalletCapable, openWalletDeepLink } from "../wc-store.js";
 import { attachWalletConnectSession } from "../wc-session.js";
@@ -21,7 +20,6 @@ export function createConnectController(shell) {
   let accountUnsubscribe = null;
   let resolver = null;
   let visible = false;
-  let networkSwitchPromise = null;
 
   const render = () => {
     if (!shell?.content) return;
@@ -81,12 +79,6 @@ export function createConnectController(shell) {
 
   store.subscribe(render);
 
-  const autoSwitchIfUnsupported = () => {
-    if (networkSwitchPromise) return networkSwitchPromise;
-    networkSwitchPromise = attemptNetworkSwitch(wagmi).catch(() => false);
-    return networkSwitchPromise;
-  };
-
   const setView = (view) => store.setState({ view });
   const setQr = (uri) => store.setState({ qrUri: uri });
   const setError = (message) => store.setState({ errorMessage: message, view: "error" });
@@ -114,7 +106,6 @@ export function createConnectController(shell) {
     shell.hide();
     visible = false;
     store.reset();
-    networkSwitchPromise = null;
     if (resolver) {
       resolver(result ?? null);
       resolver = null;
@@ -157,13 +148,20 @@ export function createConnectController(shell) {
       }
 
       await wagmi.connect({ connector });
+      
+      // Connection successful - finalize immediately
+      // Network switching is handled automatically by wallets during transactions
       const account = wagmi.getAccount();
       if (account?.isConnected) {
-        await autoSwitchIfUnsupported();
-        finalize(wagmi.getAccount());
+        log("Connected successfully", { 
+          address: account.address, 
+          connector: account.connector?.id 
+        });
+        finalize(account);
       } else {
         finalize(null);
       }
+      
     } catch (error) {
       log("connect error", error);
       const message = typeof error?.message === "string" ? error.message : "";
@@ -209,9 +207,11 @@ export function createConnectController(shell) {
 
     const onAccount = wagmi.watchAccount((account) => {
       if (account.isConnected) {
-        autoSwitchIfUnsupported()
-          .catch(() => false)
-          .finally(() => finalize(wagmi.getAccount()));
+        log("Account connected via watcher", { 
+          address: account.address, 
+          connector: account.connector?.id 
+        });
+        finalize(wagmi.getAccount());
       }
     });
     accountUnsubscribe = onAccount;

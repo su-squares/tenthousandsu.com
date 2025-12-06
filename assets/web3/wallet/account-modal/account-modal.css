@@ -74,3 +74,76 @@
     justify-content: flex-start;
   }
 }
+
+/* Add Network Instructions View */
+
+.wallet-helper--secondary {
+  font-size: 0.875rem;
+  opacity: 0.8;
+  margin-top: 0.5rem;
+}
+
+.wallet-add-network-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  margin-top: 1rem;
+  max-height: 45vh;
+  overflow-y: auto;
+  padding-right: 0.25rem;
+}
+
+.wallet-copy-field {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.25rem;
+  width: 100%;
+  padding: 0.75rem 1rem;
+  background: #0c0b0b;
+  border: 1px solid var(--color-accent, #f8d247);
+  border-radius: 8px;
+  cursor: pointer;
+  text-align: left;
+  transition: background-color 0.15s, border-color 0.15s;
+  position: relative;
+  color: var(--color-accent, #f8d247);
+}
+
+.wallet-copy-field:hover {
+  background: #141313;
+  border-color: var(--color-accent, #f8d247);
+}
+
+.wallet-copy-field:active {
+  background: #1c1a1a;
+}
+
+.wallet-copy-field.is-copied {
+  border-color: var(--color-accent, #f8d247);
+  box-shadow: 0 0 0 1px rgba(248, 210, 71, 0.35);
+}
+
+.wallet-copy-field__label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.025em;
+  color: var(--color-accent, #f8d247);
+}
+
+.wallet-copy-field__value {
+  font-size: 0.9375rem;
+  font-family: monospace;
+  word-break: break-all;
+  color: #f3f2f0;
+}
+
+.wallet-copy-field__status {
+  position: absolute;
+  top: 0.5rem;
+  right: 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--color-accent, #f8d247);
+}
