@@ -1,5 +1,10 @@
 import { openInfoModal } from "../info-modal/index.js";
-import { isWalletCapable, openWalletDeepLink } from "../wc-store.js";
+import {
+  isWalletCapable,
+  openWalletDeepLink,
+  clearStoredSession,
+  clearWalletConnectStorage,
+} from "../wc-store.js";
 import { attachWalletConnectSession } from "../wc-session.js";
 import { createConnectStore } from "./state.js";
 import { CONNECTING_VARIANT } from "./constants.js";
@@ -165,10 +170,26 @@ export function createConnectController(shell) {
     } catch (error) {
       log("connect error", error);
       const message = typeof error?.message === "string" ? error.message : "";
+      // WalletConnect sometimes leaves behind corrupted session/namespace data.
+      // If that happens, clear WC storage so the next attempt starts clean.
+      const isWalletConnect = connector?.id === "walletConnect";
+      const wcNamespaceIssue =
+        message.includes("NON_CONFORMING_NAMESPACES") ||
+        message.includes("defaultChain") ||
+        message.includes("Cannot convert undefined or null to object");
+      if (isWalletConnect && wcNamespaceIssue) {
+        clearStoredSession();
+        clearWalletConnectStorage({ onlyEmpty: false });
+        log("reset WalletConnect storage after namespace error");
+      }
       if (message.includes("User rejected") || message.includes("User denied")) {
         setView("canceled");
       } else {
-        setError(message || "Connection failed");
+        setError(
+          message || (isWalletConnect && wcNamespaceIssue
+            ? "WalletConnect session was reset. Please try again."
+            : "Connection failed")
+        );
       }
     } finally {
       removeDisplayListener?.();

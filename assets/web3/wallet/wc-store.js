@@ -137,6 +137,51 @@ export function clearStoredSession() {
 }
 
 /**
+ * Best-effort cleanup of WalletConnect-related localStorage keys when a session becomes corrupted.
+ * Optionally limit to keys that look empty/invalid.
+ * @param {{ onlyEmpty?: boolean }} [options]
+ */
+export function clearWalletConnectStorage(options = {}) {
+  const prefixes = ["wc@2:client:", "wc@2:", "walletconnect"];
+  const onlyEmpty = Boolean(options.onlyEmpty);
+  const removed = [];
+  try {
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const key = localStorage.key(i);
+      if (!key || !prefixes.some((prefix) => key.startsWith(prefix))) continue;
+
+      if (!onlyEmpty) {
+        removed.push(key);
+        localStorage.removeItem(key);
+        continue;
+      }
+
+      const value = localStorage.getItem(key);
+      if (!value || value === "{}") {
+        removed.push(key);
+        localStorage.removeItem(key);
+        continue;
+      }
+
+      try {
+        const parsed = JSON.parse(value);
+        if (!parsed || (typeof parsed === "object" && Object.keys(parsed).length === 0)) {
+          removed.push(key);
+          localStorage.removeItem(key);
+        }
+      } catch (_error) {
+        // keep non-empty/unparseable values when onlyEmpty=true
+      }
+    }
+    if (removed.length) {
+      log("cleared WalletConnect storage", { count: removed.length, onlyEmpty });
+    }
+  } catch (_error) {
+    /* ignore cleanup errors */
+  }
+}
+
+/**
  * Attempt to open the wallet app using the stored topic/uri.
  * @param {string=} fallbackUri
  * @param {{ userInitiated?: boolean, failureTimeoutMs?: number }} [options]

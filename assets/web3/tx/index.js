@@ -36,6 +36,53 @@ function formatHash(hash) {
   return `${hash.slice(0, 8)}...${hash.slice(-6)}`;
 }
 
+/**
+ * Format balance for display.
+ * - Under 1 ETH → 5 decimals
+ * - 1-999 ETH → 4 decimals
+ * - 1000+ ETH → 2 decimals
+ * - Commas for thousands, drop trailing zeros, truncate (don't round)
+ * @param {string} formatted - The raw formatted balance string
+ * @returns {string}
+ */
+function formatBalance(formatted) {
+  if (!formatted || typeof formatted !== "string") return "—";
+
+  const num = Number.parseFloat(formatted);
+  if (!Number.isFinite(num)) return formatted;
+
+  // Dust check
+  if (num > 0 && num < 0.00001) return "<0.00001";
+
+  // Determine decimal places based on size
+  let decimals;
+  if (num < 1) {
+    decimals = 5;
+  } else if (num < 1000) {
+    decimals = 4;
+  } else {
+    decimals = 2;
+  }
+
+  // Truncate (not round) by using floor on scaled value
+  const scale = Math.pow(10, decimals);
+  const truncated = Math.floor(num * scale) / scale;
+
+  // Format with commas and remove trailing zeros
+  const parts = truncated.toFixed(decimals).split(".");
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+
+  // Drop trailing zeros from decimal part
+  if (parts[1]) {
+    parts[1] = parts[1].replace(/0+$/, "");
+    if (parts[1] === "") {
+      return parts[0];
+    }
+  }
+
+  return parts.join(".");
+}
+
 function buildBarState(status) {
   if (status === "pending") return "processing";
   return status;
@@ -102,7 +149,7 @@ function renderTxView(target, state, actions, options = {}) {
             <span class="su-tx-balance__value">${state.balanceLoading
         ? "Loading..."
         : state.balance
-          ? `${state.balance.formatted} ${state.balance.symbol || "ETH"}`
+          ? `${formatBalance(state.balance.formatted)} ${state.balance.symbol || "ETH"}`
           : "—"
       }</span>
             ${getRefreshButtonHTML({ loading: state.balanceLoading })}
