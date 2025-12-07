@@ -1,4 +1,14 @@
 import { hasWalletConnectSession, openWalletFromStore } from "../foundation.js";
+import {
+  getRefreshButtonHTML,
+  ensureRefreshButtonStyles,
+  attachRefreshHandler,
+} from "../wallet/balance-refresh-button.js";
+import {
+  initActiveWalletContext,
+  getBalanceContextForComponent,
+  WALLET_CONTEXT_CHANGE_EVENT,
+} from "../wallet/active-wallet-context.js";
 
 const DEFAULT_PRICING = {
   mintPriceEth: 0.5,
@@ -78,6 +88,24 @@ function renderTxView(target, state, actions, options = {}) {
           <div class="su-tx-price__item">
             <span class="su-tx-price__label">Personalize:</span>
             <span>First ${state.pricing.personalizeFreeCount} free, then ${state.pricing.personalizePriceEth} ETH each</span>
+          </div>
+        </div>
+      `
+      : ""
+    }
+
+      ${["idle", "processing", "pending"].includes(state.status) && state.showBalance && (state.balanceContext || state.balance !== undefined)
+      ? `
+        <div class="su-tx-card__section su-tx-balance">
+          <div class="su-tx-balance__item">
+            <span class="su-tx-balance__label">Your balance:</span>
+            <span class="su-tx-balance__value">${state.balanceLoading
+        ? "Loading..."
+        : state.balance
+          ? `${state.balance.formatted} ${state.balance.symbol || "ETH"}`
+          : "—"
+      }</span>
+            ${getRefreshButtonHTML({ loading: state.balanceLoading })}
           </div>
         </div>
       `
@@ -166,9 +194,17 @@ function renderTxView(target, state, actions, options = {}) {
       actions.onCancel?.();
     });
   }
+
+  // Attach balance refresh handler
+  if (actions.onRefreshBalance) {
+    attachRefreshHandler(target, actions.onRefreshBalance);
+  }
 }
 
 function createBaseController(target, options = {}) {
+  // Ensure refresh button styles are injected
+  ensureRefreshButtonStyles();
+
   const state = {
     status: "idle",
     title: options.title || "Transaction status",
@@ -179,10 +215,16 @@ function createBaseController(target, options = {}) {
     pricing: normalizePricing(options.pricing),
     mode: options.mode || "both", // "mint", "personalize", or "both"
     showWalletButton: false,
+    // Balance state
+    showBalance: options.showBalance ?? true,
+    balance: null,
+    balanceLoading: false,
+    balanceContext: null, // { address, chainId, fetcher }
   };
 
   let hasWcSession = hasWalletConnectSession();
   let isWcConnector = false;
+  let balanceUnsubscribe = null;
 
   const refreshWalletState = () => {
     state.showWalletButton = Boolean(hasWcSession || isWcConnector);
@@ -201,6 +243,12 @@ function createBaseController(target, options = {}) {
           }
         },
         onClose: () => controller.hide?.(),
+        onRefreshBalance: state.balanceContext ? async () => {
+          const { address, chainId, fetcher } = state.balanceContext;
+          if (!address || !chainId || !fetcher) return;
+          const { refreshBalance } = await import("../wallet/balance-store.js");
+          await refreshBalance(address, chainId, fetcher);
+        } : null,
       },
       options
     );
@@ -228,6 +276,56 @@ function createBaseController(target, options = {}) {
       state.helpText = helpText || "";
       render();
     },
+    /**
+     * Set balance context for fetching and displaying balance.
+     * @param {{ address: string, chainId: number, fetcher: Function }} context
+     */
+    async setBalanceContext(context) {
+      const { address, chainId, fetcher } = context || {};
+      if (!address || !chainId || !fetcher) {
+        state.showBalance = false;
+        state.balanceContext = null;
+        render();
+        return;
+      }
+
+      state.balanceContext = { address, chainId, fetcher };
+      state.showBalance = true;
+      state.balanceLoading = true;
+      render();
+
+      try {
+        const { getBalance, getCachedBalance, subscribeBalance } = await import("../wallet/balance-store.js");
+
+        // Check for cached balance first
+        const cached = getCachedBalance(address, chainId);
+        if (cached) {
+          state.balance = cached;
+          state.balanceLoading = false;
+          render();
+        }
+
+        // Subscribe to balance updates
+        if (balanceUnsubscribe) balanceUnsubscribe();
+        balanceUnsubscribe = subscribeBalance((payload) => {
+          if (payload.address?.toLowerCase() === address.toLowerCase()) {
+            state.balance = payload.balance;
+            state.balanceLoading = false;
+            render();
+          }
+        });
+
+        // Fetch fresh balance
+        const result = await getBalance({ address, chainId, fetcher });
+        state.balance = result?.balance || null;
+        state.balanceLoading = false;
+        render();
+      } catch (error) {
+        console.warn("TX fixture: Balance fetch failed", error);
+        state.balanceLoading = false;
+        render();
+      }
+    },
     startProcessing(message) {
       state.status = "processing";
       state.message = message || "Check your wallet to continue.";
@@ -243,7 +341,7 @@ function createBaseController(target, options = {}) {
       refreshWalletState();
       render();
     },
-    markSuccess(hash, url, message) {
+    async markSuccess(hash, url, message) {
       state.status = "success";
       state.message = message || "Transaction confirmed.";
       state.pending = state.pending.filter((tx) => tx.hash !== hash);
@@ -253,6 +351,23 @@ function createBaseController(target, options = {}) {
       }
       refreshWalletState();
       render();
+
+      // Invalidate balance cache after successful transaction
+      if (state.balanceContext) {
+        try {
+          const { invalidateBalance, refreshBalance } = await import("../wallet/balance-store.js");
+          const { address, chainId, fetcher } = state.balanceContext;
+          invalidateBalance(address, chainId);
+          // Fetch fresh balance
+          if (fetcher) {
+            state.balanceLoading = true;
+            render();
+            await refreshBalance(address, chainId, fetcher);
+          }
+        } catch (error) {
+          console.warn("TX fixture: Balance invalidation failed", error);
+        }
+      }
     },
     markError(message, hash, url) {
       state.status = "error";
@@ -273,6 +388,12 @@ function createBaseController(target, options = {}) {
       refreshWalletState();
       render();
     },
+    destroy() {
+      if (balanceUnsubscribe) {
+        balanceUnsubscribe();
+        balanceUnsubscribe = null;
+      }
+    },
     getState() {
       return { ...state };
     },
@@ -281,6 +402,37 @@ function createBaseController(target, options = {}) {
   window.addEventListener("su-wc-session-change", (event) => {
     const hasSession = Boolean(event?.detail?.hasSession);
     controller.setWalletContext({ hasSession });
+  });
+
+  // Listen for wallet context changes to auto-update balance
+  window.addEventListener(WALLET_CONTEXT_CHANGE_EVENT, async (event) => {
+    const { isConnected, address } = event?.detail || {};
+
+    if (isConnected && address) {
+      // Wallet connected/changed - set balance context
+      const balanceContext = await getBalanceContextForComponent();
+      if (balanceContext) {
+        controller.setBalanceContext(balanceContext);
+      }
+    } else {
+      // Wallet disconnected - clear balance display
+      state.balance = null;
+      state.balanceContext = null;
+      state.balanceLoading = false;
+      render();
+    }
+  });
+
+  // Auto-init balance if wallet is already connected (respects lazy loading)
+  initActiveWalletContext().then(async (context) => {
+    if (context.isConnected && context.address) {
+      const balanceContext = await getBalanceContextForComponent();
+      if (balanceContext) {
+        controller.setBalanceContext(balanceContext);
+      }
+    }
+  }).catch(() => {
+    // Ignore init errors - wallet context is optional
   });
 
   refreshWalletState();

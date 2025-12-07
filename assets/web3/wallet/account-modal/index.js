@@ -7,6 +7,7 @@ import { renderAddNetworkView } from "./add-network-view.js";
 import { renderAccountView } from "./account-view.js";
 import { probeNetworkAvailable, shouldProbeNetworkAvailability } from "./network-probe.js";
 import { getCachedEnsName, getEnsName } from "../ens-store.js";
+import { getBalance, getCachedBalance, subscribeBalance, clearAllBalanceCache } from "../balance-store.js";
 
 const log = createDebugLogger("account-modal");
 
@@ -14,6 +15,7 @@ let shell = null;
 let wagmiClient = null;
 let lastDisplayData = null;
 let networkUnsubscribe = null;
+let balanceUnsubscribe = null;
 let networkAvailable = null; // null = unknown, true = available, false = not added
 const appConfig = getWeb3Config();
 const ENS_CHAIN_ID = NETWORK_PRESETS[ChainKey.MAINNET].chainId;
@@ -38,7 +40,13 @@ function cleanupWatchers() {
   } catch (_error) {
     /* ignore */
   }
+  try {
+    balanceUnsubscribe?.();
+  } catch (_error) {
+    /* ignore */
+  }
   networkUnsubscribe = null;
+  balanceUnsubscribe = null;
 }
 
 export function closeAccountModal() {
@@ -82,12 +90,18 @@ async function fetchDisplayData(wagmi) {
     console.warn("Account modal: ENS lookup failed", error);
   }
 
-  // Fetch balance on TARGET chain (not current chain)
+  // Fetch balance on TARGET chain via balance store (with caching)
   try {
-    balance = await wagmi.fetchBalance({
+    const balanceResult = await getBalance({
       address: account.address,
       chainId: appConfig.activeNetwork.chainId,
+      fetcher: (addr, chain) =>
+        wagmi.fetchBalance({
+          address: addr,
+          chainId: chain,
+        }),
     });
+    balance = balanceResult?.balance || null;
   } catch (error) {
     console.warn("Account modal: Balance lookup failed", error);
   }
@@ -122,6 +136,15 @@ function render(data, options = {}) {
       },
       wagmiClient,
       onDisconnect,
+      onRefresh: async () => {
+        if (!wagmiClient || !data.account?.address) return;
+        const { refreshBalance } = await import("../balance-store.js");
+        await refreshBalance(
+          data.account.address,
+          appConfig.activeNetwork.chainId,
+          (addr, chain) => wagmiClient.fetchBalance({ address: addr, chainId: chain })
+        );
+      },
       loadingEns: options.loadingEns,
       loadingBalance: options.loadingBalance,
     });
@@ -137,13 +160,27 @@ export async function openAccountModal() {
   const account = wagmiClient.getAccount();
   const network = wagmiClient.getNetwork();
   const cachedEns = getCachedEnsName(account?.address, ENS_CHAIN_ID);
+  const cachedBalance = getCachedBalance(account?.address, appConfig.activeNetwork.chainId);
 
-  const initialData = { account, network, ensName: cachedEns, balance: null };
+  const initialData = { account, network, ensName: cachedEns, balance: cachedBalance };
   showOverlay();
   render(initialData, {
     loadingEns: Boolean(account?.address && !cachedEns),
-    loadingBalance: true,
+    loadingBalance: Boolean(account?.address && !cachedBalance),
   });
+
+  // Subscribe to balance updates for reactive re-renders
+  if (account?.address) {
+    balanceUnsubscribe = subscribeBalance((payload) => {
+      if (payload.address?.toLowerCase() === account.address?.toLowerCase()) {
+        log("Balance update received", payload);
+        if (lastDisplayData) {
+          lastDisplayData = { ...lastDisplayData, balance: payload.balance };
+          render(lastDisplayData);
+        }
+      }
+    });
+  }
 
   // Probe if network is available (only for custom chains)
   if (shouldProbeNetworkAvailability()) {

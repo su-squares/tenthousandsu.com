@@ -9,6 +9,7 @@ import {
 } from "./wallet/wc-store.js";
 import { isAllowedChain, getCurrentChainId } from "./wallet/network.js";
 import { clearAllEnsCache } from "./wallet/ens-store.js";
+import { activateWalletContext } from "./wallet/active-wallet-context.js";
 
 const appConfig = getWeb3Config();
 let cachedClients = null;
@@ -147,6 +148,11 @@ export async function loadWeb3() {
       /* ignore watcher issues */
     }
   }
+
+  // Activate wallet context now that wagmi is loaded
+  // This ensures context events fire when user connects via button
+  activateWalletContext(cachedClients);
+
   readyCallbacks.splice(0).forEach((cb) => cb(cachedClients));
   return cachedClients;
 }

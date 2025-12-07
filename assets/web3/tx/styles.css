@@ -76,6 +76,28 @@
   color: #ffd700;
 }
 
+.su-tx-balance {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.su-tx-balance__item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: #fff;
+}
+
+.su-tx-balance__label {
+  font-weight: 700;
+  color: #ffd700;
+}
+
+.su-tx-balance__value {
+  font-variant-numeric: tabular-nums;
+}
+
+
 .su-tx-bar {
   position: relative;
   overflow: hidden;
