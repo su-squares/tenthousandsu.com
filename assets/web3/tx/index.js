@@ -39,10 +39,10 @@ function renderTxView(target, state, actions, options = {}) {
     state.status === "success"
       ? "Success!"
       : state.status === "error"
-      ? "Error!"
-      : state.status === "pending"
-      ? "Pending..."
-      : "Processing...";
+        ? "Error!"
+        : state.status === "pending"
+          ? "Pending..."
+          : "Processing...";
 
   const walletButtonVisible = state.showWalletButton && state.status !== "idle" && state.status !== "success";
   const cancelButtonVisible = state.status !== "idle";
@@ -54,33 +54,38 @@ function renderTxView(target, state, actions, options = {}) {
     <div class="su-tx-card ${options.variant === "modal" ? "su-tx-card--modal" : "su-tx-card--fixture"}">
       <div class="su-tx-card__header">
         <h3 class="su-tx-card__title">${state.title || "Transaction status"}</h3>
-        ${
-          options.showClose
-            ? '<button type="button" class="su-tx-btn su-tx-btn--ghost" data-tx-close>Close</button>'
-            : ""
-        }
+        ${options.showClose
+      ? '<button type="button" class="su-tx-btn su-tx-btn--ghost" data-tx-close>Close</button>'
+      : ""
+    }
       </div>
 
-      ${
-        state.status === "idle"
-          ? `
+      ${state.status === "idle" && (state.mode === "mint" || state.mode === "both")
+      ? `
         <div class="su-tx-card__section su-tx-price">
           <div class="su-tx-price__item">
             <span class="su-tx-price__label">Mint price:</span>
             <span>${state.pricing.mintPriceEth} ETH per mint</span>
           </div>
+        </div>
+      `
+      : ""
+    }
+
+      ${state.status === "idle" && (state.mode === "personalize" || state.mode === "both")
+      ? `
+        <div class="su-tx-card__section su-tx-price">
           <div class="su-tx-price__item">
             <span class="su-tx-price__label">Personalize:</span>
             <span>First ${state.pricing.personalizeFreeCount} free, then ${state.pricing.personalizePriceEth} ETH each</span>
           </div>
         </div>
       `
-          : ""
-      }
+      : ""
+    }
 
-      ${
-        showBar
-          ? `
+      ${showBar
+      ? `
         <div class="su-tx-card__section su-tx-card__section--status">
           <div class="su-tx-bar su-tx-bar--${barState}">
             <span>${barLabel}</span>
@@ -88,57 +93,53 @@ function renderTxView(target, state, actions, options = {}) {
           ${state.message ? `<div class="su-tx-message">${state.message}</div>` : ""}
         </div>
       `
-          : ""
-      }
+      : ""
+    }
 
-      ${
-        pendingList.length || confirmedList.length
-          ? `
+      ${pendingList.length || confirmedList.length
+      ? `
         <div class="su-tx-card__section">
           <div class="su-tx-card__note">Transactions</div>
           <ul class="su-tx-list">
             ${pendingList
-              .map(
-                (tx) => `
+        .map(
+          (tx) => `
               <li class="su-tx-list__item">
                 <span class="su-tx-list__badge su-tx-list__badge--pending">Pending</span>
                 ${tx.url ? `<a href="${tx.url}" target="_blank" rel="noreferrer">${formatHash(tx.hash)}</a>` : formatHash(tx.hash)}
               </li>`
-              )
-              .join("")}
+        )
+        .join("")}
             ${confirmedList
-              .map(
-                (tx) => `
+        .map(
+          (tx) => `
               <li class="su-tx-list__item">
                 <span class="su-tx-list__badge su-tx-list__badge--success">Confirmed</span>
                 ${tx.url ? `<a href="${tx.url}" target="_blank" rel="noreferrer">${formatHash(tx.hash)}</a>` : formatHash(tx.hash)}
               </li>`
-              )
-              .join("")}
+        )
+        .join("")}
           </ul>
         </div>
       `
-          : ""
-      }
+      : ""
+    }
 
       <div class="su-tx-actions">
-        ${
-          walletButtonVisible
-            ? '<button type="button" class="su-tx-btn" data-tx-open-wallet>Open mobile wallet</button>'
-            : ""
-        }
-        ${
-          cancelButtonVisible
-            ? '<button type="button" class="su-tx-btn su-tx-btn--ghost" data-tx-cancel>Cancel (clear UI only; cancel in wallet manually)</button>'
-            : ""
-        }
+        ${walletButtonVisible
+      ? '<button type="button" class="su-tx-btn" data-tx-open-wallet>Open mobile wallet</button>'
+      : ""
+    }
+        ${cancelButtonVisible
+      ? '<button type="button" class="su-tx-btn su-tx-btn--ghost" data-tx-cancel>Cancel (clear UI only; cancel in wallet manually)</button>'
+      : ""
+    }
       </div>
 
-      ${
-        state.helpText
-          ? `<p class="su-tx-help">${state.helpText}</p>`
-          : '<p class="su-tx-help">Need to retry? You can restart the transaction or clear this panel.</p>'
-      }
+      ${state.helpText
+      ? `<p class="su-tx-help">${state.helpText}</p>`
+      : '<p class="su-tx-help">Need to retry? You can restart the transaction or clear this panel.</p>'
+    }
     </div>
   `;
 
@@ -176,6 +177,7 @@ function createBaseController(target, options = {}) {
     pending: [],
     confirmed: [],
     pricing: normalizePricing(options.pricing),
+    mode: options.mode || "both", // "mint", "personalize", or "both"
     showWalletButton: false,
   };
 

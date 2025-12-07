@@ -23,73 +23,106 @@ const UNDERLAY_PRICE_ABI = [
   },
 ];
 
-function toWei(ethValue, fallbackWei) {
-  const num = typeof ethValue === "string" ? Number.parseFloat(ethValue) : ethValue;
-  if (!Number.isFinite(num) || num <= 0) return fallbackWei;
-  // Avoid floating drift by multiplying in stages
-  const scaled = Math.round(num * 1e6);
-  return BigInt(scaled) * 1000000000000n;
-}
-
 const priceCache = new Map(); // key: `${chainId}:${address}` -> bigint
 
-function cacheKey(wagmi, address) {
-  try {
-    const chainId = wagmi?.getNetwork?.()?.chain?.id;
-    return `${chainId ?? "unknown"}:${address}`;
-  } catch (_error) {
-    return `unknown:${address}`;
-  }
-}
-
-async function readPrice({ wagmi, address, abi, functionName, fallback }) {
-  if (!wagmi?.readContract || !address) return fallback;
-  const key = cacheKey(wagmi, address);
-  const cached = priceCache.get(key);
-  if (typeof cached === "bigint") return cached;
-  try {
-    const { activeNetwork } = getWeb3Config();
-    const price = await wagmi.readContract({ address, abi, functionName, chainId: activeNetwork.chainId });
-    if (typeof price === "bigint") {
-      priceCache.set(key, price);
-      return price;
-    }
-  } catch (error) {
-    log("price read failed; using fallback", { functionName, error });
-  }
-  return fallback;
+function cacheKey(chainId, address) {
+  return `${chainId ?? "unknown"}:${address}`;
 }
 
 /**
- * Read the mint price from the primary contract, falling back to config pricing.
+ * Get a working readContract function from the wagmi client.
+ * Falls back to using the publicClient if wagmi.readContract is unavailable.
+ */
+function getReadContractFn(wagmi) {
+  // Try direct readContract first
+  if (typeof wagmi?.readContract === "function") {
+    return wagmi.readContract;
+  }
+
+  // Fall back to using the publicClient from config
+  const publicClient = wagmi?.config?.publicClient;
+  if (publicClient?.readContract) {
+    return (args) => publicClient.readContract(args);
+  }
+
+  return null;
+}
+
+/**
+ * Read a price from the contract. Throws if the read fails.
+ * Prices are cached per chain+address to avoid redundant RPC calls.
+ */
+async function readPriceFromContract({ wagmi, address, abi, functionName, label }) {
+  const readContract = getReadContractFn(wagmi);
+
+  if (!readContract) {
+    const available = wagmi ? Object.keys(wagmi).join(", ") : "wagmi is null/undefined";
+    const configKeys = wagmi?.config ? Object.keys(wagmi.config).join(", ") : "no config";
+    throw new Error(`Cannot read ${label}: no readContract available. wagmi keys: [${available}], config keys: [${configKeys}]`);
+  }
+
+  if (!address) {
+    throw new Error(`Cannot read ${label}: contract address not configured`);
+  }
+
+  const { activeNetwork } = getWeb3Config();
+  const chainId = activeNetwork.chainId;
+  const key = cacheKey(chainId, address);
+  const cached = priceCache.get(key);
+
+  if (typeof cached === "bigint") {
+    log("using cached price", { label, price: cached.toString() });
+    return cached;
+  }
+
+  log("reading price from contract", { label, address, chainId });
+
+  const price = await readContract({
+    address,
+    abi,
+    functionName,
+    chainId,
+  });
+
+  if (typeof price !== "bigint") {
+    throw new Error(`Cannot read ${label}: contract returned invalid price type (${typeof price})`);
+  }
+
+  priceCache.set(key, price);
+  log("price read successfully", { label, price: price.toString() });
+  return price;
+}
+
+/**
+ * Read the mint price from the primary contract.
+ * Throws if the contract cannot be read - does NOT use config fallbacks.
  * @param {ReturnType<import("../client/wagmi.js").loadWagmiClient>} wagmi
  * @returns {Promise<bigint>}
  */
 export async function getMintPriceWei(wagmi) {
-  const { contracts, pricing } = getWeb3Config();
-  const fallback = toWei(pricing?.mintPriceEth ?? 0.5, 500000000000000000n);
-  return readPrice({
+  const { contracts } = getWeb3Config();
+  return readPriceFromContract({
     wagmi,
     address: contracts?.primary,
     abi: PRIMARY_PRICE_ABI,
     functionName: "salePrice",
-    fallback,
+    label: "mint price",
   });
 }
 
 /**
- * Read the personalization price from the underlay contract, falling back to config pricing.
+ * Read the personalization price from the underlay contract.
+ * Throws if the contract cannot be read - does NOT use config fallbacks.
  * @param {ReturnType<import("../client/wagmi.js").loadWagmiClient>} wagmi
  * @returns {Promise<bigint>}
  */
 export async function getPersonalizePriceWei(wagmi) {
-  const { contracts, pricing } = getWeb3Config();
-  const fallback = toWei(pricing?.personalizePriceEth ?? 0.001, 1000000000000000n);
-  return readPrice({
+  const { contracts } = getWeb3Config();
+  return readPriceFromContract({
     wagmi,
     address: contracts?.underlay,
     abi: UNDERLAY_PRICE_ABI,
     functionName: "pricePerSquare",
-    fallback,
+    label: "personalization price",
   });
 }
