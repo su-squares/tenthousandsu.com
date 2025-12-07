@@ -110,6 +110,8 @@
   width: 100%;
   display: flex;
   justify-content: center;
+  overflow: hidden;
+  touch-action: none;
 }
 
 .su-canvas__wrapper {
@@ -117,6 +119,8 @@
   width: 100%;
   max-width: 1000px;
   aspect-ratio: 1 / 1;
+  transform-origin: 0 0;
+  will-change: transform;
 }
 
 .su-canvas__image {

@@ -1,5 +1,6 @@
 import { loadSquareData } from "../square-data.js";
 import { assetPath } from "../asset-base.js";
+import { createPanZoom } from "../pan-zoom.js";
 
 const GRID_DIMENSION = 100;
 
@@ -43,9 +44,11 @@ export function attachCanvasChooser({
   let tooltip;
   let image;
   let wrapper;
+  let imgWrapper;
   let data;
   let currentSquare;
   let suppressTooltip = false;
+  let panZoom = null;
 
   function getSquareFromEvent(event) {
     if (!image) return null;
@@ -60,10 +63,25 @@ export function attachCanvasChooser({
       clientX = event.changedTouches[0].clientX;
       clientY = event.changedTouches[0].clientY;
     }
-    const cellWidth = rect.width / GRID_DIMENSION;
-    const cellHeight = rect.height / GRID_DIMENSION;
-    const xIndex = clamp(Math.floor((clientX - rect.left) / cellWidth), 0, GRID_DIMENSION - 1);
-    const yIndex = clamp(Math.floor((clientY - rect.top) / cellHeight), 0, GRID_DIMENSION - 1);
+
+    // Convert screen coords to canvas coords if pan-zoom is active
+    let x, y;
+    if (panZoom && panZoom.isActive) {
+      const canvasCoords = panZoom.screenToCanvas(clientX, clientY);
+      x = canvasCoords.x;
+      y = canvasCoords.y;
+    } else {
+      x = clientX - rect.left;
+      y = clientY - rect.top;
+    }
+
+    // Use original dimensions for cell calculation when zoomed
+    const originalWidth = imgWrapper ? imgWrapper.offsetWidth : rect.width;
+    const originalHeight = imgWrapper ? imgWrapper.offsetHeight : rect.height;
+    const cellWidth = originalWidth / GRID_DIMENSION;
+    const cellHeight = originalHeight / GRID_DIMENSION;
+    const xIndex = clamp(Math.floor(x / cellWidth), 0, GRID_DIMENSION - 1);
+    const yIndex = clamp(Math.floor(y / cellHeight), 0, GRID_DIMENSION - 1);
     return yIndex * GRID_DIMENSION + xIndex + 1;
   }
 
@@ -72,6 +90,9 @@ export function attachCanvasChooser({
       backdrop.classList.remove("is-open");
       document.removeEventListener("keydown", handleEscape);
       currentSquare = null;
+      if (panZoom) {
+        panZoom.reset();
+      }
     }
   }
 
@@ -113,12 +134,12 @@ export function attachCanvasChooser({
 
     const mobileHint = document.createElement("p");
     mobileHint.className = "su-chooser__mobile-hint";
-    mobileHint.textContent = "On mobile, zoom in and scroll.";
+    mobileHint.textContent = "Pinch to zoom, drag to pan.";
 
     wrapper = document.createElement("div");
     wrapper.className = "su-canvas";
 
-    const imgWrapper = document.createElement("div");
+    imgWrapper = document.createElement("div");
     imgWrapper.className = "su-canvas__wrapper";
 
     image = document.createElement("img");
@@ -142,6 +163,9 @@ export function attachCanvasChooser({
     modal.appendChild(wrapper);
     backdrop.appendChild(modal);
     document.body.appendChild(backdrop);
+
+    // Initialize pan-zoom on the image wrapper
+    panZoom = createPanZoom(imgWrapper);
   }
 
   function positionTooltip(event) {
@@ -168,10 +192,13 @@ export function attachCanvasChooser({
     const status = describeStatus(ctx.personalization, ctx.extra);
     const allowed = filter(squareNumber, ctx);
 
-    const rect = image.getBoundingClientRect();
-    if (!rect.width || !rect.height) return;
-    const cellWidth = rect.width / GRID_DIMENSION;
-    const cellHeight = rect.height / GRID_DIMENSION;
+    // Use original (pre-transform) dimensions for positioning
+    // CSS positioning is in pre-transform space, even when parent is scaled
+    const originalWidth = imgWrapper ? imgWrapper.offsetWidth : image.getBoundingClientRect().width;
+    const originalHeight = imgWrapper ? imgWrapper.offsetHeight : image.getBoundingClientRect().height;
+    if (!originalWidth || !originalHeight) return;
+    const cellWidth = originalWidth / GRID_DIMENSION;
+    const cellHeight = originalHeight / GRID_DIMENSION;
     const col = (squareNumber - 1) % GRID_DIMENSION;
     const row = Math.floor((squareNumber - 1) / GRID_DIMENSION);
 
@@ -200,6 +227,10 @@ export function attachCanvasChooser({
   }
 
   function handleClick(event) {
+    // Suppress click if user was panning/zooming
+    if (panZoom && panZoom.hasPanned && panZoom.hasPanned()) {
+      return;
+    }
     suppressTooltip = false;
     const squareNumber = currentSquare || getSquareFromEvent(event);
     if (!squareNumber || !data) return;
