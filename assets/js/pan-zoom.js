@@ -20,8 +20,8 @@ export function createPanZoom(wrapper, options = {}) {
         const rect = wrapper.getBoundingClientRect();
         return { x: clientX - rect.left, y: clientY - rect.top };
       },
-      reset: () => {},
-      destroy: () => {},
+      reset: () => { },
+      destroy: () => { },
       isActive: false,
     };
   }
@@ -38,9 +38,13 @@ export function createPanZoom(wrapper, options = {}) {
   let initialTranslateY = 0;
   let didPan = false;
 
-  // Store original dimensions for coordinate conversion
-  const originalWidth = wrapper.offsetWidth;
-  const originalHeight = wrapper.offsetHeight;
+  // Get dimensions dynamically - wrapper may not be visible at creation time (e.g., in modals)
+  function getOriginalWidth() {
+    return wrapper.offsetWidth || wrapper.clientWidth || 0;
+  }
+  function getOriginalHeight() {
+    return wrapper.offsetHeight || wrapper.clientHeight || 0;
+  }
 
   function clamp(value, min, max) {
     return Math.min(Math.max(value, min), max);
@@ -65,6 +69,8 @@ export function createPanZoom(wrapper, options = {}) {
 
   function constrainBounds() {
     // Ensure at least 20% of canvas remains visible
+    const originalWidth = getOriginalWidth();
+    const originalHeight = getOriginalHeight();
     const scaledWidth = originalWidth * scale;
     const scaledHeight = originalHeight * scale;
     const minVisible = 0.2;
