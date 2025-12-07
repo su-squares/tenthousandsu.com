@@ -33,7 +33,7 @@ export function attachCanvasChooser({
   trigger,
   input,
   filter = () => true,
-  onSelect = () => {},
+  onSelect = () => { },
   title = "Choose square from canvas",
   updateInput = true,
 }) {
@@ -47,7 +47,6 @@ export function attachCanvasChooser({
   let imgWrapper;
   let data;
   let currentSquare;
-  let suppressTooltip = false;
   let panZoom = null;
 
   function getSquareFromEvent(event) {
@@ -66,20 +65,24 @@ export function attachCanvasChooser({
 
     // Convert screen coords to canvas coords if pan-zoom is active
     let x, y;
+    let effectiveWidth, effectiveHeight;
     if (panZoom && panZoom.isActive) {
       const canvasCoords = panZoom.screenToCanvas(clientX, clientY);
       x = canvasCoords.x;
       y = canvasCoords.y;
+      // Use wrapper dimensions when panning (these are the "canvas" coords)
+      effectiveWidth = imgWrapper ? imgWrapper.offsetWidth : rect.width;
+      effectiveHeight = imgWrapper ? imgWrapper.offsetHeight : rect.height;
     } else {
+      // Desktop: use image's actual rendered dimensions
       x = clientX - rect.left;
       y = clientY - rect.top;
+      effectiveWidth = rect.width;
+      effectiveHeight = rect.height;
     }
 
-    // Use original dimensions for cell calculation when zoomed
-    const originalWidth = imgWrapper ? imgWrapper.offsetWidth : rect.width;
-    const originalHeight = imgWrapper ? imgWrapper.offsetHeight : rect.height;
-    const cellWidth = originalWidth / GRID_DIMENSION;
-    const cellHeight = originalHeight / GRID_DIMENSION;
+    const cellWidth = effectiveWidth / GRID_DIMENSION;
+    const cellHeight = effectiveHeight / GRID_DIMENSION;
     const xIndex = clamp(Math.floor(x / cellWidth), 0, GRID_DIMENSION - 1);
     const yIndex = clamp(Math.floor(y / cellHeight), 0, GRID_DIMENSION - 1);
     return yIndex * GRID_DIMENSION + xIndex + 1;
@@ -158,9 +161,27 @@ export function attachCanvasChooser({
     imgWrapper.appendChild(tooltip);
     wrapper.appendChild(imgWrapper);
 
+    // Reset zoom button - only shown on touch devices
+    const isTouchDevice = "ontouchstart" in window || navigator.maxTouchPoints > 0;
+    let resetBtn = null;
+    if (isTouchDevice) {
+      resetBtn = document.createElement("button");
+      resetBtn.type = "button";
+      resetBtn.className = "su-canvas__reset-btn";
+      resetBtn.textContent = "Reset zoom";
+      resetBtn.addEventListener("click", () => {
+        if (panZoom) {
+          panZoom.reset();
+        }
+      });
+    }
+
     modal.appendChild(headerRow);
     modal.appendChild(mobileHint);
     modal.appendChild(wrapper);
+    if (resetBtn) {
+      modal.appendChild(resetBtn);
+    }
     backdrop.appendChild(modal);
     document.body.appendChild(backdrop);
 
@@ -168,21 +189,8 @@ export function attachCanvasChooser({
     panZoom = createPanZoom(imgWrapper);
   }
 
-  function positionTooltip(event) {
-    if (!tooltip || !wrapper) return;
-    const rect = wrapper.getBoundingClientRect();
-    const x = clamp(event.clientX - rect.left, 0, rect.width);
-    const y = clamp(event.clientY - rect.top, 0, rect.height);
-    tooltip.style.left = `${x}px`;
-    tooltip.style.top = `${y}px`;
-  }
-
   function showSquare(squareNumber) {
     if (!image || !highlight || !tooltip) return;
-    if (suppressTooltip) {
-      currentSquare = squareNumber;
-      return;
-    }
     currentSquare = squareNumber;
     const { personalizations, extra } = data || {};
     const ctx = {
@@ -192,21 +200,53 @@ export function attachCanvasChooser({
     const status = describeStatus(ctx.personalization, ctx.extra);
     const allowed = filter(squareNumber, ctx);
 
-    // Use original (pre-transform) dimensions for positioning
-    // CSS positioning is in pre-transform space, even when parent is scaled
-    const originalWidth = imgWrapper ? imgWrapper.offsetWidth : image.getBoundingClientRect().width;
-    const originalHeight = imgWrapper ? imgWrapper.offsetHeight : image.getBoundingClientRect().height;
-    if (!originalWidth || !originalHeight) return;
-    const cellWidth = originalWidth / GRID_DIMENSION;
-    const cellHeight = originalHeight / GRID_DIMENSION;
+    // Use image's actual rendered dimensions for positioning
+    // On desktop, image may be contained smaller than wrapper due to modal height constraints
+    const imageRect = image.getBoundingClientRect();
+    let effectiveWidth, effectiveHeight;
+    if (panZoom && panZoom.isActive) {
+      // Mobile: use wrapper dimensions (coordinates are in wrapper space)
+      effectiveWidth = imgWrapper ? imgWrapper.offsetWidth : imageRect.width;
+      effectiveHeight = imgWrapper ? imgWrapper.offsetHeight : imageRect.height;
+    } else {
+      // Desktop: use actual rendered image size
+      effectiveWidth = imageRect.width;
+      effectiveHeight = imageRect.height;
+    }
+    if (!effectiveWidth || !effectiveHeight) return;
+    const cellWidth = effectiveWidth / GRID_DIMENSION;
+    const cellHeight = effectiveHeight / GRID_DIMENSION;
     const col = (squareNumber - 1) % GRID_DIMENSION;
     const row = Math.floor((squareNumber - 1) / GRID_DIMENSION);
 
+    // Position highlight
     highlight.style.display = "block";
     highlight.style.width = `${cellWidth}px`;
     highlight.style.height = `${cellHeight}px`;
     highlight.style.left = `${col * cellWidth}px`;
     highlight.style.top = `${row * cellHeight}px`;
+
+    // Position tooltip beside the highlighted square (axis-flipping like index.html)
+    // Left half (columns 0-49): tooltip appears to the right
+    // Right half (columns 50-99): tooltip appears to the left
+    const isLeftHalf = col < GRID_DIMENSION / 2;
+    if (isLeftHalf) {
+      tooltip.style.left = `${col * cellWidth + cellWidth * 1.5}px`;
+      tooltip.style.right = "auto";
+      tooltip.style.transformOrigin = "left center";
+    } else {
+      tooltip.style.left = "auto";
+      tooltip.style.right = `${(GRID_DIMENSION - col - 1) * cellWidth + cellWidth * 1.5}px`;
+      tooltip.style.transformOrigin = "right center";
+    }
+    tooltip.style.top = `${row * cellHeight + cellHeight * 0.5}px`;
+
+    // Scale tooltip inversely with pan-zoom so it stays readable when zoomed in
+    if (panZoom && panZoom.isActive && panZoom.scale) {
+      tooltip.style.transform = `translateY(-50%) scale(${1 / panZoom.scale})`;
+    } else {
+      tooltip.style.transform = "translateY(-50%)";
+    }
 
     tooltip.style.display = "block";
     tooltip.textContent = `#${squareNumber} — ${status.label}`;
@@ -214,16 +254,12 @@ export function attachCanvasChooser({
   }
 
   function handlePointerMove(event) {
-    suppressTooltip = event.pointerType === "touch";
     const squareNumber = getSquareFromEvent(event);
     if (!squareNumber) {
       clearHover();
       return;
     }
     showSquare(squareNumber);
-    if (!suppressTooltip) {
-      positionTooltip(event);
-    }
   }
 
   function handleClick(event) {
@@ -231,7 +267,6 @@ export function attachCanvasChooser({
     if (panZoom && panZoom.hasPanned && panZoom.hasPanned()) {
       return;
     }
-    suppressTooltip = false;
     const squareNumber = currentSquare || getSquareFromEvent(event);
     if (!squareNumber || !data) return;
     const { personalizations, extra } = data;
@@ -261,7 +296,6 @@ export function attachCanvasChooser({
     try {
       data = await loadSquareData();
       ensureModal();
-      suppressTooltip = false;
       clearHover();
       backdrop.classList.add("is-open");
       document.addEventListener("keydown", handleEscape);

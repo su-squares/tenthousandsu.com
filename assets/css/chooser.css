@@ -110,15 +110,20 @@
   width: 100%;
   display: flex;
   justify-content: center;
-  overflow: hidden;
+  align-items: flex-start;
+  overflow-x: hidden;
+  overflow-y: auto;
   touch-action: none;
+  /* Allow scrolling within modal's available space */
+  max-height: calc(90vh - 140px);
 }
 
 .su-canvas__wrapper {
   position: relative;
-  width: 100%;
-  max-width: 1000px;
+  /* Let the wrapper be its natural square size, even if it overflows */
+  width: min(1000px, 100%);
   aspect-ratio: 1 / 1;
+  flex-shrink: 0;
   transform-origin: 0 0;
   will-change: transform;
 }
@@ -126,7 +131,8 @@
 .su-canvas__image {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  /* Image fills the wrapper exactly since both are 1:1 aspect ratio */
+  object-fit: cover;
   display: block;
   image-rendering: pixelated;
   cursor: pointer;
@@ -148,15 +154,32 @@
   border: 2px solid var(--color-accent);
   border-radius: var(--radius-sm);
   padding: 0.35rem 0.6rem;
-  transform: translate(-50%, -120%);
+  /* Transform is set by JS for axis-flipping and scale compensation */
   pointer-events: none;
   display: none;
   white-space: nowrap;
+  z-index: 10;
 }
 
 .su-canvas__tooltip[data-disabled="true"] {
   border: 4px solid #ff4d4f;
   background: black;
+}
+
+.su-canvas__reset-btn {
+  display: block;
+  margin: 0.75rem auto 0 auto;
+  padding: 0.45rem 1.2rem;
+  background: rgba(0, 0, 0, 0.25);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  color: var(--color-accent);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.su-canvas__reset-btn:hover {
+  background: rgba(0, 0, 0, 0.4);
 }
 
 .square-lookup {
@@ -204,7 +227,7 @@
 }
 
 .square-lookup__controls button {
-    background: rgba(0, 0, 0, 0.25);
+  background: rgba(0, 0, 0, 0.25);
 }
 
 .square-lookup__controls button:hover,
@@ -236,6 +259,7 @@
 #square-lookup-canvas {
   max-width: 200px;
 }
+
 #square-lookup-choose {
   max-width: 180px;
 }
