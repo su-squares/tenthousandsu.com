@@ -233,19 +233,29 @@ export function attachCanvasChooser({
     if (isLeftHalf) {
       tooltip.style.left = `${col * cellWidth + cellWidth * 1.5}px`;
       tooltip.style.right = "auto";
-      tooltip.style.transformOrigin = "left center";
     } else {
       tooltip.style.left = "auto";
       tooltip.style.right = `${(GRID_DIMENSION - col - 1) * cellWidth + cellWidth * 1.5}px`;
-      tooltip.style.transformOrigin = "right center";
     }
-    tooltip.style.top = `${row * cellHeight + cellHeight * 0.5}px`;
+
+    // Vertical positioning based on row to prevent edge overflow
+    // Top 5000 squares (rows 0-49): tooltip appears below the square
+    // Bottom 5000 squares (rows 50-99): tooltip appears above the square
+    const isTopHalf = row < GRID_DIMENSION / 2;
+    if (isTopHalf) {
+      tooltip.style.top = `${(row + 1) * cellHeight}px`;
+      tooltip.style.transformOrigin = `${isLeftHalf ? "left" : "right"} top`;
+    } else {
+      tooltip.style.top = `${row * cellHeight}px`;
+      tooltip.style.transformOrigin = `${isLeftHalf ? "left" : "right"} bottom`;
+    }
 
     // Scale tooltip inversely with pan-zoom so it stays readable when zoomed in
+    const yTransform = isTopHalf ? "" : "translateY(-100%)";
     if (panZoom && panZoom.isActive && panZoom.scale) {
-      tooltip.style.transform = `translateY(-50%) scale(${1 / panZoom.scale})`;
+      tooltip.style.transform = `${yTransform} scale(${1 / panZoom.scale})`;
     } else {
-      tooltip.style.transform = "translateY(-50%)";
+      tooltip.style.transform = yTransform;
     }
 
     tooltip.style.display = "block";
