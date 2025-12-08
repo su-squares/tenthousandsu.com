@@ -293,6 +293,7 @@
 
 .su-nav-articles {
   flex: 1 1 auto;
+  max-height: 300px;
   overflow-y: auto;
   padding-right: 0.35rem;
   display: flex;
