@@ -21,9 +21,76 @@ const meta: Meta<ListChooserStoryArgs> = {
   }
 };
 
+export const AlwaysOpenListChooser: Story = {
+  render: () => `
+    <div
+      id="${LIST_ALWAYS_ROOT_ID}"
+      style="
+        min-height: 360px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+      "
+    >
+      <p style="text-align:center; max-width: 360px; opacity: 0.75;">
+        The stubbed list chooser opens immediately in a minimal shell.
+      </p>
+    </div>
+  `,
+  play: async ({ args, canvasElement }) => {
+    const host =
+      canvasElement.querySelector<HTMLDivElement>(`#${LIST_ALWAYS_ROOT_ID}`);
+    if (!host) {
+      return;
+    }
+
+    const previousInput = host.querySelector<HTMLInputElement>(
+      `#${LIST_ALWAYS_INPUT_ID}`
+    );
+    previousInput?.remove();
+
+    const previousTrigger = host.querySelector<HTMLButtonElement>(
+      `#${LIST_ALWAYS_TRIGGER_ID}`
+    );
+    previousTrigger?.remove();
+
+    const input = document.createElement("input");
+    input.type = "hidden";
+    input.id = LIST_ALWAYS_INPUT_ID;
+    host.appendChild(input);
+
+    const trigger = document.createElement("button");
+    trigger.type = "button";
+    trigger.id = LIST_ALWAYS_TRIGGER_ID;
+    trigger.style.display = "none";
+    host.appendChild(trigger);
+
+    alwaysOpenListChooserHandle?.close();
+
+    alwaysOpenListChooserHandle = attachListChooserWithStubData({
+      input,
+      trigger,
+      title: "Choose a Square",
+      description: `Filter mode: ${args.filterMode}`,
+      filter: buildFilter(args.filterMode),
+      onSelect: (id) => {
+        // eslint-disable-next-line no-console
+        console.log("Selected square from always-open list chooser:", id);
+      }
+    });
+
+    alwaysOpenListChooserHandle?.open();
+  }
+};
+
 export default meta;
 
 type Story = StoryObj<ListChooserStoryArgs>;
+
+const LIST_ALWAYS_ROOT_ID = "sb-list-chooser-open-root";
+const LIST_ALWAYS_TRIGGER_ID = "sb-list-chooser-open-trigger";
+const LIST_ALWAYS_INPUT_ID = "sb-list-chooser-open-input";
 
 function buildFilter(mode: ListChooserStoryArgs["filterMode"]) {
   return (id: number, ctx: { personalization: unknown; extra: unknown }) => {
@@ -47,6 +114,8 @@ function buildFilter(mode: ListChooserStoryArgs["filterMode"]) {
     }
   };
 }
+
+let alwaysOpenListChooserHandle: ReturnType<typeof attachListChooserWithStubData> | null = null;
 
 export const BasicListChooser: Story = {
   render: (args) => `

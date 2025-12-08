@@ -6,6 +6,8 @@ interface OfflineModalArgs {
   isOnline: boolean;
 }
 
+const OFFLINE_ALWAYS_ROOT_ID = "sb-offline-modal-always-root";
+
 const meta: Meta<OfflineModalArgs> = {
   title: "Modals/OfflineModal",
   tags: ["autodocs"],
@@ -17,6 +19,28 @@ const meta: Meta<OfflineModalArgs> = {
 export default meta;
 
 type Story = StoryObj<OfflineModalArgs>;
+
+export const AlwaysOffline: Story = {
+  render: () => `
+    <div
+      id="${OFFLINE_ALWAYS_ROOT_ID}"
+      style="
+        min-height: 320px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 1rem;
+      "
+    >
+      <p style="max-width: 360px; text-align: center; opacity: 0.75;">
+        The offline banner appears at the bottom with no additional controls.
+      </p>
+    </div>
+  `,
+  play: async () => {
+    window.dispatchEvent(new Event("offline"));
+  }
+};
 
 export const ToggleOnlineOffline: Story = {
   render: (args) => `

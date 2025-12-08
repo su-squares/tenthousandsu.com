@@ -5,6 +5,8 @@ interface AlertModalArgs {
   message: string;
 }
 
+const ALERT_ALWAYS_ROOT_ID = "sb-alert-modal-always-root";
+
 declare global {
   interface Window {
     SuAlertModal?: {
@@ -48,5 +50,26 @@ export const Basic: Story = {
         alert(args.message);
       }
     });
+  }
+};
+
+export const AlwaysOpen: Story = {
+  render: () => `
+    <div
+      id="${ALERT_ALWAYS_ROOT_ID}"
+      style="min-height: 260px; display:flex; align-items:center; justify-content:center;"
+    >
+      <p style="max-width: 320px; text-align:center; opacity:0.78;">
+        The alert modal appears immediately.
+      </p>
+    </div>
+  `,
+  play: async ({ args }) => {
+    await window.SuAlertModal?.init?.();
+    if (window.SuAlertModal) {
+      window.SuAlertModal.show(args.message);
+    } else {
+      alert(args.message);
+    }
   }
 };

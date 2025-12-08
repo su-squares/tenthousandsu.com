@@ -3,7 +3,11 @@
   "version": "1.0.0",
   "private": true,
   "description": "Storybook component documentation workspace",
-  "keywords": ["storybook", "components", "documentation"],
+  "keywords": [
+    "storybook",
+    "components",
+    "documentation"
+  ],
   "author": "ritorhymes",
   "type": "module",
   "scripts": {
@@ -11,9 +15,10 @@
     "build-storybook": "storybook build"
   },
   "devDependencies": {
-    "storybook": "^10.1.4",
     "@storybook/html": "^10.1.4",
     "@storybook/html-vite": "^10.1.4",
+    "@types/node": "^24.10.1",
+    "storybook": "^10.1.4",
     "typescript": "^5.6.0",
     "vite": "^5.4.0"
   }

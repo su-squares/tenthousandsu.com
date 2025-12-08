@@ -4,6 +4,8 @@ import "@modals/leaving-modal/link-guard.js";
 
 interface LeavingModalArgs {}
 
+const LEAVING_ALWAYS_ROOT_ID = "sb-leaving-modal-always-root";
+
 declare global {
   interface Window {
     SuLeavingModal?: {
@@ -98,5 +100,32 @@ export const LinkGuardDemo: Story = {
         window.SuLeavingModal?.gateAnchor(anchor);
       });
     }
+  }
+};
+
+export const AlwaysOpen: Story = {
+  render: () => `
+    <div
+      id="${LEAVING_ALWAYS_ROOT_ID}"
+      style="
+        min-height: 360px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 0.75rem;
+        text-align: center;
+        padding: 1rem;
+      "
+    >
+      <p style="max-width: 380px; opacity: 0.8;">
+        The Leaving Site modal opens immediately and stays visible until you interact with it.
+      </p>
+    </div>
+  `,
+  play: async () => {
+    const destination = new URL("https://ritovision.com");
+    await window.SuLeavingModal?.init?.();
+    window.SuLeavingModal?.show(destination, "_blank");
   }
 };

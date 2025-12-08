@@ -18,6 +18,10 @@ const config: StorybookConfig = {
     {
       from: resolve(__dirname, "../../../assets"),
       to: "/assets"
+    },
+    {
+      from: resolve(__dirname, "../../../build"),
+      to: "/build"
     }
   ],
   async viteFinal(baseConfig) {
