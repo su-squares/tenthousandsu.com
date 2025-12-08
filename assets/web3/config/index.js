@@ -60,6 +60,7 @@ export function getWeb3Config() {
     activeNetwork,
     contracts,
     pricing: flags.pricing,
+    assetBases: flags.assetBases,
   };
 
   return cachedConfig;

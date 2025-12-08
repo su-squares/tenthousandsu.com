@@ -33,7 +33,7 @@ function cacheKey(chainId, address) {
  * Get a working readContract function from the wagmi client.
  * Falls back to using the publicClient if wagmi.readContract is unavailable.
  */
-function getReadContractFn(wagmi) {
+export function getReadContractFn(wagmi) {
   // Try direct readContract first
   if (typeof wagmi?.readContract === "function") {
     return wagmi.readContract;
