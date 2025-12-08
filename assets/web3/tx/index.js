@@ -13,7 +13,6 @@ import {
 const DEFAULT_PRICING = {
   mintPriceEth: 0.5,
   personalizePriceEth: 0.001,
-  personalizeFreeCount: 3,
 };
 
 function normalizePricing(pricing) {
@@ -25,9 +24,6 @@ function normalizePricing(pricing) {
   return {
     mintPriceEth: asNumber(safe.mintPriceEth, DEFAULT_PRICING.mintPriceEth),
     personalizePriceEth: asNumber(safe.personalizePriceEth, DEFAULT_PRICING.personalizePriceEth),
-    personalizeFreeCount: Number.isFinite(safe.personalizeFreeCount)
-      ? safe.personalizeFreeCount
-      : DEFAULT_PRICING.personalizeFreeCount,
   };
 }
 
@@ -134,7 +130,19 @@ function renderTxView(target, state, actions, options = {}) {
         <div class="su-tx-card__section su-tx-price">
           <div class="su-tx-price__item">
             <span class="su-tx-price__label">Personalize:</span>
-            <span>First ${state.pricing.personalizeFreeCount} free, then ${state.pricing.personalizePriceEth} ETH each</span>
+            <span>${state.pricing.personalizePriceEth} ETH each</span>
+          </div>
+        </div>
+      `
+      : ""
+    }
+
+      ${state.status === "idle" && state.mode === "unpersonalize"
+      ? `
+        <div class="su-tx-card__section su-tx-price">
+          <div class="su-tx-price__item">
+            <span class="su-tx-price__label">Unpersonalize:</span>
+            <span>${state.pricing.personalizePriceEth} ETH</span>
           </div>
         </div>
       `

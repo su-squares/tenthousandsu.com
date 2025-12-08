@@ -59,7 +59,6 @@ function normalizePricing(raw) {
   return {
     mintPriceEth: parseFloatish(pricing.mintPriceEth, 0.5),
     personalizePriceEth: parseFloatish(pricing.personalizePriceEth, 0.001),
-    personalizeFreeCount: 3,
   };
 }
 
@@ -72,7 +71,7 @@ function normalizePricing(raw) {
  *   addresses: Record<string, { primary?: string|null, underlay?: string|null }>,
  *   assetBases: Record<string, string>,
  *   overrides: { sunetChainId?: number, sunetExplorerBaseUrl?: string, sunetRpcUrls?: string[] },
- *   pricing: { mintPriceEth: number, personalizePriceEth: number, personalizeFreeCount: number }
+ *   pricing: { mintPriceEth: number, personalizePriceEth: number }
  * }}
  */
 export function getRuntimeFlags() {

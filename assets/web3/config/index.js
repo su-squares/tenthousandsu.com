@@ -40,7 +40,7 @@ function buildNetworks(flags) {
  *   networks: Record<string, { chainId: number, label: string, explorerBaseUrl?: string, explorerTxPath?: string, rpcUrls: string[] }>,
  *   activeNetwork: { chainId: number, label: string, explorerBaseUrl?: string, explorerTxPath?: string, rpcUrls: string[] },
  *   contracts: { primary: string, underlay: string },
- *   pricing: { mintPriceEth: number, personalizePriceEth: number, personalizeFreeCount: number }
+ *   pricing: { mintPriceEth: number, personalizePriceEth: number }
  * }}
  */
 export function getWeb3Config() {
