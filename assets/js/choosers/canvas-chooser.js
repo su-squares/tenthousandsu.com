@@ -91,7 +91,7 @@ export function attachCanvasChooser({
   function closeModal() {
     if (backdrop) {
       backdrop.classList.remove("is-open");
-      document.removeEventListener("keydown", handleEscape);
+      document.removeEventListener("keydown", handleKeydown);
       currentSquare = null;
       if (panZoom) {
         panZoom.reset();
@@ -99,9 +99,52 @@ export function attachCanvasChooser({
     }
   }
 
-  function handleEscape(event) {
-    if (event.key === "Escape") {
+  function handleKeydown(event) {
+    const key = event.key.toLowerCase();
+    if (key === "escape") {
       closeModal();
+      return;
+    }
+
+    // Arrow key navigation
+    const square = currentSquare || 1;
+    if (key === "w" || key === "," || key === "arrowup") {
+      if (square > GRID_DIMENSION) {
+        showSquare(square - GRID_DIMENSION);
+        event.preventDefault();
+      }
+    } else if (key === "a" || key === "arrowleft") {
+      if (square % GRID_DIMENSION !== 1) {
+        showSquare(square - 1);
+        event.preventDefault();
+      }
+    } else if (key === "s" || key === "o" || key === "arrowdown") {
+      if (square <= GRID_DIMENSION * (GRID_DIMENSION - 1)) {
+        showSquare(square + GRID_DIMENSION);
+        event.preventDefault();
+      }
+    } else if (key === "d" || key === "e" || key === "arrowright") {
+      if (square % GRID_DIMENSION !== 0) {
+        showSquare(square + 1);
+        event.preventDefault();
+      }
+    } else if (key === "enter") {
+      if (currentSquare && data) {
+        const { personalizations, extra } = data;
+        const ctx = {
+          personalization: personalizations[currentSquare - 1],
+          extra: extra[currentSquare - 1],
+        };
+        const allowed = filter(currentSquare, ctx);
+        if (allowed) {
+          if (updateInput && input) {
+            input.value = currentSquare;
+            input.dispatchEvent(new Event("input", { bubbles: true }));
+          }
+          onSelect(currentSquare);
+          closeModal();
+        }
+      }
     }
   }
 
@@ -308,7 +351,7 @@ export function attachCanvasChooser({
       ensureModal();
       clearHover();
       backdrop.classList.add("is-open");
-      document.addEventListener("keydown", handleEscape);
+      document.addEventListener("keydown", handleKeydown);
     } catch (error) {
       alert(error.message || "Failed to load squares");
     }
