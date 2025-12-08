@@ -108,7 +108,7 @@ export async function loadWagmiClient() {
     promise: (async () => {
       ensureProcessEnv();
 
-      const [core, eip6963Providers] = await Promise.all([import(BUNDLE_URL), waitForProviders(400)]);
+      const [core, eip6963Providers] = await Promise.all([import(/* @vite-ignore */ BUNDLE_URL), waitForProviders(400)]);
 
       log("loaded bundle", core);
       log("EIP-6963 providers:", eip6963Providers.size);

@@ -5,7 +5,9 @@ import { ChainKey, NETWORK_PRESETS } from "@assets/web3/config/networks.js";
 import { createModalShell } from "@assets/web3/wallet/base/modal-shell.js";
 import { renderAccountView } from "@assets/web3/wallet/account-modal/account-view.js";
 
-type NetworkKey = ChainKey | "custom";
+type ChainKeyValue = (typeof ChainKey)[keyof typeof ChainKey];
+type NetworkPreset = (typeof NETWORK_PRESETS)[keyof typeof NETWORK_PRESETS];
+type NetworkKey = ChainKeyValue | "custom";
 
 interface AccountModalStoryArgs {
   accountConnected: boolean;
@@ -33,11 +35,11 @@ const customNetwork = {
   nativeCurrency: { symbol: "CUSTOM" },
 };
 
-const networkMap: Record<NetworkKey, typeof NETWORK_PRESETS[ChainKey.MAINNET]> = {
+const networkMap: Record<NetworkKey, NetworkPreset | typeof customNetwork> = {
   [ChainKey.MAINNET]: NETWORK_PRESETS[ChainKey.MAINNET],
   [ChainKey.SEPOLIA]: NETWORK_PRESETS[ChainKey.SEPOLIA],
   [ChainKey.SUNET]: NETWORK_PRESETS[ChainKey.SUNET],
-  custom: customNetwork as any,
+  custom: customNetwork,
 };
 
 const wagmiClientStub = {
@@ -52,7 +54,7 @@ const meta: Meta<AccountModalStoryArgs> = {
   args: {
     accountConnected: true,
     accountAddress: "0x5f2b8a9f1e284f02d90a6b7f34c6d8c72f2e38f5",
-    networkKey: ChainKey.MAINNET,
+    networkKey: ChainKey.MAINNET as ChainKeyValue,
     includeEns: true,
     ensName: "storytime.eth",
     loadingEns: false,

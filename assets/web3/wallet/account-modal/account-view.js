@@ -30,7 +30,7 @@ function getChainIcon(activeNetwork, presets) {
  * Render the normal account view.
  * @param {HTMLElement} target
  * @param {{ account: any, ensName: string|null, balance: any }} data
- * @param {{ activeNetwork: any, presets: { mainnet: number, sepolia: number }, wagmiClient: any, onDisconnect: Function, loadingEns?: boolean, loadingBalance?: boolean }} options
+ * @param {{ activeNetwork: any, presets: { mainnet: number, sepolia: number }, wagmiClient: any, onDisconnect: Function, onRefresh?: Function, loadingEns?: boolean, loadingBalance?: boolean }} options
  */
 export function renderAccountView(target, data, options) {
   if (!target) return;

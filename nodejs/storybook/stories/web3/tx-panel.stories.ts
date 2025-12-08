@@ -5,6 +5,8 @@ import { createTxFixture, createTxModal } from "@assets/web3/tx/index.js";
 
 type Story = StoryObj;
 type TxState = "idle" | "processing" | "success" | "error";
+type FixtureController = ReturnType<typeof createTxFixture>;
+type ModalController = FixtureController & { hide: () => void; show: () => void };
 const STORYBOOK_STORY_CHANGED_EVENT = "storyChanged";
 type StorybookChannel = { on: (event: string, handler: () => void) => void };
 type StorybookWindow = Window & { __STORYBOOK_ADDONS_CHANNEL__?: StorybookChannel };
@@ -46,8 +48,8 @@ const DEFAULT_BALANCE = {
 };
 
 let fixtureTarget: HTMLDivElement | null = null;
-let fixtureController: ReturnType<typeof createTxFixture> | null = null;
-let modalController: ReturnType<typeof createTxModal> | null = null;
+let fixtureController: FixtureController | null = null;
+let modalController: ModalController | null = null;
 let storyChangeRegistered = false;
 
 function renderFixtureFrame() {
@@ -131,16 +133,14 @@ function ensureModalController() {
       pricing: DEFAULT_PRICING,
       mode: "both",
       title: "Transaction status",
-    });
+    }) as ModalController;
   }
 
   return modalController;
 }
 
 function hideModalOverlay() {
-  if (modalController) {
-    modalController.hide();
-  }
+  modalController?.hide();
 }
 
 function registerStoryChangeCleanup() {
@@ -162,7 +162,7 @@ if (typeof window !== "undefined") {
   registerStoryChangeCleanup();
 }
 
-async function seedBalance(controller: ReturnType<typeof createTxFixture>, balance = DEFAULT_BALANCE) {
+async function seedBalance(controller: FixtureController, balance = DEFAULT_BALANCE) {
   await controller.setBalanceContext({
     address: STUB_ADDRESS,
     chainId: STUB_CHAIN_ID,
@@ -175,14 +175,14 @@ async function seedBalance(controller: ReturnType<typeof createTxFixture>, balan
   });
 }
 
-function setWalletButton(controller: ReturnType<typeof createTxFixture>, visible: boolean) {
+function setWalletButton(controller: FixtureController, visible: boolean) {
   controller.setWalletContext({
     hasSession: visible,
     isWalletConnect: visible,
   });
 }
 
-async function applyState(controller: ReturnType<typeof createTxFixture>, state: TxState) {
+async function applyState(controller: FixtureController, state: TxState) {
   controller.reset();
   await seedBalance(controller);
   controller.setTitle("Su Squares transaction");

@@ -8,7 +8,7 @@ let qrLibPromise = null;
 
 async function loadQrLib() {
   if (qrLibPromise) return qrLibPromise;
-  qrLibPromise = import(QR_LIB_URL);
+  qrLibPromise = import(/* @vite-ignore */ QR_LIB_URL);
   return qrLibPromise;
 }
 
