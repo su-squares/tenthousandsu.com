@@ -10,7 +10,7 @@
   width: 100%;
   max-width: 1000px;
   display: block;
-  margin: 0 auto 2rem auto;
+  margin: 0 auto;
   overflow: hidden; /* Clip zoomed content */
 }
 
@@ -67,6 +67,7 @@
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 1rem;
+  margin-top: 2rem;
 }
 
 .newly-feed__section {
@@ -155,15 +156,14 @@
 .mobile-hint {
   font-weight: bold;
   text-align: center;
-  /* offset the gap spacing */
-  margin: -2rem auto 0 auto;
+  margin: 10px auto 0 auto;
   padding: 0;
   display: none;
 }
 
 .map-reset-btn {
   display: none;
-  margin: 0.5rem auto 0 auto;
+  margin: 10px auto 0 auto;
   padding: 0.4rem 1rem;
   background: rgba(0, 0, 0, 0.25);
   border: 2px solid var(--color-accent);
@@ -175,6 +175,17 @@
 
 .map-reset-btn:hover {
   background: rgba(0, 0, 0, 0.4);
+}
+
+/* Override article gaps from main.css for homepage */
+article {
+  gap: 0;
+}
+
+@media (max-width: 1007px) {
+  article {
+    gap: 0;
+  }
 }
 
 @media (max-width: 700px) {
