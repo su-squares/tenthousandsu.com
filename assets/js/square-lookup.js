@@ -1,5 +1,3 @@
-import { attachListChooser } from "./choosers/list-chooser.js";
-import { attachCanvasChooser } from "./choosers/canvas-chooser.js";
 import { loadSquareData } from "./square-data.js";
 
 const input = document.getElementById("square-lookup-input");
@@ -59,29 +57,71 @@ if (input && chooseButton && submitButton) {
     return { ok: true, value };
   };
 
-  attachListChooser({
-    input,
-    trigger: chooseButton,
-    filter: (_id, ctx) => Boolean(ctx.extra),
-    onSelect: (id) => {
-      goToSquare(id);
-    },
-    updateInput: false,
-    title: "Choose a minted Square",
-    description: "Tap a square below to look it up.",
-  });
-
-  if (chooseCanvasButton) {
-    attachCanvasChooser({
+  let listChooserHandle;
+  const ensureListChooser = async () => {
+    if (listChooserHandle) return listChooserHandle;
+    const module = await import("./choosers/list-chooser.js");
+    listChooserHandle = module.attachListChooser({
       input,
-      trigger: chooseCanvasButton,
+      trigger: chooseButton,
       filter: (_id, ctx) => Boolean(ctx.extra),
       onSelect: (id) => {
         goToSquare(id);
       },
       updateInput: false,
-      title: "Choose square from canvas",
+      title: "Choose a minted Square",
+      description: "Tap a square below to look it up.",
     });
+    return listChooserHandle;
+  };
+
+  const handleChooseListClick = async (event) => {
+    event.preventDefault();
+    event.stopPropagation();
+    try {
+      const chooser = await ensureListChooser();
+      chooser.open();
+      chooseButton.removeEventListener("click", handleChooseListClick);
+    } catch (error) {
+      console.error("Failed to load the list chooser", error);
+      alert("Unable to open the chooser right now.");
+    }
+  };
+
+  chooseButton.addEventListener("click", handleChooseListClick);
+
+  if (chooseCanvasButton) {
+    let canvasChooserHandle;
+    const ensureCanvasChooser = async () => {
+      if (canvasChooserHandle) return canvasChooserHandle;
+      const module = await import("./choosers/canvas-chooser.js");
+      canvasChooserHandle = module.attachCanvasChooser({
+        input,
+        trigger: chooseCanvasButton,
+        filter: (_id, ctx) => Boolean(ctx.extra),
+        onSelect: (id) => {
+          goToSquare(id);
+        },
+        updateInput: false,
+        title: "Choose square from canvas",
+      });
+      return canvasChooserHandle;
+    };
+
+    const handleChooseCanvasClick = async (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      try {
+        const chooser = await ensureCanvasChooser();
+        chooser.open();
+        chooseCanvasButton.removeEventListener("click", handleChooseCanvasClick);
+      } catch (error) {
+        console.error("Failed to load the canvas chooser", error);
+        alert("Unable to open the chooser right now.");
+      }
+    };
+
+    chooseCanvasButton.addEventListener("click", handleChooseCanvasClick);
   }
 
   submitButton.addEventListener("click", async () => {
