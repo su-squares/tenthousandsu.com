@@ -13,7 +13,7 @@ Gemfile.lock
 /nodejs/builder/dist/
 
 
-### Smart Contract workspace ###
+### Smart Contract workspace related ###
 .env
 .env.sunet
 .env.contract
@@ -30,6 +30,13 @@ build-sunet/
 build-sepolia/
 erc721-sunet/
 erc721-sepolia/
+/nodejs/smart-contract/personalizing/images/*.png
+/nodejs/smart-contract/personalizing/images/*.svg
+/nodejs/smart-contract/personalizing/images/*.jpg
+/nodejs/smart-contract/personalizing/images/*.jpeg
+/nodejs/smart-contract/personalizing/images/*.webp
+/nodejs/smart-contract/personalizing/metadata/personalizations.csv
+
 
 # Windows reserved device names
 nul

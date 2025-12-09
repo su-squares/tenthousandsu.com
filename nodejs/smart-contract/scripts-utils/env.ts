@@ -12,6 +12,8 @@ export type ContractEnv = {
   CEO_ADDRESS: string;
   CFO_ADDRESS: string;
   COO_ADDRESS: string;
+  CEO_ADDRESS_UNDERLAY?: string;
+  CFO_ADDRESS_UNDERLAY?: string;
 };
 
 export type SunetEnv = {
@@ -110,6 +112,31 @@ export function loadTransferEnv(options: { required?: boolean } = {}): TransferE
   };
 }
 
+export type TokenCheckEnv = {
+  tokenId: number;
+};
+
+export function loadTokenCheckEnv(options: { required?: boolean } = {}): TokenCheckEnv | null {
+  const { required = false } = options;
+  const rawTokenId = (process.env.TOKEN_ID_CHECK || "").trim();
+
+  if (!rawTokenId) {
+    if (required) {
+      throw new Error(
+        `Missing env var TOKEN_ID_CHECK. Set it in ${CONTRACT_ENV_PATH} (see ${CONTRACT_ENV_EXAMPLE_PATH}).`,
+      );
+    }
+    return null;
+  }
+
+  const tokenId = Number(rawTokenId);
+  if (!Number.isInteger(tokenId) || tokenId <= 0) {
+    throw new Error("TOKEN_ID_CHECK must be a positive integer.");
+  }
+
+  return { tokenId };
+}
+
 export function loadContractEnv(options: LoadOptions = {}): ContractEnv | null {
   const { required = false, requireKeys = contractRequiredKeys } = options;
 
@@ -134,11 +161,11 @@ export function loadContractEnv(options: LoadOptions = {}): ContractEnv | null {
     CEO_ADDRESS: (source.CEO_ADDRESS || "").trim(),
     CFO_ADDRESS: (source.CFO_ADDRESS || "").trim(),
     COO_ADDRESS: (source.COO_ADDRESS || "").trim(),
+    CEO_ADDRESS_UNDERLAY: (source.CEO_ADDRESS_UNDERLAY || "").trim(),
+    CFO_ADDRESS_UNDERLAY: (source.CFO_ADDRESS_UNDERLAY || "").trim(),
   };
 
-  const invalid = Object.entries(env)
-    .filter(([key, value]) => requireKeys.includes(key as keyof ContractEnv) && !isAddress(value))
-    .map(([key]) => key);
+  const invalid = requireKeys.filter((key) => !isAddress(env[key] ?? ""));
 
   if (invalid.length > 0) {
     if (required) {
