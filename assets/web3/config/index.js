@@ -3,6 +3,15 @@ import { getRuntimeFlags } from "./runtime.js";
 import { ChainKey, DEFAULT_CHAIN, NETWORK_PRESETS, normalizeChainKey } from "./networks.js";
 
 let cachedConfig = null;
+let cachedSignature = null;
+
+function buildSignature(flags) {
+  try {
+    return JSON.stringify(flags);
+  } catch (_error) {
+    return null;
+  }
+}
 
 function buildNetworks(flags) {
   const sunetChainId = flags?.overrides?.sunetChainId || NETWORK_PRESETS[ChainKey.SUNET].chainId;
@@ -44,9 +53,11 @@ function buildNetworks(flags) {
  * }}
  */
 export function getWeb3Config() {
-  if (cachedConfig) return cachedConfig;
-
   const flags = getRuntimeFlags();
+  const signature = buildSignature(flags);
+
+  if (cachedConfig && cachedSignature === signature) return cachedConfig;
+
   const chain = normalizeChainKey(flags.chain || DEFAULT_CHAIN);
   const networks = buildNetworks(flags);
   const activeNetwork = networks[chain] || networks[DEFAULT_CHAIN];
@@ -62,6 +73,7 @@ export function getWeb3Config() {
     pricing: flags.pricing,
     assetBases: flags.assetBases,
   };
+  cachedSignature = signature;
 
   return cachedConfig;
 }

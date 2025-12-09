@@ -1,4 +1,4 @@
-import { loadSquareData } from "../square-data.js";
+import { loadSquareData } from "../../js/square-data.js";
 
 /**
  * Attach a list-style chooser modal to a trigger/input pair.

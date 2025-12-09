@@ -2,6 +2,8 @@
 layout: article
 permalink: /articles/2018-08-01-launch-week
 title: Launch week
+image: "{{ site.baseurl }}/assets/images/su-OG.png"
+description: "Details the 2018 launch week special offer, including how to claim a free adjacent Su Square."
 ---
 
 # Launch week

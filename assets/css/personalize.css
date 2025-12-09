@@ -58,7 +58,7 @@
 .su-modal__title {
   margin: 0;
   font-size: 1.25rem;
-  color: #ffd700;
+  color: var(--color-accent);
 }
 
 .su-modal__close {
@@ -98,7 +98,7 @@
 
 .su-modal__label {
   font-weight: 600;
-  color: #ffd700;
+  color: var(--color-accent);
 }
 
 .su-modal__input {
@@ -117,7 +117,7 @@
 
 .su-modal__input:focus {
   outline: none;
-  border-color: #ffd700;
+  border-color: var(--color-accent);
 }
 
 .su-modal__status {

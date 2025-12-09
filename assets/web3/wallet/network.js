@@ -1,11 +1,15 @@
 import { getWeb3Config } from "../config/index.js";
 import { createDebugLogger } from "../config/logger.js";
 
-const appConfig = getWeb3Config();
 const log = createDebugLogger("wallet-network");
 
-export const PREFERRED_CHAIN_ID = appConfig.activeNetwork.chainId;
-export const PREFERRED_CHAIN_LABEL = appConfig.activeNetwork.label || "Ethereum";
+export function getPreferredChainId() {
+  return getWeb3Config().activeNetwork.chainId;
+}
+
+export function getPreferredChainLabel() {
+  return getWeb3Config().activeNetwork.label || "Ethereum";
+}
 
 /**
  * Check if the given chain ID matches the preferred/allowed chain.
@@ -14,7 +18,8 @@ export const PREFERRED_CHAIN_LABEL = appConfig.activeNetwork.label || "Ethereum"
  */
 export function isAllowedChain(chainId) {
   if (typeof chainId !== "number") return false;
-  return chainId === PREFERRED_CHAIN_ID;
+  const preferredId = getWeb3Config().activeNetwork.chainId;
+  return chainId === preferredId;
 }
 
 /**
@@ -67,6 +72,6 @@ export async function requestPreferredNetwork(wagmi, options = {}) {
 /**
  * @deprecated No longer used.
  */
-export async function attemptNetworkSwitch(wagmi, targetChainId = PREFERRED_CHAIN_ID) {
+export async function attemptNetworkSwitch(wagmi, targetChainId = getPreferredChainId()) {
   return false;
 }

@@ -1,38 +1,38 @@
-import type { Meta, StoryObj } from "@storybook/html";
-import "@assets/css/chooser.css";
-import { attachCanvasChooser } from "@assets/js/choosers/canvas-chooser.js";
+﻿import type { Meta, StoryObj } from "@storybook/html";
+import "@assets/square-lookup/styles.css";
+import { attachBillboardChooser } from "@assets/square-lookup/choosers/billboard.js";
 
-interface CanvasChooserStoryArgs {
+interface BillboardChooserStoryArgs {
   filterMode: "all" | "mintedOnly" | "personalizedOnly";
 }
 
-const meta: Meta<CanvasChooserStoryArgs> = {
-  title: "Choosers/CanvasChooser (Live Data)",
+const meta: Meta<BillboardChooserStoryArgs> = {
+  title: "Choosers/BillboardChooser (Live Data)",
   tags: ["autodocs"],
   args: {
-    filterMode: "mintedOnly"
+    filterMode: "mintedOnly",
   },
   argTypes: {
     filterMode: {
       control: { type: "select" },
       options: ["all", "mintedOnly", "personalizedOnly"],
-      description: "Control which squares are considered enabled when hovering the canvas"
-    }
-  }
+      description: "Control which squares are considered enabled when hovering the billboard",
+    },
+  },
 };
 
 export default meta;
 
-type Story = StoryObj<CanvasChooserStoryArgs>;
+type Story = StoryObj<BillboardChooserStoryArgs>;
 
-const CANVAS_INPUT_ID = "sb-canvas-chooser-input";
-const CANVAS_TRIGGER_ID = "sb-canvas-chooser-trigger";
-const CANVAS_ALWAYS_OPEN_ROOT_ID = "sb-canvas-chooser-open-root";
-const CANVAS_ALWAYS_OPEN_TRIGGER_ID = "sb-canvas-chooser-open-trigger";
+const BILLBOARD_INPUT_ID = "sb-billboard-chooser-input";
+const BILLBOARD_TRIGGER_ID = "sb-billboard-chooser-trigger";
+const BILLBOARD_ALWAYS_OPEN_ROOT_ID = "sb-billboard-chooser-open-root";
+const BILLBOARD_ALWAYS_OPEN_TRIGGER_ID = "sb-billboard-chooser-open-trigger";
 
 type FilterMeta = { minted?: boolean; personalized?: boolean } | null | undefined;
 
-function matchesFilter(mode: CanvasChooserStoryArgs["filterMode"], meta: FilterMeta) {
+function matchesFilter(mode: BillboardChooserStoryArgs["filterMode"], meta: FilterMeta) {
   if (!meta) {
     return mode === "all";
   }
@@ -48,16 +48,16 @@ function matchesFilter(mode: CanvasChooserStoryArgs["filterMode"], meta: FilterM
   }
 }
 
-function buildCanvasFilter(mode: CanvasChooserStoryArgs["filterMode"]) {
+function buildBillboardFilter(mode: BillboardChooserStoryArgs["filterMode"]) {
   return (_id: number, ctx: { personalization: unknown; extra: unknown }) =>
     matchesFilter(mode, ctx.extra as FilterMeta);
 }
 
-let canvasChooserHandle: ReturnType<typeof attachCanvasChooser> | null = null;
+let billboardChooserHandle: ReturnType<typeof attachBillboardChooser> | null = null;
 let attachedTrigger: HTMLElement | null = null;
-let alwaysOpenCanvasChooserHandle: ReturnType<typeof attachCanvasChooser> | null = null;
+let alwaysOpenBillboardChooserHandle: ReturnType<typeof attachBillboardChooser> | null = null;
 
-export const LiveCanvasChooser: Story = {
+export const LiveBillboardChooser: Story = {
   render: (args) => `
     <div
       style="
@@ -72,12 +72,12 @@ export const LiveCanvasChooser: Story = {
       "
     >
       <label
-        for="${CANVAS_INPUT_ID}"
+        for="${BILLBOARD_INPUT_ID}"
         style="display: flex; flex-direction: column; gap: 0.25rem; width: 100%;"
       >
         <span style="font-weight: 600;">Selected square ID</span>
         <input
-          id="${CANVAS_INPUT_ID}"
+          id="${BILLBOARD_INPUT_ID}"
           type="number"
           min="1"
           step="1"
@@ -92,7 +92,7 @@ export const LiveCanvasChooser: Story = {
       </label>
 
       <button
-        id="${CANVAS_TRIGGER_ID}"
+        id="${BILLBOARD_TRIGGER_ID}"
         type="button"
         style="
           padding: 0.6rem 1.1rem;
@@ -104,12 +104,12 @@ export const LiveCanvasChooser: Story = {
           font-weight: 600;
         "
       >
-        Open canvas chooser (live data)
+        Open billboard chooser (live data)
       </button>
 
       <p style="font-size: 0.85rem; opacity: 0.85; max-width: 460px;">
         This story loads the published <code>/build/squarePersonalizations.json</code> and
-        <code>/build/squareExtra.json</code> and renders the full canvas with the real minted/personalized flags.
+        <code>/build/squareExtra.json</code> and renders the full billboard with the real minted/personalized flags.
         Use the <strong>filterMode</strong> control to change which squares are treated as selectable before
         opening the chooser. After switching it, close the modal (if open) and click the button again to see
         the updated filtering applied.
@@ -121,34 +121,33 @@ export const LiveCanvasChooser: Story = {
     </div>
   `,
   play: async ({ args, canvasElement }) => {
-    const filter = buildCanvasFilter(args.filterMode);
-    const input =
-      canvasElement.querySelector<HTMLInputElement>(`#${CANVAS_INPUT_ID}`) ?? undefined;
-    const trigger = canvasElement.querySelector<HTMLElement>(`#${CANVAS_TRIGGER_ID}`);
+    const filter = buildBillboardFilter(args.filterMode);
+    const input = canvasElement.querySelector<HTMLInputElement>(`#${BILLBOARD_INPUT_ID}`) ?? undefined;
+    const trigger = canvasElement.querySelector<HTMLElement>(`#${BILLBOARD_TRIGGER_ID}`);
 
     if (!trigger) return;
 
-    if (!canvasChooserHandle || attachedTrigger !== trigger) {
-      canvasChooserHandle?.close();
+    if (!billboardChooserHandle || attachedTrigger !== trigger) {
+      billboardChooserHandle?.close();
 
-      canvasChooserHandle = attachCanvasChooser({
+      billboardChooserHandle = attachBillboardChooser({
         input,
         trigger,
         filter,
-        title: "Choose square from canvas",
+        title: "Choose square from billboard",
         // eslint-disable-next-line no-console
-        onSelect: (id) => console.log("Selected square from live canvas:", id)
+        onSelect: (id) => console.log("Selected square from live billboard:", id),
       });
 
       attachedTrigger = trigger;
     }
-  }
+  },
 };
 
-export const AlwaysOpenCanvasChooser: Story = {
+export const AlwaysOpenBillboardChooser: Story = {
   render: () => `
     <div
-      id="${CANVAS_ALWAYS_OPEN_ROOT_ID}"
+      id="${BILLBOARD_ALWAYS_OPEN_ROOT_ID}"
       style="
         min-height: 400px;
         display: flex;
@@ -163,32 +162,29 @@ export const AlwaysOpenCanvasChooser: Story = {
     </div>
   `,
   play: async ({ args, canvasElement }) => {
-    const host =
-      canvasElement.querySelector<HTMLDivElement>(`#${CANVAS_ALWAYS_OPEN_ROOT_ID}`);
+    const host = canvasElement.querySelector<HTMLDivElement>(`#${BILLBOARD_ALWAYS_OPEN_ROOT_ID}`);
     if (!host) {
       return;
     }
 
-    const existingTrigger =
-      host.querySelector<HTMLButtonElement>(`#${CANVAS_ALWAYS_OPEN_TRIGGER_ID}`);
+    const existingTrigger = host.querySelector<HTMLButtonElement>(`#${BILLBOARD_ALWAYS_OPEN_TRIGGER_ID}`);
     existingTrigger?.remove();
 
     const trigger = document.createElement("button");
-    trigger.id = CANVAS_ALWAYS_OPEN_TRIGGER_ID;
+    trigger.id = BILLBOARD_ALWAYS_OPEN_TRIGGER_ID;
     trigger.type = "button";
     trigger.style.display = "none";
     host.appendChild(trigger);
 
-    alwaysOpenCanvasChooserHandle?.close();
-    alwaysOpenCanvasChooserHandle = attachCanvasChooser({
+    alwaysOpenBillboardChooserHandle?.close();
+    alwaysOpenBillboardChooserHandle = attachBillboardChooser({
       trigger,
-      filter: buildCanvasFilter(args.filterMode),
-      title: "Choose square from canvas",
+      filter: buildBillboardFilter(args.filterMode),
+      title: "Choose square from billboard",
       // eslint-disable-next-line no-console
-      onSelect: (id) =>
-        console.log("Selected square from always-open canvas chooser:", id)
+      onSelect: (id) => console.log("Selected square from always-open billboard chooser:", id),
     });
 
-    await alwaysOpenCanvasChooserHandle?.open?.();
-  }
+    await alwaysOpenBillboardChooserHandle?.open?.();
+  },
 };

@@ -2,6 +2,8 @@
 layout: article
 permalink: /articles/2018-09-18-operator-bug
 title: Operator bug
+image: "{{ site.baseurl }}/assets/images/su-OG.png"
+description: "Recounts the OpenSea discovery of an operator bug and its security impact on Su Squares."
 ---
 
 # OpenSea identifies operator bug with Su Squares

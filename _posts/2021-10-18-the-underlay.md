@@ -2,6 +2,8 @@
 layout: article
 permalink: /articles/2021-10-18-the-underlay
 title: Introducing the underlay
+image: "{{ site.baseurl }}/assets/images/su-OG.png"
+description: "Explains the new low-cost underlay personalization contract and how it coexists with the original Su Squares contract."
 ---
 
 # The underlay

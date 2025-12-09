@@ -42,7 +42,7 @@
 }
 
 .map-tooltip {
-  --map-tooltip-color: #ffd700;
+  --map-tooltip-color: var(--color-accent);
   position: absolute;
   background-image: linear-gradient(135deg, rgba(45, 60, 150, 0.95), rgba(213, 51, 146, 0.9));
   color: var(--map-tooltip-color);

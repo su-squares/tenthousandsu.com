@@ -270,7 +270,7 @@
   font-size: 1rem;
   border-radius: 0.5rem;
   border: 2px solid #ffd700;
-  color: #ffd700;
+  color: var(--color-accent);
   padding: 0.65rem 0.85rem;
   box-shadow: 4px 6px 4px rgba(255, 255, 255, 0.2);
   transition: box-shadow 0.15s ease, transform 0.15s ease;
@@ -304,7 +304,7 @@
 
 .su-nav-article-link {
   text-decoration: none;
-  color: #ffd700;
+  color: var(--color-accent);
   font-weight: 700;
   line-height: 1.5rem;
   word-break: break-word;
@@ -332,16 +332,16 @@
 }
 
 .su-nav-articles::-webkit-scrollbar-thumb {
-  background: #ffd700;
+  background: var(--color-accent);
   border-radius: 10px;
 }
 
 .su-nav-articles a:visited {
-  color: #ffd700;
+  color: var(--color-accent);
 }
 
 .su-nav-articles a:active {
-  color: #ffd700;
+  color: var(--color-accent);
 }
 
 .su-nav-arrow-right {

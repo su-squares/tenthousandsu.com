@@ -24,6 +24,10 @@
   color: var(--color-on-surface);
 }
 
+.square-default-state h1 {
+  font-size: 3rem;
+}
+
 .square-page h1,
 .square-page h2,
 .square-page h3,

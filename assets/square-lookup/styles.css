@@ -27,7 +27,8 @@
   overflow: hidden;
 }
 
-.su-chooser--canvas {
+.su-chooser--canvas,
+.su-chooser--billboard {
   width: min(1100px, 95vw);
   max-height: 90vh;
   overflow: hidden;
@@ -106,7 +107,7 @@
   margin: 0;
 }
 
-.su-canvas {
+.su-billboard {
   width: 100%;
   display: flex;
   justify-content: center;
@@ -118,7 +119,7 @@
   max-height: calc(90vh - 140px);
 }
 
-.su-canvas__wrapper {
+.su-billboard__wrapper {
   position: relative;
   /* Let the wrapper be its natural square size, even if it overflows */
   width: min(1000px, 100%);
@@ -128,7 +129,7 @@
   will-change: transform;
 }
 
-.su-canvas__image {
+.su-billboard__image {
   width: 100%;
   height: 100%;
   /* Image fills the wrapper exactly since both are 1:1 aspect ratio */
@@ -139,7 +140,7 @@
   background: rgba(0, 0, 0, 0.1);
 }
 
-.su-canvas__highlight {
+.su-billboard__highlight {
   position: absolute;
   border: 2px solid var(--color-accent);
   pointer-events: none;
@@ -147,7 +148,7 @@
   display: none;
 }
 
-.su-canvas__tooltip {
+.su-billboard__tooltip {
   position: absolute;
   background: var(--bg-gradient);
   color: var(--color-accent);
@@ -161,12 +162,12 @@
   z-index: 10;
 }
 
-.su-canvas__tooltip[data-disabled="true"] {
+.su-billboard__tooltip[data-disabled="true"] {
   border: 4px solid #ff4d4f;
   background: black;
 }
 
-.su-canvas__reset-btn {
+.su-billboard__reset-btn {
   display: block;
   margin: 0.75rem auto 0 auto;
   padding: 0.45rem 1.2rem;
@@ -178,7 +179,7 @@
   font-size: 0.9rem;
 }
 
-.su-canvas__reset-btn:hover {
+.su-billboard__reset-btn:hover {
   background: rgba(0, 0, 0, 0.4);
 }
 
@@ -256,7 +257,7 @@
   }
 }
 
-#square-lookup-canvas {
+#square-lookup-billboard {
   max-width: 200px;
 }
 
@@ -272,7 +273,8 @@
 }
 
 @media (min-width: 900px) {
-  .su-chooser--canvas {
+  .su-chooser--canvas,
+  .su-chooser--billboard {
     overflow: scroll;
     scrollbar-gutter: stable;
   }

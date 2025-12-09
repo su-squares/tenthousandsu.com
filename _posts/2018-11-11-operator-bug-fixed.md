@@ -2,6 +2,8 @@
 layout: article
 permalink: /articles/2018-11-11-operator-bug-fixed
 title: Operator bug fixed
+image: "{{ site.baseurl }}/assets/images/su-OG.png"
+description: "Announces the relaunch after the operator bug fix and shares lessons learned for ERC-721 security."
 ---
 
 # Su Squares relaunches with fix for operator bug

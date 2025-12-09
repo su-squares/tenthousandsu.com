@@ -23,7 +23,7 @@
   border: 1px solid #ffd700;
   border-radius: 10px;
   padding: 1.25rem;
-  color: #ffd700;
+  color: var(--color-accent);
   box-shadow: 0 16px 34px rgba(0, 0, 0, 0.4);
   display: grid;
   gap: 1rem;
@@ -84,7 +84,7 @@
   border-radius: 8px;
   border: 1px solid #ffd700;
   background: rgba(0, 0, 0, 0.15);
-  color: #ffd700;
+  color: var(--color-accent);
   cursor: pointer;
   font-weight: 700;
 }

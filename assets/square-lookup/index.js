@@ -1,8 +1,8 @@
-import { loadSquareData } from "./square-data.js";
+import { loadSquareData } from "../js/square-data.js";
 
 const input = document.getElementById("square-lookup-input");
 const chooseButton = document.getElementById("square-lookup-choose");
-const chooseCanvasButton = document.getElementById("square-lookup-canvas");
+const chooseBillboardButton = document.getElementById("square-lookup-billboard");
 const submitButton = document.getElementById("square-lookup-submit");
 
 if (input && chooseButton && submitButton) {
@@ -60,7 +60,7 @@ if (input && chooseButton && submitButton) {
   let listChooserHandle;
   const ensureListChooser = async () => {
     if (listChooserHandle) return listChooserHandle;
-    const module = await import("./choosers/list-chooser.js");
+    const module = await import("./choosers/list.js");
     listChooserHandle = module.attachListChooser({
       input,
       trigger: chooseButton,
@@ -90,38 +90,38 @@ if (input && chooseButton && submitButton) {
 
   chooseButton.addEventListener("click", handleChooseListClick);
 
-  if (chooseCanvasButton) {
-    let canvasChooserHandle;
-    const ensureCanvasChooser = async () => {
-      if (canvasChooserHandle) return canvasChooserHandle;
-      const module = await import("./choosers/canvas-chooser.js");
-      canvasChooserHandle = module.attachCanvasChooser({
+  if (chooseBillboardButton) {
+    let billboardChooserHandle;
+    const ensureBillboardChooser = async () => {
+      if (billboardChooserHandle) return billboardChooserHandle;
+      const module = await import("./choosers/billboard.js");
+      billboardChooserHandle = module.attachBillboardChooser({
         input,
-        trigger: chooseCanvasButton,
+        trigger: chooseBillboardButton,
         filter: (_id, ctx) => Boolean(ctx.extra),
         onSelect: (id) => {
           goToSquare(id);
         },
         updateInput: false,
-        title: "Choose square from canvas",
+        title: "Choose square from billboard",
       });
-      return canvasChooserHandle;
+      return billboardChooserHandle;
     };
 
-    const handleChooseCanvasClick = async (event) => {
+    const handleChooseBillboardClick = async (event) => {
       event.preventDefault();
       event.stopPropagation();
       try {
-        const chooser = await ensureCanvasChooser();
+        const chooser = await ensureBillboardChooser();
         chooser.open();
-        chooseCanvasButton.removeEventListener("click", handleChooseCanvasClick);
+        chooseBillboardButton.removeEventListener("click", handleChooseBillboardClick);
       } catch (error) {
-        console.error("Failed to load the canvas chooser", error);
+        console.error("Failed to load the billboard chooser", error);
         alert("Unable to open the chooser right now.");
       }
     };
 
-    chooseCanvasButton.addEventListener("click", handleChooseCanvasClick);
+    chooseBillboardButton.addEventListener("click", handleChooseBillboardClick);
   }
 
   submitButton.addEventListener("click", async () => {

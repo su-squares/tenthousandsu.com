@@ -6,20 +6,31 @@
     const baseurl = window.SITE_BASEURL || "";
     const menuSrc = `${baseurl}/assets/nav-menu/menu.js`;
     let scriptState = "idle";
+    let scriptReadyPromise = null;
     const loadMenuScript = () => {
-      if (scriptState !== "idle") return;
+      if (scriptState === "loaded") {
+        return Promise.resolve();
+      }
+      if (scriptState === "loading" && scriptReadyPromise) {
+        return scriptReadyPromise;
+      }
       scriptState = "loading";
-      const script = document.createElement("script");
-      script.src = menuSrc;
-      script.defer = true;
-      script.onload = () => {
-        scriptState = "loaded";
-      };
-      script.onerror = () => {
-        scriptState = "error";
-        console.warn("Failed to load the navigation menu script.");
-      };
-      document.head.appendChild(script);
+      scriptReadyPromise = new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = menuSrc;
+        script.defer = true;
+        script.onload = () => {
+          scriptState = "loaded";
+          resolve();
+        };
+        script.onerror = () => {
+          scriptState = "error";
+          console.warn("Failed to load the navigation menu script.");
+          reject(new Error("Failed to load the navigation menu script."));
+        };
+        document.head.appendChild(script);
+      });
+      return scriptReadyPromise;
     };
 
     const attachTrigger = () => {
@@ -27,15 +38,34 @@
       if (!hamburger) {
         return;
       }
-      const triggerLoad = () => loadMenuScript();
+      const triggerLoad = () => loadMenuScript().catch(() => {});
+
+      const waitForMenuScript = (event) => {
+        if (scriptState === "loaded") {
+          hamburger.removeEventListener("click", waitForMenuScript, true);
+          return;
+        }
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        loadMenuScript()
+          .then(() => {
+            hamburger.removeEventListener("click", waitForMenuScript, true);
+            setTimeout(() => hamburger.click(), 0);
+          })
+          .catch(() => {
+            hamburger.removeEventListener("click", waitForMenuScript, true);
+          });
+      };
+
       hamburger.addEventListener("pointerdown", triggerLoad, { once: true });
       hamburger.addEventListener("mouseenter", triggerLoad, { once: true });
       hamburger.addEventListener("focus", triggerLoad, { once: true });
+      hamburger.addEventListener("click", waitForMenuScript, true);
       hamburger.addEventListener(
         "keydown",
         (event) => {
           if (event.key === "Enter" || event.key === " ") {
-            loadMenuScript();
+            loadMenuScript().catch(() => {});
           }
         },
         { once: true }

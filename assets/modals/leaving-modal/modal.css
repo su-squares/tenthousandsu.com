@@ -59,7 +59,7 @@
   border: 1px dashed rgba(255, 215, 0, 0.6);
   border-radius: 0.5rem;
   background: rgba(0, 0, 0, 0.15);
-  color: #ffd700;
+  color: var(--color-accent);
   text-decoration: none;
   font-weight: 600;
   word-break: break-all;
@@ -83,7 +83,7 @@
   border-radius: 0.6rem;
   border: 2px solid #ffd700;
   background: none;
-  color: #ffd700;
+  color: var(--color-accent);
   font-weight: 700;
   letter-spacing: 0.02em;
   cursor: pointer;
@@ -101,7 +101,7 @@
 
 .su-leaving__button--stay {
   border-color: #d44e4e;
-  color: #ffd700;
+  color: var(--color-accent);
   box-shadow: 0 0 0 1px rgba(212, 78, 78, 0.4);
 }
 
@@ -110,9 +110,9 @@
 }
 
 .su-leaving__button--go {
-  background: #ffd700;
+  background: var(--color-accent);
   color: #2d3c96;
-  border-color: #ffd700;
+  border-color: var(--color-accent);
   box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
 }
 

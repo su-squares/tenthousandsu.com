@@ -2,6 +2,8 @@
 layout: article
 permalink: /articles/2021-08-29-open-source
 title: Su Squares open sourced
+image: "{{ site.baseurl }}/assets/images/su-OG.png"
+description: "Celebrates making the Su Squares smart contract, website, and tooling freely available now that 1,000 Squares sold."
 ---
 
 # Su Squares open sourced

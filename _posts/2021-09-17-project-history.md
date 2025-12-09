@@ -2,6 +2,8 @@
 layout: article
 permalink: /articles/2021-09-17-project-history
 title: Project history
+image: "{{ site.baseurl }}/assets/images/su-OG.png"
+description: "Summarizes Su Squares' origins, ERC-721 involvement, and a detailed timeline of the project milestones."
 ---
 
 # Project history

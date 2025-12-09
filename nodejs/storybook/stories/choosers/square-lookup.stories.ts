@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/html";
-import "@assets/css/chooser.css";
-import { attachListChooser } from "@assets/js/choosers/list-chooser.js";
-import { attachCanvasChooser } from "@assets/js/choosers/canvas-chooser.js";
+import "@assets/square-lookup/styles.css";
+import { attachListChooser } from "@assets/square-lookup/choosers/list.js";
+import { attachBillboardChooser } from "@assets/square-lookup/choosers/billboard.js";
 
 interface SquareLookupStoryArgs {
   variant: "default" | "narrow";
@@ -28,11 +28,11 @@ type Story = StoryObj<SquareLookupStoryArgs>;
 
 const INPUT_ID = "sb-square-lookup-input";
 const LIST_BUTTON_ID = "sb-square-lookup-choose";
-const CANVAS_BUTTON_ID = "sb-square-lookup-canvas";
+const BILLBOARD_BUTTON_ID = "sb-square-lookup-billboard";
 const SUBMIT_BUTTON_ID = "sb-square-lookup-submit";
 
 let listChooserHandle: ReturnType<typeof attachListChooser> | null = null;
-let canvasChooserHandle: ReturnType<typeof attachCanvasChooser> | null = null;
+let billboardChooserHandle: ReturnType<typeof attachBillboardChooser> | null = null;
 
 export const SquareLookup: Story = {
   render: (args) => `
@@ -43,7 +43,7 @@ export const SquareLookup: Story = {
         <input id="${INPUT_ID}" type="number" min="1" max="10000" inputmode="numeric" placeholder="e.g. 8503">
         <div class="square-lookup__actions">
           <button id="${LIST_BUTTON_ID}" type="button">Choose from list</button>
-          <button id="${CANVAS_BUTTON_ID}" type="button">Choose from canvas</button>
+          <button id="${BILLBOARD_BUTTON_ID}" type="button">Choose from billboard</button>
         </div>
       </div>
       <button id="${SUBMIT_BUTTON_ID}" type="button" class="btn btn-lg square-lookup__submit">Look up</button>
@@ -52,10 +52,10 @@ export const SquareLookup: Story = {
   play: async ({ canvasElement }) => {
     const input = canvasElement.querySelector<HTMLInputElement>(`#${INPUT_ID}`);
     const listButton = canvasElement.querySelector<HTMLButtonElement>(`#${LIST_BUTTON_ID}`);
-    const canvasButton = canvasElement.querySelector<HTMLButtonElement>(`#${CANVAS_BUTTON_ID}`);
+    const billboardButton = canvasElement.querySelector<HTMLButtonElement>(`#${BILLBOARD_BUTTON_ID}`);
     const submitButton = canvasElement.querySelector<HTMLButtonElement>(`#${SUBMIT_BUTTON_ID}`);
 
-    if (!input || !listButton || !canvasButton || !submitButton) return;
+    if (!input || !listButton || !billboardButton || !submitButton) return;
 
     listChooserHandle?.close();
     listChooserHandle = attachListChooser({
@@ -71,17 +71,17 @@ export const SquareLookup: Story = {
       description: "Tap a square below to look it up."
     });
 
-    canvasChooserHandle?.close();
-    canvasChooserHandle = attachCanvasChooser({
+    billboardChooserHandle?.close();
+    billboardChooserHandle = attachBillboardChooser({
       input,
-      trigger: canvasButton,
+      trigger: billboardButton,
       filter: (_id, ctx) => Boolean(ctx.extra),
       onSelect: (id) => {
         // eslint-disable-next-line no-console
-        console.log("Selected square from canvas:", id);
+        console.log("Selected square from billboard:", id);
       },
       updateInput: true,
-      title: "Choose square from canvas"
+      title: "Choose square from billboard"
     });
 
     input.addEventListener("input", () => {

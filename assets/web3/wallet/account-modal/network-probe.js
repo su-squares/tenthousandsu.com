@@ -2,7 +2,6 @@ import { getWeb3Config, ChainKey } from "../../config/index.js";
 import { createDebugLogger } from "../../config/logger.js";
 
 const log = createDebugLogger("account-modal:probe");
-const appConfig = getWeb3Config();
 
 function toHexChainId(chainId) {
   return `0x${Number(chainId).toString(16)}`;
@@ -12,6 +11,7 @@ function toHexChainId(chainId) {
  * Only probe when the active app network is Sunet.
  */
 export function shouldProbeNetworkAvailability() {
+  const appConfig = getWeb3Config();
   const key = appConfig.activeNetwork?.key || appConfig.chain;
   return key === ChainKey.SUNET;
 }
@@ -23,6 +23,7 @@ export function shouldProbeNetworkAvailability() {
  * @returns {Promise<{ available: boolean, error?: any }>}
  */
 export async function probeNetworkAvailable(wagmi) {
+  const appConfig = getWeb3Config();
   try {
     if (!shouldProbeNetworkAvailability()) return { available: true };
 

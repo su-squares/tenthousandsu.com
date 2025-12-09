@@ -4,7 +4,7 @@ import "@assets/web3/tx/styles.css";
 import { createTxFixture, createTxModal } from "@assets/web3/tx/index.js";
 
 type Story = StoryObj;
-type TxState = "idle" | "processing" | "success" | "error";
+type TxState = "idle" | "processing" | "pending" | "success" | "error";
 type FixtureController = ReturnType<typeof createTxFixture>;
 type ModalController = FixtureController & { hide: () => void; show: () => void };
 const STORYBOOK_STORY_CHANGED_EVENT = "storyChanged";
@@ -117,7 +117,7 @@ function ensureFixtureController() {
     fixtureController = createTxFixture({
       target: fixtureTarget,
       pricing: DEFAULT_PRICING,
-      mode: "both",
+      mode: "mint",
       title: "Transaction status",
     });
   }
@@ -131,7 +131,7 @@ function ensureModalController() {
   if (!modalController) {
     modalController = createTxModal({
       pricing: DEFAULT_PRICING,
-      mode: "both",
+      mode: "mint",
       title: "Transaction status",
     }) as ModalController;
   }
@@ -192,6 +192,12 @@ async function applyState(controller: FixtureController, state: TxState) {
       setWalletButton(controller, true);
       controller.startProcessing("Waiting for you to confirm in your wallet.");
       controller.setHelp("Keep your wallet open until you see at least one confirmation.");
+      break;
+    case "pending":
+      setWalletButton(controller, true);
+      controller.setMessage("Submitted. Waiting for confirmations.");
+      controller.addPending(SAMPLE_PENDING_TX.hash, SAMPLE_PENDING_TX.url);
+      controller.setHelp("Keep this tab open; we will refresh your balance after confirmation.");
       break;
     case "success":
       setWalletButton(controller, false);
@@ -256,6 +262,13 @@ export const FixtureProcessing: Story = {
   },
 };
 
+export const FixturePending: Story = {
+  render: () => renderFixtureFrame(),
+  play: async () => {
+    await showFixtureState("pending");
+  },
+};
+
 export const FixtureSuccess: Story = {
   render: () => renderFixtureFrame(),
   play: async () => {
@@ -270,6 +283,26 @@ export const FixtureError: Story = {
   },
 };
 
+export const FixtureDisconnected: Story = {
+  render: () => renderFixtureFrame(),
+  play: async () => {
+    const controller = ensureFixtureController();
+    if (!controller || !fixtureTarget) return;
+    hideModalOverlay();
+
+    const container = document.getElementById(FIXTURE_CONTAINER_ID);
+    if (!container) return;
+
+    container.innerHTML = "";
+    container.appendChild(fixtureTarget);
+
+    controller.reset();
+    await controller.setBalanceContext(null);
+    setWalletButton(controller, false);
+    controller.setHelp("Connect a wallet to see your balance and start a transaction.");
+  },
+};
+
 export const ModalDefault: Story = {
   render: () => renderModalBlurb(),
   play: async () => {
@@ -281,6 +314,13 @@ export const ModalProcessing: Story = {
   render: () => renderModalBlurb(),
   play: async () => {
     await showModalState("processing");
+  },
+};
+
+export const ModalPending: Story = {
+  render: () => renderModalBlurb(),
+  play: async () => {
+    await showModalState("pending");
   },
 };
 

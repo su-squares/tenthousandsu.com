@@ -2,6 +2,8 @@
 layout: article
 permalink: /articles/2021-09-04-steganography
 title: Storing text/data in your square
+image: "{{ site.baseurl }}/assets/images/su-OG.png"
+description: "Guides readers through converting messages into 10A-10 pixel images for hiding and revealing data on their Squares."
 ---
 
 # Storing text/data in your square 

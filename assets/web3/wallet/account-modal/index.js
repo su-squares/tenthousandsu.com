@@ -17,7 +17,6 @@ let lastDisplayData = null;
 let networkUnsubscribe = null;
 let balanceUnsubscribe = null;
 let networkAvailable = null; // null = unknown, true = available, false = not added
-const appConfig = getWeb3Config();
 const ENS_CHAIN_ID = NETWORK_PRESETS[ChainKey.MAINNET].chainId;
 
 const ensureShell = () => {
@@ -63,6 +62,7 @@ export function closeAccountModal() {
 }
 
 async function fetchDisplayData(wagmi) {
+  const appConfig = getWeb3Config();
   const account = wagmi.getAccount();
   const network = wagmi.getNetwork();
 
@@ -110,6 +110,7 @@ async function fetchDisplayData(wagmi) {
 }
 
 function render(data, options = {}) {
+  const appConfig = getWeb3Config();
   const modalShell = ensureShell();
   const target = modalShell.content;
   if (!target) return;
@@ -156,6 +157,7 @@ export async function openAccountModal() {
   wagmiClient = await loadWagmiClient();
   cleanupWatchers();
   networkAvailable = null;
+  const appConfig = getWeb3Config();
 
   const account = wagmiClient.getAccount();
   const network = wagmiClient.getNetwork();

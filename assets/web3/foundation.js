@@ -11,8 +11,8 @@ import { isAllowedChain, getCurrentChainId } from "./wallet/network.js";
 import { clearAllEnsCache } from "./wallet/ens-store.js";
 import { activateWalletContext } from "./wallet/active-wallet-context.js";
 
-const appConfig = getWeb3Config();
 let cachedClients = null;
+let cachedChainKey = null;
 const readyCallbacks = [];
 const wagmiLocalStorageKey = "wagmi.store";
 let disconnectWatcher = null;
@@ -134,8 +134,22 @@ export function shouldEagerLoadWeb3() {
 }
 
 export async function loadWeb3() {
+  const appConfig = getWeb3Config();
+
+  if (cachedClients && cachedChainKey && cachedChainKey !== appConfig.chain) {
+    try {
+      disconnectWatcher?.();
+    } catch (_error) {
+      /* ignore watcher issues */
+    }
+    disconnectWatcher = null;
+    cachedClients = null;
+  }
+
   if (cachedClients) return cachedClients;
+
   cachedClients = await loadWagmiClient();
+  cachedChainKey = appConfig.chain;
   if (!disconnectWatcher) {
     try {
       disconnectWatcher = cachedClients.watchAccount((account) => {
@@ -216,6 +230,7 @@ export async function ensureConnected(action) {
  */
 export async function ensureCorrectNetwork(clients) {
   const wagmi = clients || (await loadWeb3());
+  const appConfig = getWeb3Config();
   
   const currentChainId = getCurrentChainId(wagmi);
   const onCorrectNetwork = isAllowedChain(currentChainId);

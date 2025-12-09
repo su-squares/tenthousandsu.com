@@ -1,0 +1,29 @@
+# Site settings
+baseurl: ""
+url: https://tenthousandsu.com
+
+# Exclude directories from Jekyll processing
+## uncomment / exclude the erc721 folders during development to speed up builds
+exclude:
+#  - erc721/
+  - erc721-sunet/
+  - erc721-sepolia/
+  - vendor/
+  - Gemfile
+  - Gemfile.lock
+  - README.md
+  - nodejs/
+
+# Speed up builds in developement
+incremental: true
+
+# Plugins
+plugins:
+  - jekyll-sitemap
+  - jekyll-seo-tag
+
+# Site info
+title: Su Squares
+description: Cute squares you own and personalize for the homepage.
+logo: /favicon.ico
+

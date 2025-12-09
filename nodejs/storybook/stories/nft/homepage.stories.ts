@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/html";
 import "@assets/css/main.css";
 import "@assets/css/index.css";
-import "@assets/css/chooser.css";
+import "@assets/square-lookup/styles.css";
 import { createPanZoom } from "@assets/js/pan-zoom.js";
 
 type Story = StoryObj;

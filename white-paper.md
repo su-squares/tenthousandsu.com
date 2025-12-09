@@ -2,6 +2,8 @@
 layout: article
 permalink: /white-paper
 title: Su Squares white paper
+description: The guiding white paper for Su Squares
+image: "{{ site.baseurl }}/assets/images/su-OG.png"
 ---
 
 # Su Squares white paper

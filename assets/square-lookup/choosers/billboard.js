@@ -1,6 +1,6 @@
-import { loadSquareData } from "../square-data.js";
-import { assetPath } from "../asset-base.js";
-import { createPanZoom } from "../pan-zoom.js";
+import { loadSquareData } from "../../js/square-data.js";
+import { assetPath } from "../../js/asset-base.js";
+import { createPanZoom } from "../../js/pan-zoom.js";
 
 const GRID_DIMENSION = 100;
 
@@ -20,7 +20,7 @@ function clamp(value, min, max) {
 }
 
 /**
- * Attach a canvas chooser modal to a trigger/input pair.
+ * Attach a billboard chooser modal to a trigger/input pair.
  * @param {Object} options
  * @param {HTMLElement} options.trigger Element that opens the modal when clicked.
  * @param {HTMLInputElement} [options.input] Element to receive the chosen number.
@@ -29,12 +29,12 @@ function clamp(value, min, max) {
  * @param {string} [options.title] Title text for the modal.
  * @param {boolean} [options.updateInput] Whether to write the selection into the input (default true).
  */
-export function attachCanvasChooser({
+export function attachBillboardChooser({
   trigger,
   input,
   filter = () => true,
   onSelect = () => { },
-  title = "Choose square from canvas",
+  title = "Choose square from billboard",
   updateInput = true,
 }) {
   if (!trigger) return;
@@ -159,7 +159,7 @@ export function attachCanvasChooser({
     });
 
     const modal = document.createElement("div");
-    modal.className = "su-chooser su-chooser--canvas";
+    modal.className = "su-chooser su-chooser--billboard";
 
     const headerRow = document.createElement("div");
     headerRow.className = "su-chooser__header";
@@ -183,21 +183,21 @@ export function attachCanvasChooser({
     mobileHint.textContent = "Pinch to zoom, drag to pan.";
 
     wrapper = document.createElement("div");
-    wrapper.className = "su-canvas";
+    wrapper.className = "su-billboard";
 
     imgWrapper = document.createElement("div");
-    imgWrapper.className = "su-canvas__wrapper";
+    imgWrapper.className = "su-billboard__wrapper";
 
     image = document.createElement("img");
     image.src = assetPath("wholeSquare.png");
     image.alt = "All Su Squares";
-    image.className = "su-canvas__image";
+    image.className = "su-billboard__image";
 
     highlight = document.createElement("div");
-    highlight.className = "su-canvas__highlight";
+    highlight.className = "su-billboard__highlight";
 
     tooltip = document.createElement("div");
-    tooltip.className = "su-canvas__tooltip";
+    tooltip.className = "su-billboard__tooltip";
 
     imgWrapper.appendChild(image);
     imgWrapper.appendChild(highlight);
@@ -210,7 +210,7 @@ export function attachCanvasChooser({
     if (isTouchDevice) {
       resetBtn = document.createElement("button");
       resetBtn.type = "button";
-      resetBtn.className = "su-canvas__reset-btn";
+      resetBtn.className = "su-billboard__reset-btn";
       resetBtn.textContent = "Reset zoom";
       resetBtn.addEventListener("click", () => {
         if (panZoom) {

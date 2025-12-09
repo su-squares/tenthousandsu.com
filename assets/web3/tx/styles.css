@@ -22,7 +22,7 @@
   background-image: linear-gradient(135deg, #2d3c96, #d53392);
   border: 1px solid #ffd700;
   border-radius: 10px;
-  color: #ffd700;
+  color: var(--color-accent);
   padding: 1rem;
   box-sizing: border-box;
   display: grid;
@@ -73,7 +73,7 @@
 
 .su-tx-price__label {
   font-weight: 700;
-  color: #ffd700;
+  color: var(--color-accent);
 }
 
 .su-tx-balance {
@@ -90,7 +90,7 @@
 
 .su-tx-balance__label {
   font-weight: 700;
-  color: #ffd700;
+  color: var(--color-accent);
 }
 
 .su-tx-balance__value {
@@ -189,6 +189,11 @@
   border-color: rgba(0, 255, 160, 0.35);
 }
 
+.su-tx-list__badge--error {
+  background: rgba(255, 99, 132, 0.12);
+  border-color: rgba(255, 99, 132, 0.35);
+}
+
 .su-tx-actions {
   display: flex;
   flex-wrap: wrap;
@@ -201,7 +206,7 @@
   border-radius: 8px;
   border: 1px solid #ffd700;
   background: rgba(0, 0, 0, 0.15);
-  color: #ffd700;
+  color: var(--color-accent);
   font-weight: 700;
   cursor: pointer;
 }
