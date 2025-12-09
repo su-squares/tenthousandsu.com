@@ -6,6 +6,24 @@
   gap: 1.5rem;
 }
 
+.square-page--hidden {
+  display: none;
+}
+
+.square-default-state {
+  text-align: center;
+  margin: 2rem auto 1rem;
+  max-width: 32rem;
+  padding: 0 1rem;
+}
+
+.square-default-state__description {
+  margin: 0.75rem auto 0;
+  font-size: 1.1rem;
+  line-height: 1.4;
+  color: var(--color-on-surface);
+}
+
 .square-page h1,
 .square-page h2,
 .square-page h3,
