@@ -1,6 +1,69 @@
 <link rel="stylesheet" href="{{ site.baseurl }}/assets/nav-menu/nav.css">
 <link rel="stylesheet" href="{{ site.baseurl }}/assets/web3/wallet/wallet-ui.css">
 <script type="module" src="{{ site.baseurl }}/assets/js/global-init.js"></script>
-<script src="{{ site.baseurl }}/assets/nav-menu/menu.js" defer></script>
-<script src="{{ site.baseurl }}/assets/web3/config/runtime.generated.js" defer></script>
+<script>
+  (function () {
+    const baseurl = window.SITE_BASEURL || "";
+    const menuSrc = `${baseurl}/assets/nav-menu/menu.js`;
+    let scriptState = "idle";
+    const loadMenuScript = () => {
+      if (scriptState !== "idle") return;
+      scriptState = "loading";
+      const script = document.createElement("script");
+      script.src = menuSrc;
+      script.defer = true;
+      script.onload = () => {
+        scriptState = "loaded";
+      };
+      script.onerror = () => {
+        scriptState = "error";
+        console.warn("Failed to load the navigation menu script.");
+      };
+      document.head.appendChild(script);
+    };
+
+    const attachTrigger = () => {
+      const hamburger = document.querySelector(".su-nav-hamburger");
+      if (!hamburger) {
+        return;
+      }
+      const triggerLoad = () => loadMenuScript();
+      hamburger.addEventListener("pointerdown", triggerLoad, { once: true });
+      hamburger.addEventListener("mouseenter", triggerLoad, { once: true });
+      hamburger.addEventListener("focus", triggerLoad, { once: true });
+      hamburger.addEventListener(
+        "keydown",
+        (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            loadMenuScript();
+          }
+        },
+        { once: true }
+      );
+    };
+
+    if (document.readyState !== "loading") {
+      attachTrigger();
+    } else {
+      document.addEventListener("DOMContentLoaded", attachTrigger);
+    }
+  })();
+</script>
+<script>
+  (function () {
+    const baseurl = window.SITE_BASEURL || "";
+    const runtimeScript = document.createElement("script");
+    runtimeScript.src = `${baseurl}/assets/web3/config/runtime.generated.js`;
+    runtimeScript.defer = true;
+    runtimeScript.onload = () => {
+      const network = window.suWeb3?.chain || window.suWeb3?.network || "mainnet";
+      console.info(`Runtime config loaded; current network: ${network}.`);
+    };
+    runtimeScript.onerror = () => {
+      const defaultNetwork = window.suWeb3?.chain || window.suWeb3?.network || "mainnet";
+      console.info(`Optional runtime config not applied; current network: ${defaultNetwork}.`);
+    };
+    document.head.appendChild(runtimeScript);
+  })();
+</script>
 <script type="module" src="{{ site.baseurl }}/assets/web3/connect-button.js" defer></script>
