@@ -1,7 +1,7 @@
 import { ethers, network } from "hardhat";
 
 import { readDeployment } from "@script-utils/deployments";
-import { SUNET_ENV_PATH, SunetEnv, loadSunetEnv, selectSunetSignerKey } from "@script-utils/env";
+import { SunetEnv, loadSunetEnv, selectSunetSignerKey } from "@script-utils/env";
 import { ensureNetworkIsReachable, ensureSunetReady } from "@script-utils/network";
 
 const OWNER_ENV = "OWNER_ADDRESS";

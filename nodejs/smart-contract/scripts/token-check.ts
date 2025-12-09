@@ -1,6 +1,6 @@
 import chalk from "chalk";
 import { ethers, network } from "hardhat";
-import type { BytesLike, Contract, Event } from "ethers";
+import type { BigNumberish, BytesLike, Contract } from "ethers";
 
 import { readDeployment, DeploymentRecord } from "@script-utils/deployments";
 import { loadTokenCheckEnv } from "@script-utils/env";
@@ -56,7 +56,7 @@ function describeRgb(data?: BytesLike | null): string {
   return `${bytes} bytes (${preview})`;
 }
 
-function formatEth(value?: ethers.BigNumberish | null): string {
+function formatEth(value?: BigNumberish | null): string {
   if (value === null || value === undefined) {
     return "n/a";
   }
@@ -67,15 +67,26 @@ function formatEth(value?: ethers.BigNumberish | null): string {
   }
 }
 
+type PersonalizationEvent = {
+  blockNumber?: number;
+  logIndex?: number;
+  transactionHash?: string;
+  args?: {
+    title?: string;
+    href?: string;
+    rgbData?: BytesLike;
+  };
+};
+
 async function queryLatestUnderlayEvent(
   contract: Contract,
   tokenId: number,
   fromBlock: number,
-): Promise<Event | null> {
+): Promise<PersonalizationEvent | null> {
   const filter = contract.filters.PersonalizedUnderlay(tokenId);
-  const events = await contract.queryFilter(filter, fromBlock, "latest");
+  const events = (await contract.queryFilter(filter, fromBlock, "latest")) as PersonalizationEvent[];
 
-  return events.reduce<Event | null>((latest, event) => {
+  return events.reduce<PersonalizationEvent | null>((latest, event) => {
     if (!latest) {
       return event;
     }
@@ -92,9 +103,8 @@ async function queryLatestUnderlayEvent(
 
 async function main(): Promise<void> {
   const { tokenId, networkName, primaryDeployment, underlayDeployment } = await getReadyState();
-  const provider = ethers.provider;
 
-  const primaryContract = await ethers.getContractAt("SuMain", primaryDeployment.address, provider);
+  const primaryContract = await ethers.getContractAt("SuMain", primaryDeployment.address);
   const owner = await primaryContract.ownerOf(tokenId);
   const square = await primaryContract.suSquares(tokenId);
   const personalizationPrice = await primaryContract.personalizationPrice();
@@ -143,7 +153,7 @@ async function main(): Promise<void> {
     return;
   }
 
-  const underlayContract = await ethers.getContractAt("SuSquaresUnderlay", underlayDeployment.address, provider);
+  const underlayContract = await ethers.getContractAt("SuSquaresUnderlay", underlayDeployment.address);
   const underlayPrice = await underlayContract.pricePerSquare();
   const latestEvent = await queryLatestUnderlayEvent(
     underlayContract,

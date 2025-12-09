@@ -11,6 +11,7 @@ import {
   loadRgbDataForToken,
   validateTextLength,
 } from "@script-utils/image";
+import { expandTokenRange, summarizeTokenIds } from "@script-utils/token-input";
 import { resolvePersonalizerSigner } from "@script-utils/personalization-signer";
 
 const TOKEN_INPUT_ENV = "PERSONALIZE_BATCH_TOKENS";
@@ -24,39 +25,9 @@ async function ensureNetworkReady(): Promise<ReturnType<typeof ensureSunetReady>
   return undefined;
 }
 
-function expandRange(input: string): number[] {
-  const ids: number[] = [];
-  return input
-    .split(",")
-    .map((part) => part.trim())
-    .filter(Boolean)
-    .flatMap((part) => {
-      const rangeMatch = part.match(/^(\d+)\s*-\s*(\d+)$/);
-      if (rangeMatch) {
-        const start = Number(rangeMatch[1]);
-        const end = Number(rangeMatch[2]);
-        if (end < start) {
-          throw new Error(`Invalid range ${part}: end must be >= start.`);
-        }
-        return Array.from({ length: end - start + 1 }, (_, i) => start + i);
-      }
-      const num = Number(part);
-      if (!Number.isInteger(num) || num <= 0) {
-        throw new Error(`Invalid token id ${part}.`);
-      }
-      return [num];
-    });
-}
-
-function summarizeIds(ids: number[]): string {
-  if (ids.length === 0) return "none";
-  if (ids.length <= 10) return ids.join(", ");
-  return `${ids.slice(0, 5).join(", ")} ... ${ids.slice(-3).join(", ")} (${ids.length} total)`;
-}
-
 async function main(): Promise<void> {
   const tokenInput = process.env[TOKEN_INPUT_ENV] || DEFAULT_TOKEN_INPUT;
-  const tokenIds = expandRange(tokenInput);
+  const tokenIds = expandTokenRange(tokenInput, TOKEN_INPUT_ENV);
   if (tokenIds.length === 0) {
     throw new Error(`No tokens specified in ${TOKEN_INPUT_ENV}.`);
   }
@@ -97,7 +68,7 @@ async function main(): Promise<void> {
   const totalValue = pricePerSquare * BigInt(payload.length);
 
   console.log(chalk.cyan(`Batch personalizing ${tokenIds.length} underlay tokens on ${networkName}...`));
-  console.log(`Tokens: ${summarizeIds(tokenIds)}`);
+  console.log(`Tokens: ${summarizeTokenIds(tokenIds)}`);
   console.log(`Contract: ${deployment.address}`);
   console.log(`Total value to send: ${ethers.formatEther(totalValue)} ETH`);
 

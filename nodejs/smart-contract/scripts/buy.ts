@@ -4,6 +4,7 @@ import { ContractTransactionResponse } from "ethers";
 import { readDeployment } from "@script-utils/deployments";
 import { SUNET_ENV_PATH, SunetEnv, loadSunetEnv, selectSunetSignerKey } from "@script-utils/env";
 import { ensureNetworkIsReachable, ensureSunetReady } from "@script-utils/network";
+import { expandTokenRange, summarizeTokenIds } from "@script-utils/token-input";
 
 const TOKEN_INPUT_ENV = "BUY_TOKENS";
 const DEFAULT_TOKEN_ID = 1;
@@ -20,31 +21,6 @@ const PROGRESS_INTERVAL = 1000;
 function normalizePrivateKey(value: string): string {
   const trimmed = value.trim();
   return trimmed.startsWith("0x") ? trimmed : `0x${trimmed}`;
-}
-
-function expandRange(input: string): number[] {
-  const ids: number[] = [];
-  const parts = input.split(",").map((p) => p.trim()).filter(Boolean);
-  
-  for (const part of parts) {
-    const rangeMatch = part.match(/^(\d+)\s*-\s*(\d+)$/);
-    if (rangeMatch) {
-      const start = Number(rangeMatch[1]);
-      const end = Number(rangeMatch[2]);
-      for (let i = start; i <= end; i++) {
-        ids.push(i);
-      }
-    } else {
-      ids.push(Number(part));
-    }
-  }
-  return ids;
-}
-
-function summarizeIds(ids: number[]): string {
-  if (ids.length === 0) return "none";
-  if (ids.length <= 10) return ids.join(", ");
-  return `${ids.slice(0, 5).join(", ")} ... ${ids.slice(-3).join(", ")} (${ids.length} total)`;
 }
 
 async function resolveBuyerSigner(networkName: string, sunetEnv?: SunetEnv) {
@@ -148,7 +124,7 @@ async function main(): Promise<void> {
   const contract = await ethers.getContractAt("SuMain", deployment.address, buyer);
   const salePriceWei = await contract.salePrice();
 
-  const tokenIds = expandRange(tokenInputRaw);
+  const tokenIds = expandTokenRange(tokenInputRaw, TOKEN_INPUT_ENV);
   const totalCostWei = salePriceWei * BigInt(tokenIds.length);
   const buyerBalance = await ethers.provider.getBalance(buyerAddress);
 
@@ -162,7 +138,7 @@ async function main(): Promise<void> {
   console.log(`Network: ${networkName}`);
   console.log(`Contract: ${deployment.address}`);
   console.log(`Buyer: ${buyerAddress}`);
-  console.log(`Tokens to buy: ${summarizeIds(tokenIds)}`);
+  console.log(`Tokens to buy: ${summarizeTokenIds(tokenIds)}`);
   console.log(`Total tokens: ${tokenIds.length}`);
   console.log(`Price per token: ${ethers.formatEther(salePriceWei)} ETH`);
   console.log(`Total cost: ${ethers.formatEther(totalCostWei)} ETH`);
@@ -282,7 +258,7 @@ async function main(): Promise<void> {
   console.log(`Confirmation failures: ${confirmFailures.length}`);
   
   if (successes.length > 0) {
-    console.log(`\nPurchased tokens: ${summarizeIds(successes.sort((a, b) => a - b))}`);
+    console.log(`\nPurchased tokens: ${summarizeTokenIds(successes.sort((a, b) => a - b))}`);
   }
   
   if (sendFailures.length > 0 && sendFailures.length <= 20) {
