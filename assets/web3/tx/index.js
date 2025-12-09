@@ -219,9 +219,9 @@ function renderTxView(target, state, actions, options = {}) {
     }
       </div>
 
-      ${state.helpText
-      ? `<p class="su-tx-help">${state.helpText}</p>`
-      : '<p class="su-tx-help">Need to retry? You can restart the transaction or clear this panel.</p>'
+      ${state.status !== "idle"
+      ? `<p class="su-tx-help">${state.helpText || "Need to retry? You can restart the transaction or clear this panel."}</p>`
+      : ""
     }
     </div>
   `;
