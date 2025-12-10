@@ -31,3 +31,5 @@ Yes, we are working now to document and resolve the problem. The new version wil
 ## What happens to my squares?
 
 Your squares will be accessible again once the new smart contract is deployed. The squares will be accessible to owners of the squares at the time of this announcement. In the meantime, the existing personalizations will be shown on the [homepage](https://tenthousandsu.com/).
+
+{% include jsonld/articles/operator-bug.html %}

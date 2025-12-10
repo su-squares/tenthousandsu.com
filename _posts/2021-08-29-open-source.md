@@ -27,3 +27,5 @@ That milestone was just achieved today and we are immediately following through 
 Starting today, all our software is entirely open source.
 
 <blockquote class="twitter-tweet"><p lang="en" dir="ltr">Achievement unlocked.<br><br>10% of Squares have been sold. And as per the white paper promise, all parts of our project are now open source software.<a href="https://t.co/CBA3M6IV9J">https://t.co/CBA3M6IV9J</a></p>&mdash; Su Squares (@SuSquares) <a href="https://x.com/SuSquares/status/1431870766388326401?ref_src=twsrc%5Etfw">August 29, 2021</a></blockquote> <script async src="https://platform.x.com/widgets.js" charset="utf-8"></script>
+
+{% include jsonld/articles/open-source.html %}

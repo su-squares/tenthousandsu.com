@@ -1,0 +1,80 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "What does personalizing a Su Square NFT mean and what's it for?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "When you own a Su Square NFT, you own a space on the homepage billboard corresponding to the number of your Square. Personalizing a Square is when you upload data (a title, link and small image) that gets associated with your Square on the blockchain, then that data gets automatically displayed onto the homepage billboard in your Square's spot. The homepage billboard updates hourly."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "How do I split a 30×30 image into 9 10×10 images?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Please see our new batch personalize page, which automatically splits a 30×30 image into 9 10×10 tiles."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Why is gas cost ridonkulously high?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Because that Square is not available. You are attempting to place an order that will revert. MetaMask could do a much better job of articulating this."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Why are there two smart contracts? What's the underlay one for?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "The underlay contract allows cheaper personalization transactions. Only the owner of a Square on the main contract can personalize it on the underlay. You use the underlay contract instead of the main one when you want your personalization to show up on the homepage billboard without paying full gas costs."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What's ERC-721?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "ERC-721 is the original Ethereum standard for NFTs. It ensures each token is unique, owned by only one wallet, and transferable across marketplaces. Su Squares uses an ERC-721 contract and was one of the first bona fide implementations."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "I personalized my Square but the content I added isn't showing up. Why?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Possible reasons: (1) the Square was personalized on the main contract which overrides new updates; (2) you personalized a different Square; or (3) the homepage hasn't updated yet—the billboard refreshes hourly."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What's a Square number and what's a token ID?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Each Su Square is an NFT with a unique token ID from 1 to 10,000. That ID is also the Square number. Your token ID gives you a corresponding Square on the homepage billboard."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "What blockchain is Su Squares on? Is it an L2?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Su Squares is on Ethereum mainnet. It is not an L2, side chain, or rollup. It is one of the earliest true ERC-721 projects from the original NFT era."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Can I pay in cash or WETH to buy a Square?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Purchases through this site require Ether. On secondary markets you might be able to use other payment methods."
+      }
+    }
+  ]
+}
+</script>

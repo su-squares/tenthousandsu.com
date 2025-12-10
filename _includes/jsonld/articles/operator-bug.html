@@ -1,0 +1,57 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "Operator bug",
+  "name": "Operator bug",
+  "description": "Describes the operator bug discovered in the Su Squares smart contract by OpenSea, its security implications, and the planned remediation for Su Squares holders.",
+  "inLanguage": "en",
+  "url": "{{ site.url }}{{ site.baseurl }}{{ page.url }}",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "{{ site.url }}{{ site.baseurl }}{{ page.url }}"
+  },
+  "image": "{{ site.url }}{{ site.baseurl }}/assets/images/su-OG.png",
+  "datePublished": "2018-09-18",
+  "author": {
+    "@type": "Organization",
+    "name": "Su Squares",
+    "url": "{{ site.url }}{{ site.baseurl }}/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Su Squares",
+    "url": "{{ site.url }}{{ site.baseurl }}/"
+  },
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "{{ site.title }}",
+    "url": "{{ site.url }}{{ site.baseurl }}/"
+  },
+  "about": {
+    "@type": "Thing",
+    "name": "Su Squares operator bug",
+    "description": "A vulnerability in the Su Squares ERC-721 smart contract related to delegated operator transfers that could impact transfer behavior and security."
+  },
+  "mentions": [
+    {
+      "@type": "Organization",
+      "name": "OpenSea"
+    },
+    {
+      "@type": "Person",
+      "name": "Devin Finzer"
+    },
+    {
+      "@type": "DefinedTerm",
+      "name": "Operator",
+      "description": "A delegated address authorized to transfer NFTs on behalf of an owner under the ERC-721 standard."
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "name": "Su Squares bounty repository",
+      "url": "https://github.com/fulldecent/su-squares-bounty/issues/10"
+    }
+  ]
+}
+</script>

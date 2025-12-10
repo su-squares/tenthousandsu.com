@@ -70,3 +70,5 @@ Here is a technical summary of the differences:
 For future use cases that have been discussed, such as renting Squares using a smart contract, using a smart contract to combine or publish other information as a personalization, these are all compatible with the main contract and the underlay.
 
 The only practical difference is that if a smart contract were deployed on-chain and it wanted to query the personalization status of a Square, it would see the main contract data and not the underlay. But for distributed-applications ("dapps"), the underlay would be just accessible as the main contract.
+
+{% include jsonld/articles/the-underlay.html %}

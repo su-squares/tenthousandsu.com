@@ -1,0 +1,54 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "TechArticle",
+  "headline": "Operator bug fixed",
+  "name": "Operator bug fixed",
+  "description": "Announces the Su Squares relaunch after fixing the operator bug in the smart contract and summarizes the security lessons and testing best practices for ERC-721 projects.",
+  "inLanguage": "en",
+  "url": "{{ site.url }}{{ site.baseurl }}{{ page.url }}",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "{{ site.url }}{{ site.baseurl }}{{ page.url }}"
+  },
+  "image": "{{ site.url }}{{ site.baseurl }}/assets/images/su-OG.png",
+  "datePublished": "2018-11-11",
+  "author": {
+    "@type": "Organization",
+    "name": "Su Squares",
+    "url": "{{ site.url }}{{ site.baseurl }}/"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Su Squares",
+    "url": "{{ site.url }}{{ site.baseurl }}/"
+  },
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "{{ site.title }}",
+    "url": "{{ site.url }}{{ site.baseurl }}/"
+  },
+  "about": {
+    "@type": "Thing",
+    "name": "Su Squares smart contract operator bug fix",
+    "description": "A correction to the Su Squares ERC-721 smart contract operator permissions and the addition of a comprehensive automated test suite."
+  },
+  "mentions": [
+    {
+      "@type": "DefinedTerm",
+      "name": "ERC-721",
+      "description": "The Ethereum non-fungible token standard whose transfer and operator semantics are implemented by the Su Squares contract."
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "name": "Su Squares smart contract fix",
+      "url": "https://github.com/su-squares/ethereum-contract/commit/30f305710706371326486ef14daf941c0276a9c5"
+    },
+    {
+      "@type": "SoftwareSourceCode",
+      "name": "Su Squares test suite",
+      "url": "https://github.com/su-squares/ethereum-contract/compare/1.0...2.0"
+    }
+  ]
+}
+</script>

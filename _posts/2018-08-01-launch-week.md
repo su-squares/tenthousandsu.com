@@ -31,3 +31,5 @@ During launch week, anybody who purchases one square can receive an adjacent squ
 5. Do all of this before the end of launch week, Monday August 13th, 2018 at 23:59 GMT.
 
 If you do the above then Su will refund your purchase price (0.5 Ether) to your wallet address. Su and Will's wedding anniversary is right after launch week.
+
+{% include jsonld/articles/launch-week.html %}

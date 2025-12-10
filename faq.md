@@ -72,3 +72,6 @@ No L2s, side chains or rollups. This is a classic Ethereum project from way back
 ## Can I pay in cash or WETH to buy a Square?
 
 To purchase directly through this site we only accept Ether. Outside of this site, you might be able to purchase it in the secondary market by whatever means.
+
+{% include jsonld/pages/faq.html %}
+

@@ -100,3 +100,5 @@ These are some of the interview, notes and live events which mentioned Su Square
 - 2019-04-28 罗鸿达. 金色财 (Jinse). "ERC721主作者：撰写协议的过程是对用例更加深入的探讨".   https://www.jinse.com/news/blockchain/357441.html.
 
 More press coverage and speaking events may also be in the items listed at https://phor.net.
+
+{% include jsonld/articles/project-history.html %}
