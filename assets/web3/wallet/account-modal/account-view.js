@@ -5,6 +5,7 @@ import {
   ensureRefreshButtonStyles,
   attachRefreshHandler,
 } from "../balance-refresh-button.js";
+import { formatBalanceForDisplay } from "../../services/format-balance.js";
 
 function getChainIcon(activeNetwork, presets) {
   const baseurl = window.SITE_BASEURL || '';
@@ -81,21 +82,24 @@ export function renderAccountView(target, data, options) {
         </div>
       </div>
       <div class="wallet-status__aside wallet-balance-wrapper">
-        ${balanceLoading
-      ? `<div class="wallet-balance wallet-placeholder">Fetching balance...</div>`
-      : `<div class="wallet-balance">${balance ? `${balance.formatted} ${balance.symbol || "ETH"}` : ""
-      }</div>`
-    }
+        ${
+          balanceLoading
+            ? `<div class="wallet-balance wallet-placeholder">Fetching balance...</div>`
+            : `<div class="wallet-balance">${
+                balance ? formatBalanceForDisplay(balance) : ""
+              }</div>`
+        }
         ${onRefresh ? getRefreshButtonHTML({ loading: balanceLoading }) : ""}
       </div>
     </div>
     <div class="wallet-actions" style="margin-top: 1rem;">
-      ${wcSession
-      ? `<button class="wallet-btn" type="button" data-open-wallet>Open mobile wallet</button>`
-      : ""
-    }
-      <button class="wallet-btn wallet-btn--ghost" type="button" data-disconnect>
-        Disconnect
+      ${
+        wcSession
+          ? `<button class="wallet-btn" type="button" data-open-wallet>Open mobile wallet</button>`
+          : ""
+      }
+      <button class="wallet-btn wallet-btn--ghost" type="button" data-disconnect data-testid="disconnect-wallet-button">
+        Disconnect Wallet
         <svg viewBox="0 0 36 24" fill="none" style="width: 24px; height: 16px; margin-left: 0.5rem; vertical-align: middle;">
           <path
             d="M18 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H18"

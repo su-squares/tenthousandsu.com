@@ -42,41 +42,9 @@ export function formatHash(hash) {
 
 /**
  * Format a balance string with truncated decimals and commas.
- * @param {string} [formatted]
- * @returns {string}
+ * Reuses the shared string-based formatter.
  */
-export function formatBalance(formatted) {
-  if (!formatted || typeof formatted !== "string") return "â€”";
-
-  const num = Number.parseFloat(formatted);
-  if (!Number.isFinite(num)) return formatted;
-
-  if (num > 0 && num < 0.00001) return "<0.00001";
-
-  let decimals;
-  if (num < 1) {
-    decimals = 5;
-  } else if (num < 1000) {
-    decimals = 4;
-  } else {
-    decimals = 2;
-  }
-
-  const scale = Math.pow(10, decimals);
-  const truncated = Math.floor(num * scale) / scale;
-
-  const parts = truncated.toFixed(decimals).split(".");
-  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
-
-  if (parts[1]) {
-    parts[1] = parts[1].replace(/0+$/, "");
-    if (parts[1] === "") {
-      return parts[0];
-    }
-  }
-
-  return parts.join(".");
-}
+export { formatBalanceString as formatBalance } from "../services/format-balance.js";
 
 /**
  * Map internal status to UI progress bar status.
