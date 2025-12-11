@@ -48,6 +48,10 @@ export function attachBillboardChooser({
   let data;
   let currentSquare;
   let panZoom = null;
+  let grid;
+  const gridCells = [];
+  let activeGridCell = null;
+  let tabStopCell = null;
 
   function getSquareFromEvent(event) {
     if (!image) return null;
@@ -88,6 +92,46 @@ export function attachBillboardChooser({
     return yIndex * GRID_DIMENSION + xIndex + 1;
   }
 
+  function getSquareFromCell(element) {
+    if (!element) return null;
+    const square = Number(element.dataset.square);
+    if (Number.isNaN(square) || square < 1) return null;
+    return square;
+  }
+
+  function getSquareFromEventOrCell(event) {
+    if (event && event.target && typeof event.target.closest === "function") {
+      const cell = event.target.closest(".su-billboard__cell");
+      if (cell) {
+        return getSquareFromCell(cell);
+      }
+    }
+    return getSquareFromEvent(event);
+  }
+
+  function updateGridSelection(squareNumber, { focusCell = false, updateTabStop = false } = {}) {
+    if (!gridCells.length || squareNumber < 1 || squareNumber > GRID_DIMENSION * GRID_DIMENSION) {
+      return;
+    }
+    const nextCell = gridCells[squareNumber - 1];
+    if (!nextCell) return;
+    if (activeGridCell && activeGridCell !== nextCell) {
+      activeGridCell.setAttribute("aria-selected", "false");
+    }
+    activeGridCell = nextCell;
+    activeGridCell.setAttribute("aria-selected", "true");
+    if (updateTabStop && tabStopCell !== nextCell) {
+      if (tabStopCell) {
+        tabStopCell.tabIndex = -1;
+      }
+      nextCell.tabIndex = 0;
+      tabStopCell = nextCell;
+    }
+    if (focusCell) {
+      nextCell.focus();
+    }
+  }
+
   function closeModal() {
     if (backdrop) {
       backdrop.classList.remove("is-open");
@@ -103,6 +147,9 @@ export function attachBillboardChooser({
     const key = event.key.toLowerCase();
     if (key === "escape") {
       closeModal();
+      return;
+    }
+    if (grid && event.target && grid.contains(event.target)) {
       return;
     }
 
@@ -193,6 +240,29 @@ export function attachBillboardChooser({
     image.alt = "All Su Squares";
     image.className = "su-billboard__image";
 
+    grid = document.createElement("div");
+    grid.className = "su-billboard__grid";
+    grid.setAttribute("role", "grid");
+    grid.setAttribute("aria-label", "Billboard squares");
+    grid.dataset.testid = "billboard-modal-grid";
+    const fragment = document.createDocumentFragment();
+    for (let i = 1; i <= GRID_DIMENSION * GRID_DIMENSION; i++) {
+      const cell = document.createElement("div");
+      cell.className = "su-billboard__cell";
+      cell.dataset.square = i;
+      cell.setAttribute("role", "gridcell");
+      cell.setAttribute("aria-label", `Square #${i}`);
+      cell.setAttribute("aria-selected", "false");
+      cell.tabIndex = -1;
+      fragment.appendChild(cell);
+      gridCells[i - 1] = cell;
+    }
+    if (gridCells[0]) {
+      gridCells[0].tabIndex = 0;
+      tabStopCell = gridCells[0];
+    }
+    grid.appendChild(fragment);
+
     highlight = document.createElement("div");
     highlight.className = "su-billboard__highlight";
 
@@ -200,6 +270,7 @@ export function attachBillboardChooser({
     tooltip.className = "su-billboard__tooltip";
 
     imgWrapper.appendChild(image);
+    imgWrapper.appendChild(grid);
     imgWrapper.appendChild(highlight);
     imgWrapper.appendChild(tooltip);
     wrapper.appendChild(imgWrapper);
@@ -230,6 +301,26 @@ export function attachBillboardChooser({
 
     // Initialize pan-zoom on the image wrapper
     panZoom = createPanZoom(imgWrapper);
+  }
+
+  function finalizeSelection(squareNumber) {
+    if (!squareNumber || !data) return false;
+    const { personalizations, extra } = data;
+    const ctx = {
+      personalization: personalizations[squareNumber - 1],
+      extra: extra[squareNumber - 1],
+    };
+    const allowed = filter(squareNumber, ctx);
+    if (!allowed) {
+      return false;
+    }
+    if (updateInput && input) {
+      input.value = squareNumber;
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+    onSelect(squareNumber);
+    closeModal();
+    return true;
   }
 
   function showSquare(squareNumber) {
@@ -304,12 +395,18 @@ export function attachBillboardChooser({
     tooltip.style.display = "block";
     tooltip.textContent = `#${squareNumber} — ${status.label}`;
     tooltip.dataset.disabled = allowed ? "false" : "true";
+    updateGridSelection(squareNumber);
   }
 
   function handlePointerMove(event) {
-    const squareNumber = getSquareFromEvent(event);
+    if (event && "pointerType" in event && event.pointerType === "touch") {
+      return;
+    }
+    const squareNumber = getSquareFromEventOrCell(event);
     if (!squareNumber) {
-      clearHover();
+      if (!grid || !grid.contains(document.activeElement)) {
+        clearHover();
+      }
       return;
     }
     showSquare(squareNumber);
@@ -320,29 +417,81 @@ export function attachBillboardChooser({
     if (panZoom && panZoom.hasPanned && panZoom.hasPanned()) {
       return;
     }
-    const squareNumber = currentSquare || getSquareFromEvent(event);
-    if (!squareNumber || !data) return;
-    const { personalizations, extra } = data;
-    const ctx = {
-      personalization: personalizations[squareNumber - 1],
-      extra: extra[squareNumber - 1],
-    };
-    const allowed = filter(squareNumber, ctx);
-    if (!allowed) {
-      return;
+    const squareNumber = currentSquare || getSquareFromEventOrCell(event);
+    if (squareNumber && event && event.target && typeof event.target.closest === "function") {
+      if (event.target.closest(".su-billboard__cell")) {
+        updateGridSelection(squareNumber, { focusCell: true, updateTabStop: true });
+      }
     }
-    if (updateInput && input) {
-      input.value = squareNumber;
-      input.dispatchEvent(new Event("input", { bubbles: true }));
-    }
-    onSelect(squareNumber);
-    closeModal();
+    finalizeSelection(squareNumber);
   }
 
   function clearHover() {
+    if (grid && grid.contains(document.activeElement)) {
+      return;
+    }
     if (highlight) highlight.style.display = "none";
     if (tooltip) tooltip.style.display = "none";
     currentSquare = null;
+    if (activeGridCell) {
+      activeGridCell.setAttribute("aria-selected", "false");
+      activeGridCell = null;
+    }
+  }
+
+  function handleGridFocus(event) {
+    const cell = event.target.closest(".su-billboard__cell");
+    const squareNumber = getSquareFromCell(cell);
+    if (!squareNumber) return;
+    updateGridSelection(squareNumber, { updateTabStop: true });
+    showSquare(squareNumber);
+  }
+
+  function handleGridFocusOut(event) {
+    const nextFocus = event.relatedTarget;
+    if (!nextFocus || !grid || !grid.contains(nextFocus)) {
+      clearHover();
+    }
+  }
+
+  function handleGridKeydown(event) {
+    const cell = event.target.closest(".su-billboard__cell");
+    if (!cell) return;
+    const squareNumber = getSquareFromCell(cell);
+    if (!squareNumber) return;
+    const key = event.key.toLowerCase();
+    let nextSquare = null;
+    if (key === "w" || key === "," || key === "arrowup") {
+      if (squareNumber > GRID_DIMENSION) {
+        nextSquare = squareNumber - GRID_DIMENSION;
+      }
+    } else if (key === "a" || key === "arrowleft") {
+      if ((squareNumber - 1) % GRID_DIMENSION !== 0) {
+        nextSquare = squareNumber - 1;
+      }
+    } else if (key === "s" || key === "o" || key === "arrowdown") {
+      if (squareNumber <= GRID_DIMENSION * (GRID_DIMENSION - 1)) {
+        nextSquare = squareNumber + GRID_DIMENSION;
+      }
+    } else if (key === "d" || key === "e" || key === "arrowright") {
+      if (squareNumber % GRID_DIMENSION !== 0) {
+        nextSquare = squareNumber + 1;
+      }
+    } else if (key === "enter" || key === " " || key === "spacebar") {
+      event.preventDefault();
+      event.stopPropagation();
+      finalizeSelection(squareNumber);
+      return;
+    } else {
+      return;
+    }
+
+    if (nextSquare) {
+      event.preventDefault();
+      event.stopPropagation();
+      updateGridSelection(nextSquare, { focusCell: true, updateTabStop: true });
+      showSquare(nextSquare);
+    }
   }
 
   async function openModal() {
@@ -361,13 +510,19 @@ export function attachBillboardChooser({
 
   function attachListeners() {
     if (!image || !wrapper) return;
-    image.addEventListener("pointermove", handlePointerMove);
-    image.addEventListener("pointerdown", handlePointerMove);
-    image.addEventListener("pointerup", handleClick);
-    image.addEventListener("click", handleClick);
-    image.addEventListener("pointerleave", clearHover);
-    image.addEventListener("touchend", handleClick);
+    const pointerSurface = grid || image;
+    pointerSurface.addEventListener("pointermove", handlePointerMove);
+    pointerSurface.addEventListener("pointerdown", handlePointerMove);
+    pointerSurface.addEventListener("pointerup", handleClick);
+    pointerSurface.addEventListener("click", handleClick);
+    pointerSurface.addEventListener("pointerleave", clearHover);
+    pointerSurface.addEventListener("touchend", handleClick);
     wrapper.addEventListener("pointerleave", clearHover);
+    if (grid) {
+      grid.addEventListener("focusin", handleGridFocus);
+      grid.addEventListener("focusout", handleGridFocusOut);
+      grid.addEventListener("keydown", handleGridKeydown);
+    }
     window.addEventListener("resize", () => {
       if (currentSquare) {
         // reposition highlight on resize

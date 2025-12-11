@@ -24,6 +24,32 @@
   will-change: transform;
 }
 
+.map-grid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(100, 1fr);
+  grid-template-rows: repeat(100, 1fr);
+  z-index: 5;
+  touch-action: none;
+}
+
+.map-grid__cell {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  outline: none;
+}
+
+.map-grid__cell:focus-visible {
+  outline: 2px solid var(--color-accent);
+  outline-offset: -2px;
+}
+
 .map-image {
   width: 100%;
   height: 100%;
@@ -39,6 +65,7 @@
   position: absolute;
   pointer-events: none;
   display: none;
+  z-index: 10;
 }
 
 .map-tooltip {
@@ -102,6 +129,7 @@
   width: 100%;
   height: 100%;
   pointer-events: none;
+  z-index: 8;
 }
 
 .newly-feed {
