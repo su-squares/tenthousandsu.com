@@ -181,7 +181,7 @@
     <nav aria-label="Article navigation">
       <div class="su-nav-articles">
         {% for post in site.posts %}
-        <a class="su-nav-article-link" data-nav-path="{{ post.url }}" href="{{ post.url | escape }}">{{ post.title | escape }}</a>
+         <a class="su-nav-article-link" data-nav-path="{{ post.url }}" href="{{ post.url | relative_url }}">{{ post.title | escape }}</a>
         {% endfor %}
       </div>
     </nav>
