@@ -6,6 +6,10 @@
   line-height: 1.2;
 }
 
+.billboard-heading {
+  text-align: center;
+}
+
 .map-container {
   width: 100%;
   max-width: 1000px;

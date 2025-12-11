@@ -20,7 +20,18 @@
 <div class="su-nav-overlay" aria-hidden="true">
   <div class="su-nav-modal" id="su-nav-main-modal" role="dialog" aria-modal="true" aria-label="Main menu" aria-hidden="true" tabindex="-1">
     <div class="su-nav-modal__top">
-      <span class="su-nav-main-placeholder" aria-hidden="true"></span>
+      <div class="su-nav-modal__header">
+        <span class="su-nav-main-placeholder" aria-hidden="true"></span>
+        <div class="su-nav-modal__tagline">The first ERC-721 NFT</div>
+        <button
+          class="su-nav-close"
+          type="button"
+          aria-label="Close menu"
+          data-testid="nav-close-menu"
+        >
+          <span aria-hidden="true">&#10005;</span>
+        </button>
+      </div>
       <div class="su-nav-social">
         <a
           href="https://x.com/susquares"
@@ -56,14 +67,6 @@
           </svg>
         </a>
       </div>
-      <button
-        class="su-nav-close"
-        type="button"
-        aria-label="Close menu"
-        data-testid="nav-close-menu"
-      >
-        <span aria-hidden="true">&#10005;</span>
-      </button>
     </div>
 
     <nav aria-label="Main navigation">
@@ -144,18 +147,25 @@
 
   <div class="su-nav-modal" id="su-nav-articles-modal" role="dialog" aria-modal="true" aria-label="Articles" aria-hidden="true" tabindex="-1">
     <div class="su-nav-modal__top">
-      <button
-        class="su-nav-back"
-        type="button"
-        aria-label="Back to main menu"
-        aria-controls="su-nav-main-modal"
-        data-testid="nav-back-main"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#ffffff" stroke-width="2">
-          <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
-        </svg>
-      </button>
+      <div class="su-nav-modal__header">
+        <span class="su-nav-main-placeholder" aria-hidden="true"></span>
+        <div class="su-nav-modal__tagline">The first ERC-721 NFT</div>
+        <button class="su-nav-close" type="button" aria-label="Close articles menu">
+          <span aria-hidden="true">&#10005;</span>
+        </button>
+      </div>
       <div class="su-nav-social">
+        <button
+          class="su-nav-back"
+          type="button"
+          aria-label="Back to main menu"
+          aria-controls="su-nav-main-modal"
+          data-testid="nav-back-main"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#ffffff" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+          </svg>
+        </button>
         <a href="https://x.com/susquares" target="_blank" rel="noopener" aria-label="Su Squares on X">
           <svg xmlns="http://www.w3.org/2000/svg" fill="currentColor" viewBox="0 0 16 16">
             <path d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.601.75Zm-.86 13.028h1.36L4.323 2.145H2.865l8.875 11.633Z" />
@@ -172,9 +182,6 @@
           </svg>
         </a>
       </div>
-      <button class="su-nav-close" type="button" aria-label="Close articles menu">
-        <span aria-hidden="true">&#10005;</span>
-      </button>
     </div>
 
     <div class="su-nav-modal__title">Articles</div>
