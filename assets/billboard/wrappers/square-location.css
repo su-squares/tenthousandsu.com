@@ -1,0 +1,79 @@
+/**
+ * Square location view styles
+ * Arrow positioning for square detail page
+ */
+
+/* Location wrapper */
+.square-location-wrapper {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+}
+
+/* Location container */
+.square-location {
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  touch-action: none;
+  overflow: hidden;
+}
+
+/* Canvas wrapper - transform target for pan-zoom */
+.square-location__canvas {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  aspect-ratio: 1;
+  margin: 0 auto;
+  transform-origin: 0 0;
+  will-change: transform;
+  overflow: visible;
+}
+
+/* Billboard image */
+.square-location__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  max-width: 500px;
+  max-height: 500px;
+  image-rendering: pixelated;
+}
+
+/* Directional arrow indicator */
+.square-location__arrow {
+  position: absolute;
+}
+
+/* Mobile hint */
+.square-location__mobile-hint {
+  margin: 0.5rem 0 0 0;
+  display: none;
+  font-weight: 700;
+  text-align: center;
+}
+
+/* Reset button */
+.square-location__reset-btn {
+  display: block;
+  margin: 0.75rem auto 0 auto;
+  padding: 0.45rem 1.2rem;
+  background: rgba(0, 0, 0, 0.25);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  color: var(--color-accent);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.square-location__reset-btn:hover {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+/* Show mobile controls on small screens */
+@media (max-width: 700px) {
+  .square-location__mobile-hint {
+    display: block;
+  }
+}

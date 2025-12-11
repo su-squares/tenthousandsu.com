@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from "@storybook/html";
 import "@assets/square-lookup/styles.css";
-import { attachListChooser } from "@assets/square-lookup/choosers/list.js";
-import { attachBillboardChooser } from "@assets/square-lookup/choosers/billboard.js";
+import { attachListChooser } from "@assets/square-lookup/list.js";
+import { attachBillboardChooser } from "@assets/billboard/wrappers/modal-chooser.js";
 
 interface SquareLookupStoryArgs {
   variant: "default" | "narrow";

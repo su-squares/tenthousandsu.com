@@ -60,7 +60,7 @@ if (input && chooseButton && submitButton) {
   let listChooserHandle;
   const ensureListChooser = async () => {
     if (listChooserHandle) return listChooserHandle;
-    const module = await import("./choosers/list.js");
+    const module = await import("./list.js");
     listChooserHandle = module.attachListChooser({
       input,
       trigger: chooseButton,
@@ -94,7 +94,7 @@ if (input && chooseButton && submitButton) {
     let billboardChooserHandle;
     const ensureBillboardChooser = async () => {
       if (billboardChooserHandle) return billboardChooserHandle;
-      const module = await import("./choosers/billboard.js");
+      const module = await import("../billboard/wrappers/modal-chooser.js");
       billboardChooserHandle = module.attachBillboardChooser({
         input,
         trigger: chooseBillboardButton,

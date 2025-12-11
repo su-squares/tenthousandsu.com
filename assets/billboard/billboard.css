@@ -1,0 +1,121 @@
+/**
+ * Billboard shared styles
+ * Used by: index-billboard, modal-chooser, square-location
+ */
+
+/* Container - transform target for pan-zoom */
+.billboard__wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  touch-action: none;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+/* Main image */
+.billboard__image {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
+  image-rendering: pixelated;
+  background: rgba(0, 0, 0, 0.1);
+}
+
+/* 100x100 grid overlay */
+.billboard__grid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(100, 1fr);
+  grid-template-rows: repeat(100, 1fr);
+  z-index: 5;
+  touch-action: none;
+}
+
+/* Individual grid cell */
+.billboard__cell {
+  width: 100%;
+  height: 100%;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  outline: none;
+}
+
+.billboard__cell:focus-visible {
+  outline: 2px solid var(--color-accent, #ffd700);
+  outline-offset: -2px;
+}
+
+/* Highlight box (selection indicator) */
+.billboard__highlight {
+  position: absolute;
+  border: 2px solid var(--color-accent, #ffd700);
+  pointer-events: none;
+  box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.4), 0 0 8px rgba(255, 215, 0, 0.8);
+  display: none;
+  z-index: 10;
+}
+
+/* Tooltip */
+.billboard__tooltip {
+  position: absolute;
+  background: var(--bg-gradient, linear-gradient(135deg, rgba(45, 60, 150, 0.95), rgba(213, 51, 146, 0.9)));
+  color: var(--color-accent, #ffd700);
+  border: 2px solid var(--color-accent, #ffd700);
+  border-radius: var(--radius-sm, 0.5rem);
+  padding: 0.35rem 0.6rem;
+  pointer-events: none;
+  display: none;
+  white-space: nowrap;
+  z-index: 20;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(4px);
+}
+
+.billboard__tooltip[data-disabled="true"] {
+  border: 4px solid #ff4d4f;
+  background: black;
+}
+
+/* Reset zoom button */
+.billboard__reset-btn {
+  display: none;
+  margin: 0.75rem auto 0 auto;
+  padding: 0.45rem 1.2rem;
+  background: rgba(0, 0, 0, 0.25);
+  border: 2px solid var(--color-accent, #ffd700);
+  border-radius: var(--radius-sm, 0.5rem);
+  color: var(--color-accent, #ffd700);
+  cursor: pointer;
+  font-size: 0.9rem;
+}
+
+.billboard__reset-btn:hover {
+  background: rgba(0, 0, 0, 0.4);
+}
+
+/* Mobile hint */
+.billboard__mobile-hint {
+  margin: 0.5rem auto 0 auto;
+  padding: 0;
+  font-weight: bold;
+  text-align: center;
+  display: none;
+}
+
+/* Show mobile controls on touch devices / small screens */
+@media (max-width: 700px) {
+  .billboard__reset-btn {
+    display: block;
+  }
+
+  .billboard__mobile-hint {
+    display: block;
+  }
+}

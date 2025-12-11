@@ -1,6 +1,6 @@
 ﻿import type { Meta, StoryObj } from "@storybook/html";
 import "@assets/square-lookup/styles.css";
-import { attachBillboardChooser } from "@assets/square-lookup/choosers/billboard.js";
+import { attachBillboardChooser } from "@assets/billboard/wrappers/modal-chooser.js";
 
 interface BillboardChooserStoryArgs {
   filterMode: "all" | "mintedOnly" | "personalizedOnly";
