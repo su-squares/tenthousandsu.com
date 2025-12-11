@@ -58,9 +58,32 @@
   font-size: 1rem;
 }
 
+/* Fade-in animation for main content */
+.fade-target {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+.fade-visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Flexbox layout only on this page to push footer off-screen */
+body.square-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.square-main {
+  flex: 0 0 100vh;
+  max-width: 95%;
+}
+
 @media (max-width: 900px) {
   .square-page h1 {
     font-size: clamp(2.4rem, 3vw + 1.4rem, 3.2rem);
   }
 }
-
