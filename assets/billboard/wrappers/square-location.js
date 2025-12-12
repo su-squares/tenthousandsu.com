@@ -5,6 +5,7 @@
 
 import { createPanZoom } from "../../js/pan-zoom.js";
 import { squareToCoords, getQuadrant } from "../billboard-utils.js";
+import { SquareBlocklist } from "../blocklist/blocklist-squares.js";
 
 /**
  * Initialize the square location view
@@ -33,9 +34,42 @@ export function initSquareLocation(options) {
   }
 
   let currentSquare = squareNumber;
+  let blockedOverlaysRendered = false;
 
   // Initialize pan-zoom
   const panZoom = createPanZoom(canvas);
+
+  /**
+   * Render blocked square overlays
+   */
+  async function renderBlockedOverlays() {
+    if (blockedOverlaysRendered) return;
+    blockedOverlaysRendered = true;
+
+    await SquareBlocklist.loadOnce();
+    const blockedSquares = SquareBlocklist.getBlockedSquares();
+
+    if (blockedSquares.size === 0) return;
+
+    // Create container for overlays
+    const overlayContainer = document.createElement("div");
+    overlayContainer.className = "square-location__blocked-container";
+    canvas.appendChild(overlayContainer);
+
+    // Create overlay for each blocked square
+    for (const sq of blockedSquares) {
+      const { row, col } = squareToCoords(sq);
+      const overlay = document.createElement("div");
+      overlay.className = "square-location__blocked";
+      // Position: each square is 10x10 in original 1000x1000 image, use percentage
+      overlay.style.top = `${row}%`;
+      overlay.style.left = `${col}%`;
+      overlayContainer.appendChild(overlay);
+    }
+  }
+
+  // Load and render blocked overlays
+  renderBlockedOverlays();
 
   // Show reset button if touch device
   if (panZoom && panZoom.isActive && resetButton) {

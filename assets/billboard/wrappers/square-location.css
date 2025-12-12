@@ -71,6 +71,23 @@
   background: rgba(0, 0, 0, 0.4);
 }
 
+/* Blocked square overlays */
+.square-location__blocked-container {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.square-location__blocked {
+  position: absolute;
+  width: 1%;
+  height: 1%;
+  background: #000;
+}
+
 /* Show mobile controls on small screens */
 @media (max-width: 700px) {
   .square-location__mobile-hint {

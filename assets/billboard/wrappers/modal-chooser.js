@@ -5,7 +5,86 @@
 
 import { loadSquareData } from "../../js/square-data.js";
 import { assetPath } from "../../js/asset-base.js";
-import { createBillboard, createResetButton, createMobileHint, isTouchDevice } from "../billboard-core.js";
+import { createBillboard } from "../billboard-core.js";
+import { createResetButton, createMobileHint } from "../billboard-view.js";
+import { isTouchDevice } from "../billboard-utils.js";
+
+const TOOLTIP_PROFILES = {
+  lookup: {
+    getTooltipContent(squareNumber, _ctx, info) {
+      if (!info?.status?.minted) {
+        return `Square #${squareNumber} is unminted.`;
+      }
+      if (info.status.personalized) {
+        return `Square #${squareNumber} is minted and personalized.`;
+      }
+      return `Square #${squareNumber} is minted but not yet personalized.`;
+    },
+    getTooltipCssClass: () => null, // Bypass blocked CSS class
+    shouldShowDisabledTooltip(_squareNumber, _ctx, info) {
+      // Disabled style for unminted, regular for minted
+      if (!info?.filter) return !info?.status?.minted;
+      if (!info.filter.allowed) return true;
+      return !info.status?.minted;
+    },
+  },
+  buy: {
+    getTooltipContent(squareNumber, _ctx, info) {
+      if (!info?.status?.minted) {
+        return `Square #${squareNumber} is available to mint.`;
+      }
+      if (info.status.personalized) {
+        return `Square #${squareNumber} is already minted and personalized.`;
+      }
+      return `Square #${squareNumber} is minted but not personalized.`;
+    },
+    getTooltipCssClass: () => null, // Bypass blocked CSS class
+    shouldShowDisabledTooltip(_squareNumber, _ctx, info) {
+      // Disabled style for minted, regular for unminted
+      if (!info?.filter) return Boolean(info?.status?.minted);
+      if (!info.filter.allowed) return true;
+      return Boolean(info.status?.minted);
+    },
+  },
+  plain: {
+    getTooltipContent(squareNumber, _ctx, info) {
+      // Show category regardless of blocked status
+      if (!info?.status?.minted) {
+        return `Square #${squareNumber} is unminted.`;
+      }
+      if (info.status.personalized) {
+        return `Square #${squareNumber} is minted and personalized.`;
+      }
+      return `Square #${squareNumber} is minted but not yet personalized.`;
+    },
+    getTooltipCssClass: () => null, // Never use blocked CSS class
+    shouldShowDisabledTooltip: () => false, // Never show disabled styling
+  },
+};
+
+function resolveTooltipProfile(mode) {
+  if (!mode) return TOOLTIP_PROFILES.lookup;
+  if (typeof mode === "string") {
+    return TOOLTIP_PROFILES[mode] || TOOLTIP_PROFILES.lookup;
+  }
+  if (typeof mode === "object") {
+    return {
+      getTooltipContent:
+        typeof mode.getTooltipContent === "function"
+          ? mode.getTooltipContent
+          : TOOLTIP_PROFILES.lookup.getTooltipContent,
+      getTooltipCssClass:
+        typeof mode.getTooltipCssClass === "function"
+          ? mode.getTooltipCssClass
+          : null,
+      shouldShowDisabledTooltip:
+        typeof mode.shouldShowDisabledTooltip === "function"
+          ? mode.shouldShowDisabledTooltip
+          : TOOLTIP_PROFILES.lookup.shouldShowDisabledTooltip,
+    };
+  }
+  return TOOLTIP_PROFILES.lookup;
+}
 
 /**
  * Attach a billboard chooser modal to a trigger element
@@ -25,6 +104,7 @@ export function attachBillboardChooser({
   onSelect = () => {},
   title = "Choose square from billboard",
   updateInput = true,
+  tooltipMode = "lookup",
 }) {
   if (!trigger) return { open: () => Promise.resolve(), close: () => {} };
 
@@ -62,16 +142,26 @@ export function attachBillboardChooser({
     closeModal();
   }
 
+  function filterAllowsSelection(squareNumber, ctx) {
+    const result = filter(squareNumber, ctx);
+    if (result && typeof result === "object") {
+      return Boolean(result.allowed);
+    }
+    return Boolean(result);
+  }
+
   function focusBillboardGrid() {
     const grid = billboard?.elements?.grid;
     if (!grid) return;
     const tabStop =
-      grid.querySelector(".su-billboard__cell[tabindex='0']") ||
-      grid.querySelector(".su-billboard__cell");
+      grid.querySelector(".billboard__cell[tabindex='0']") ||
+      grid.querySelector(".billboard__cell");
     if (tabStop instanceof HTMLElement) {
       tabStop.focus();
     }
   }
+
+  const tooltipProfile = resolveTooltipProfile(tooltipMode);
 
   function ensureModal() {
     if (backdrop) return;
@@ -112,17 +202,17 @@ export function attachBillboardChooser({
 
     // Billboard container
     const billboardContainer = document.createElement("div");
-    billboardContainer.className = "su-billboard";
+    billboardContainer.className = "billboard";
 
     // Create billboard
     billboard = createBillboard(billboardContainer, {
       mode: "interactive",
       enableGrid: true,
       enableKeyboard: true,
+      allowBlockedSelection: true,
       imageSrc: assetPath("wholeSquare.png"),
       imageAlt: "All Su Squares",
       gridTestId: "billboard-modal-grid",
-      classPrefix: "su-billboard",
       filter: (squareNumber, ctx) => filter(squareNumber, ctx),
       getPersonalization: (squareNumber) => {
         if (!data || !data.personalizations) return null;
@@ -132,12 +222,22 @@ export function attachBillboardChooser({
         if (!data || !data.extra) return null;
         return data.extra[squareNumber - 1];
       },
+      getTooltipContent: (squareNumber, ctx, info) =>
+        tooltipProfile.getTooltipContent(squareNumber, ctx, info),
+      getTooltipCssClass:
+        typeof tooltipProfile.getTooltipCssClass === "function"
+          ? (squareNumber, ctx, info) =>
+              tooltipProfile.getTooltipCssClass(squareNumber, ctx, info)
+          : undefined,
+      shouldShowDisabledTooltip: (squareNumber, ctx, info) =>
+        tooltipProfile.shouldShowDisabledTooltip(squareNumber, ctx, info),
+      allowWrapperTooltipOverride: true,
       onSquareActivate: (squareNumber) => {
         const ctx = {
           personalization: data?.personalizations?.[squareNumber - 1],
           extra: data?.extra?.[squareNumber - 1],
         };
-        if (filter(squareNumber, ctx)) {
+        if (filterAllowsSelection(squareNumber, ctx)) {
           handleSelect(squareNumber);
         }
       },
@@ -147,7 +247,6 @@ export function attachBillboardChooser({
     let resetBtn = null;
     if (isTouchDevice()) {
       resetBtn = createResetButton({
-        className: "su-billboard__reset-btn",
         text: "Reset zoom",
         onClick: () => billboard.reset(),
       });

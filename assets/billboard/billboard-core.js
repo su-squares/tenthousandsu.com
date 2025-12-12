@@ -1,15 +1,18 @@
 /**
- * Billboard core - state management and event handling
+ * Billboard core - orchestrator + rendering + public API
+ * Split into:
+ * - billboard-core.js (this file): DOM creation/mounting, rendering, API
+ * - billboard-core-events.js: event listeners + nav behavior
+ * - billboard-core-blocklists.js: core blocklists load/check/apply
  */
 
 import { createPanZoom } from "../js/pan-zoom.js";
 import {
-  GRID_DIMENSION,
   TOTAL_SQUARES,
   getCellSize,
-  getSquareFromPosition,
   describeSquareStatus,
   isTouchDevice,
+  GRID_DIMENSION,
 } from "./billboard-utils.js";
 import {
   createGrid,
@@ -17,29 +20,82 @@ import {
   createTooltip,
   updateGridSelection,
   clearGridSelection,
-  getSquareFromCell,
   showSquare,
   hideSquare,
 } from "./billboard-view.js";
+import { createSquareOverrideManager } from "./square-override.js";
+import { attachBillboardEvents } from "./billboard-core-events.js";
+import {
+  coreBlocklistsReady,
+  loadCoreBlocklistsOnce,
+  applyCoreSquareBlocklistOverrides,
+  isCoreSquareBlocked,
+  isCoreHrefBlocked,
+  isCoreSquareTextHidden,
+} from "./billboard-core-blocklists.js";
+
+/**
+ * Extract first token from class string.
+ * @param {string} className
+ * @returns {string}
+ */
+function primaryClass(className) {
+  if (!className || typeof className !== "string") return "";
+  return className.trim().split(/\s+/)[0] || "";
+}
+
+const TEXT_SILENCED_TOOLTIP = (squareNumber) =>
+  `Square #${squareNumber} — Personalization text hidden for your safety.`;
+
+function normalizeFilterResult(result) {
+  if (result && typeof result === "object") {
+    const allowed = Boolean(result.allowed);
+    const showDisabledTooltip =
+      result.showDisabledTooltip !== undefined
+        ? Boolean(result.showDisabledTooltip)
+        : !allowed;
+    const reason = typeof result.reason === "string" ? result.reason : null;
+    return { allowed, showDisabledTooltip, reason };
+  }
+
+  if (typeof result === "boolean") {
+    return { allowed: result, showDisabledTooltip: !result, reason: null };
+  }
+
+  const coerced = Boolean(result);
+  return { allowed: coerced, showDisabledTooltip: !coerced, reason: null };
+}
+
+/**
+ * Default href resolver (best-effort) for domain-block checks.
+ * Supports:
+ * - personalization as [label, href]
+ * - personalization as { href }
+ * @param {number} _squareNumber
+ * @param {Object} ctx
+ * @returns {string|null}
+ */
+function defaultGetHref(_squareNumber, ctx) {
+  const p = ctx?.personalization;
+  if (!p) return null;
+
+  if (Array.isArray(p)) {
+    const href = p[1];
+    return typeof href === "string" && href.trim() ? href.trim() : null;
+  }
+
+  if (typeof p === "object" && p) {
+    const href = p.href;
+    return typeof href === "string" && href.trim() ? href.trim() : null;
+  }
+
+  return null;
+}
 
 /**
  * Create an interactive billboard component
- * @param {HTMLElement} container - Container element to append billboard to
+ * @param {HTMLElement} container
  * @param {Object} options
- * @param {"interactive"|"location-only"} [options.mode="interactive"]
- * @param {boolean} [options.enableGrid=true] - Create 10k cell grid overlay
- * @param {boolean} [options.enableKeyboard=true] - Enable keyboard navigation
- * @param {boolean} [options.enablePanZoom=true] - Enable touch pan-zoom
- * @param {(squareNumber: number) => void} [options.onSquareHover]
- * @param {(squareNumber: number) => void} [options.onSquareSelect]
- * @param {(squareNumber: number, event: Event) => void} [options.onSquareActivate]
- * @param {(squareNumber: number, ctx: Object) => boolean} [options.filter]
- * @param {(squareNumber: number) => any} [options.getPersonalization]
- * @param {(squareNumber: number) => any} [options.getExtra]
- * @param {string} options.imageSrc
- * @param {string} [options.imageAlt="All Su Squares"]
- * @param {string} [options.gridTestId]
- * @param {string} [options.classPrefix="billboard"]
  * @returns {Object} Billboard controller
  */
 export function createBillboard(container, options = {}) {
@@ -48,17 +104,40 @@ export function createBillboard(container, options = {}) {
     enableGrid = mode === "interactive",
     enableKeyboard = mode === "interactive",
     enablePanZoom = isTouchDevice(),
+    enableCoreBlocklists = true,
+    allowBlockedSelection = false,
+
     onSquareHover,
     onSquareSelect,
     onSquareActivate,
+    onClearSelection,
+
     filter = () => true,
     getPersonalization = () => null,
     getExtra = () => null,
+    getHref = defaultGetHref,
+    isTextHidden,
+
+    getTooltipContent,
+    getTooltipCssClass,
+    shouldShowDisabledTooltip,
+    allowWrapperTooltipOverride = false,
+
     imageSrc,
     imageAlt = "All Su Squares",
+
     gridTestId,
     classPrefix = "billboard",
+    gridClassName,
+    cellClassName,
+    ariaLabel = "Billboard squares",
+    blockedTooltipCssClass = "billboard__tooltip--blocked",
+
+    mount = null,
   } = options;
+
+  const mountObj = mount && typeof mount === "object" ? mount : {};
+  const wrapperProvided = Boolean(mountObj.wrapper);
 
   // State
   let currentSquare = null;
@@ -67,323 +146,364 @@ export function createBillboard(container, options = {}) {
     tabStopCell: null,
   };
 
-  // Create wrapper
-  const wrapper = document.createElement("div");
-  wrapper.className = `${classPrefix}__wrapper`;
-
-  // Create image
-  const image = document.createElement("img");
-  image.className = `${classPrefix}__image`;
-  image.src = imageSrc;
-  image.alt = imageAlt;
-  wrapper.appendChild(image);
-
-  // Create grid if enabled
-  let grid = null;
-  let cells = [];
-  if (enableGrid) {
-    const gridResult = createGrid({
-      gridClassName: `${classPrefix}__grid`,
-      cellClassName: `${classPrefix}__cell`,
-      testId: gridTestId,
-    });
-    grid = gridResult.grid;
-    cells = gridResult.cells;
-    gridState.tabStopCell = cells[0] || null;
-    wrapper.appendChild(grid);
+  // Wrapper
+  const wrapper = mountObj.wrapper || document.createElement("div");
+  if (!wrapperProvided) {
+    wrapper.className = `${classPrefix}__wrapper`;
   }
 
-  // Create highlight and tooltip
-  const highlight = createHighlight(`${classPrefix}__highlight`);
-  const tooltip = createTooltip(`${classPrefix}__tooltip`);
-  wrapper.appendChild(highlight);
-  wrapper.appendChild(tooltip);
+  // Image
+  let image = mountObj.image || null;
+  if (!image) {
+    if (!imageSrc) {
+      throw new Error("[BillboardCore] imageSrc is required when not mounting an existing image element.");
+    }
+    image = document.createElement("img");
+    image.className = `${classPrefix}__image`;
+    image.src = imageSrc;
+    image.alt = imageAlt;
+    wrapper.appendChild(image);
+  } else {
+    if (!wrapper.contains(image)) {
+      wrapper.appendChild(image);
+    }
+  }
 
-  // Initialize pan-zoom
+  // Grid
+  const effectiveGridClassName = gridClassName || `${classPrefix}__grid`;
+  const effectiveCellClassName = cellClassName || `${classPrefix}__cell`;
+
+  const cellClosestClass = primaryClass(effectiveCellClassName);
+  const cellClosestSelector = cellClosestClass ? `.${cellClosestClass}` : null;
+
+  let grid = null;
+  let cells = [];
+  let overrideManager = null;
+
+  if (enableGrid) {
+    if (mountObj.grid && Array.isArray(mountObj.cells) && mountObj.cells.length) {
+      grid = mountObj.grid;
+      cells = mountObj.cells;
+    } else {
+      const gridResult = createGrid({
+        gridClassName: effectiveGridClassName,
+        cellClassName: effectiveCellClassName,
+        ariaLabel,
+        testId: gridTestId,
+      });
+      grid = gridResult.grid;
+      cells = gridResult.cells;
+      wrapper.appendChild(grid);
+    }
+
+    gridState.tabStopCell = cells[0] || null;
+    overrideManager = createSquareOverrideManager(cells);
+  }
+
+  // Highlight + Tooltip
+  const highlightProvided = Boolean(mountObj.highlight);
+  const tooltipProvided = Boolean(mountObj.tooltip);
+
+  const highlight = mountObj.highlight || createHighlight(`${classPrefix}__highlight`);
+  const tooltip = mountObj.tooltip || createTooltip(`${classPrefix}__tooltip`);
+
+  if (!highlightProvided && highlight && !wrapper.contains(highlight)) {
+    wrapper.appendChild(highlight);
+  }
+  if (!tooltipProvided && tooltip && !wrapper.contains(tooltip)) {
+    wrapper.appendChild(tooltip);
+  }
+
+  // Pan-zoom
   let panZoom = null;
   if (enablePanZoom) {
     panZoom = createPanZoom(wrapper);
   }
 
-  // Append wrapper to container
-  container.appendChild(wrapper);
+  // Mount wrapper if we created it
+  if (!wrapperProvided) {
+    container.appendChild(wrapper);
+  }
 
-  // Helper: get effective container width
+  // Start loading blocklists immediately
+  if (enableCoreBlocklists) {
+    loadCoreBlocklistsOnce();
+  }
+
+  // Apply core square block overlays once we have an override manager
+  if (enableCoreBlocklists && overrideManager) {
+    applyCoreSquareBlocklistOverrides(overrideManager, {
+      style: { background: "#000" },
+      tooltipCssClass: blockedTooltipCssClass,
+      tooltipText: (n) => `Square #${n} — For your protection, this square is disabled`,
+    }).then(() => {
+      if (currentSquare) setSquare(currentSquare);
+    });
+  }
+
   function getEffectiveWidth() {
     if (panZoom && panZoom.isActive) {
       return wrapper.offsetWidth || wrapper.clientWidth;
     }
     const rect = image.getBoundingClientRect();
-    return rect.width || wrapper.offsetWidth;
+    return rect.width || wrapper.offsetWidth || wrapper.clientWidth;
   }
 
-  // Helper: get square context
   function getSquareContext(squareNumber) {
     const personalization = getPersonalization(squareNumber);
     const extra = getExtra(squareNumber);
     return { personalization, extra };
   }
 
-  // Helper: get square from pointer event
-  function getSquareFromEvent(event) {
-    let clientX = event.clientX;
-    let clientY = event.clientY;
-
-    if (event.touches && event.touches[0]) {
-      clientX = event.touches[0].clientX;
-      clientY = event.touches[0].clientY;
-    } else if (event.changedTouches && event.changedTouches[0]) {
-      clientX = event.changedTouches[0].clientX;
-      clientY = event.changedTouches[0].clientY;
+  function resolveHref(squareNumber, ctx) {
+    try {
+      const href = getHref(squareNumber, ctx);
+      return typeof href === "string" && href.trim() ? href.trim() : null;
+    } catch {
+      return null;
     }
-
-    let x, y, effectiveWidth;
-    if (panZoom && panZoom.isActive) {
-      const canvasCoords = panZoom.screenToCanvas(clientX, clientY);
-      x = canvasCoords.x;
-      y = canvasCoords.y;
-      effectiveWidth = wrapper.offsetWidth || wrapper.clientWidth;
-    } else {
-      const rect = image.getBoundingClientRect();
-      x = clientX - rect.left;
-      y = clientY - rect.top;
-      effectiveWidth = rect.width;
-    }
-
-    return getSquareFromPosition(x, y, effectiveWidth);
   }
 
-  // Helper: get square from event or cell
-  function getSquareFromEventOrCell(event) {
-    if (event && event.target && typeof event.target.closest === "function") {
-      const cell = event.target.closest(`.${classPrefix}__cell`);
-      if (cell) {
-        return getSquareFromCell(cell);
-      }
-    }
-    return getSquareFromEvent(event);
+  function computeCoreBlockInfo(squareNumber, ctx) {
+    const href = resolveHref(squareNumber, ctx);
+    const isSquareBlocked = enableCoreBlocklists ? isCoreSquareBlocked(squareNumber) : false;
+    const isDomainBlocked =
+      enableCoreBlocklists && href ? isCoreHrefBlocked(href) : false;
+    const isTextSilencedCore = enableCoreBlocklists
+      ? isCoreSquareTextHidden(squareNumber)
+      : false;
+    const isTextSilencedWrapper =
+      typeof isTextHidden === "function" ? Boolean(isTextHidden(squareNumber, ctx)) : false;
+
+    return {
+      href,
+      isSquareBlocked,
+      isDomainBlocked,
+      isTextSilenced: isTextSilencedCore || isTextSilencedWrapper,
+    };
   }
 
-  // Show square highlight and tooltip
   function setSquare(squareNumber) {
-    if (!squareNumber || squareNumber < 1 || squareNumber > TOTAL_SQUARES) {
-      return;
-    }
+    if (!squareNumber || squareNumber < 1 || squareNumber > TOTAL_SQUARES) return;
 
     currentSquare = squareNumber;
+
     const ctx = getSquareContext(squareNumber);
     const status = describeSquareStatus(ctx.personalization, ctx.extra);
-    const allowed = filter(squareNumber, ctx);
+    const coreInfo = computeCoreBlockInfo(squareNumber, ctx);
+
+    const filterResult = normalizeFilterResult(
+      typeof filter === "function" ? filter(squareNumber, ctx) : true
+    );
+    const filterAllowed = filterResult.allowed;
+
+    const override = overrideManager ? overrideManager.get(squareNumber) : null;
+    const overrideClickable = override ? override.clickable !== false : true;
+
+    const preventedByCore = coreInfo.isSquareBlocked || coreInfo.isDomainBlocked;
+    const preventedByOverride = !overrideClickable;
+    const preventedByFilter = !filterAllowed;
+
+    const allowed =
+      filterAllowed &&
+      overrideClickable &&
+      !coreInfo.isSquareBlocked &&
+      !coreInfo.isDomainBlocked;
+
+    let shouldShowDisabled =
+      preventedByCore ||
+      preventedByOverride ||
+      coreInfo.isTextSilenced ||
+      (preventedByFilter && filterResult.showDisabledTooltip);
+
+    const info = {
+      status,
+      allowed,
+      override,
+      filter: filterResult,
+      ...coreInfo,
+    };
+
+    let tooltipContent = `#${squareNumber} — ${status.label}`;
+    let tooltipCssClass = null;
+
+    // When allowWrapperTooltipOverride is true, wrapper's getTooltipContent takes priority
+    // but we sanitize ctx for blocked/silenced squares to avoid exposing unsafe content
+    if (allowWrapperTooltipOverride && typeof getTooltipContent === "function") {
+      const needsSanitization =
+        coreInfo.isSquareBlocked || coreInfo.isDomainBlocked || coreInfo.isTextSilenced;
+      const safeCtx = needsSanitization ? { ...ctx, personalization: null } : ctx;
+      try {
+        tooltipContent = getTooltipContent(squareNumber, safeCtx, info);
+      } catch {
+        // fallback to default priority chain below
+        if (coreInfo.isTextSilenced) {
+          tooltipContent = TEXT_SILENCED_TOOLTIP(squareNumber);
+        } else if (override && override.tooltip && override.tooltip.text) {
+          tooltipContent = override.tooltip.text;
+        }
+      }
+    } else if (coreInfo.isTextSilenced) {
+      tooltipContent = TEXT_SILENCED_TOOLTIP(squareNumber);
+    } else if (override && override.tooltip && override.tooltip.text) {
+      tooltipContent = override.tooltip.text;
+    } else if (typeof getTooltipContent === "function") {
+      try {
+        tooltipContent = getTooltipContent(squareNumber, ctx, info);
+      } catch {
+        // ignore
+      }
+    }
+
+    // When allowWrapperTooltipOverride is true, wrapper's getTooltipCssClass takes priority
+    if (allowWrapperTooltipOverride && typeof getTooltipCssClass === "function") {
+      try {
+        tooltipCssClass = getTooltipCssClass(squareNumber, ctx, info);
+      } catch {
+        // fallback to default priority chain below
+        if (override && override.tooltip && override.tooltip.cssClass) {
+          tooltipCssClass = override.tooltip.cssClass;
+        } else if (coreInfo.isDomainBlocked) {
+          tooltipCssClass = blockedTooltipCssClass;
+        }
+      }
+    } else if (override && override.tooltip && override.tooltip.cssClass) {
+      tooltipCssClass = override.tooltip.cssClass;
+    } else {
+      if (typeof getTooltipCssClass === "function") {
+        try {
+          tooltipCssClass = getTooltipCssClass(squareNumber, ctx, info);
+        } catch {
+          // ignore
+        }
+      } else if (coreInfo.isDomainBlocked) {
+        tooltipCssClass = blockedTooltipCssClass;
+      }
+    }
+
+    if (typeof shouldShowDisabledTooltip === "function") {
+      try {
+        const disabledOverride = shouldShowDisabledTooltip(squareNumber, ctx, info);
+        if (typeof disabledOverride === "boolean") {
+          shouldShowDisabled = disabledOverride;
+        }
+      } catch {
+        // ignore
+      }
+    }
 
     const effectiveWidth = getEffectiveWidth();
     const cellSize = getCellSize(effectiveWidth);
     const scale = panZoom && panZoom.isActive ? panZoom.scale : 1;
 
-    showSquare(
-      { highlight, tooltip },
-      squareNumber,
-      {
-        cellSize,
-        scale,
-        tooltipContent: `#${squareNumber} — ${status.label}`,
-        disabled: !allowed,
-      }
-    );
+    showSquare({ highlight, tooltip }, squareNumber, {
+      cellSize,
+      scale,
+      tooltipContent,
+      tooltipCssClass,
+      disabled: shouldShowDisabled,
+    });
 
     if (enableGrid) {
       updateGridSelection(cells, squareNumber, gridState);
     }
 
-    if (onSquareHover) {
-      onSquareHover(squareNumber);
+    if (typeof onSquareHover === "function") {
+      onSquareHover(squareNumber, ctx, info);
     }
   }
 
-  // Clear selection
   function clearSelection() {
     currentSquare = null;
     hideSquare({ highlight, tooltip });
+
     if (enableGrid) {
       clearGridSelection(gridState);
     }
+
+    if (typeof onClearSelection === "function") {
+      onClearSelection();
+    }
   }
 
-  // Activate (select) a square
   function activateSquare(squareNumber, event) {
     if (!squareNumber) return false;
 
     const ctx = getSquareContext(squareNumber);
-    const allowed = filter(squareNumber, ctx);
+    const coreInfo = computeCoreBlockInfo(squareNumber, ctx);
 
-    if (!allowed) return false;
+    const filterResult = normalizeFilterResult(
+      typeof filter === "function" ? filter(squareNumber, ctx) : true
+    );
+    const filterAllowed = filterResult.allowed;
 
-    if (onSquareSelect) {
-      onSquareSelect(squareNumber);
+    const override = overrideManager ? overrideManager.get(squareNumber) : null;
+    const overrideClickable = override ? override.clickable !== false : true;
+
+    const allowed =
+      filterAllowed &&
+      overrideClickable &&
+      !coreInfo.isSquareBlocked &&
+      !coreInfo.isDomainBlocked;
+
+    const preventedByCore = coreInfo.isSquareBlocked || coreInfo.isDomainBlocked;
+    const preventedByOverride = !overrideClickable;
+
+    const allowCoreBypass =
+      allowBlockedSelection &&
+      preventedByCore &&
+      filterAllowed;
+
+    const activationAllowed = allowed || allowCoreBypass;
+
+    if (!activationAllowed) {
+      if (override && typeof override.onActivate === "function") {
+        override.onActivate(squareNumber, event);
+      }
+      return false;
     }
-    if (onSquareActivate) {
-      onSquareActivate(squareNumber, event);
+
+    const status = describeSquareStatus(ctx.personalization, ctx.extra);
+    const info = {
+      status,
+      allowed,
+      override,
+      filter: filterResult,
+      ...coreInfo,
+    };
+
+    if (typeof onSquareSelect === "function") {
+      onSquareSelect(squareNumber, ctx, info);
+    }
+    if (typeof onSquareActivate === "function") {
+      onSquareActivate(squareNumber, event, ctx, info);
     }
 
     return true;
   }
 
-  // Event handlers
-  function handlePointerMove(event) {
-    if (event && "pointerType" in event && event.pointerType === "touch") {
-      return;
-    }
-    const squareNumber = getSquareFromEventOrCell(event);
-    if (!squareNumber) {
-      if (!grid || !grid.contains(document.activeElement)) {
-        clearSelection();
-      }
-      return;
-    }
-    setSquare(squareNumber);
-  }
+  const events = attachBillboardEvents({
+    enableGrid,
+    enableKeyboard,
+    elements: { wrapper, image, grid, cells },
+    panZoom,
+    cellClosestSelector,
+    gridState,
+    getCurrentSquare: () => currentSquare,
+    setSquare,
+    clearSelection,
+    activateSquare,
+  });
 
-  function handlePointerLeave() {
-    if (grid && grid.contains(document.activeElement)) {
-      return;
-    }
-    clearSelection();
-  }
-
-  function handleClick(event) {
-    if (panZoom && panZoom.hasPanned && panZoom.hasPanned()) {
-      return;
-    }
-    const squareNumber = currentSquare || getSquareFromEventOrCell(event);
-    if (squareNumber && enableGrid) {
-      const cell = event.target.closest(`.${classPrefix}__cell`);
-      if (cell) {
-        updateGridSelection(cells, squareNumber, gridState, {
-          focusCell: true,
-          updateTabStop: true,
-        });
-      }
-    }
-    activateSquare(squareNumber, event);
-  }
-
-  function handleGridFocus(event) {
-    const cell = event.target.closest(`.${classPrefix}__cell`);
-    const squareNumber = getSquareFromCell(cell);
-    if (!squareNumber) return;
-    updateGridSelection(cells, squareNumber, gridState, { updateTabStop: true });
-    setSquare(squareNumber);
-  }
-
-  function handleGridFocusOut(event) {
-    const nextFocus = event.relatedTarget;
-    if (!nextFocus || !grid || !grid.contains(nextFocus)) {
-      clearSelection();
-    }
-  }
-
-  function handleGridKeydown(event) {
-    const cell = event.target.closest(`.${classPrefix}__cell`);
-    if (!cell) return;
-
-    const squareNumber = getSquareFromCell(cell);
-    if (!squareNumber) return;
-
-    const key = event.key.toLowerCase();
-    let nextSquare = null;
-
-    // Navigation keys
-    if (key === "w" || key === "," || key === "arrowup") {
-      if (squareNumber > GRID_DIMENSION) {
-        nextSquare = squareNumber - GRID_DIMENSION;
-      }
-    } else if (key === "a" || key === "arrowleft") {
-      if ((squareNumber - 1) % GRID_DIMENSION !== 0) {
-        nextSquare = squareNumber - 1;
-      }
-    } else if (key === "s" || key === "o" || key === "arrowdown") {
-      if (squareNumber <= GRID_DIMENSION * (GRID_DIMENSION - 1)) {
-        nextSquare = squareNumber + GRID_DIMENSION;
-      }
-    } else if (key === "d" || key === "e" || key === "arrowright") {
-      if (squareNumber % GRID_DIMENSION !== 0) {
-        nextSquare = squareNumber + 1;
-      }
-    } else if (key === "enter" || key === " " || key === "spacebar") {
-      event.preventDefault();
-      event.stopPropagation();
-      activateSquare(squareNumber, event);
-      return;
-    } else {
-      return;
-    }
-
-    if (nextSquare) {
-      event.preventDefault();
-      event.stopPropagation();
-      updateGridSelection(cells, nextSquare, gridState, {
-        focusCell: true,
-        updateTabStop: true,
-      });
-      setSquare(nextSquare);
-    }
-  }
-
-  // Attach event listeners
-  const pointerSurface = grid || image;
-  pointerSurface.addEventListener("pointermove", handlePointerMove);
-  pointerSurface.addEventListener("pointerdown", handlePointerMove);
-  pointerSurface.addEventListener("pointerleave", handlePointerLeave);
-  pointerSurface.addEventListener("click", handleClick);
-  pointerSurface.addEventListener("pointerup", handleClick);
-  pointerSurface.addEventListener("touchend", handleClick);
-
-  if (grid && enableKeyboard) {
-    grid.addEventListener("focusin", handleGridFocus);
-    grid.addEventListener("focusout", handleGridFocusOut);
-    grid.addEventListener("keydown", handleGridKeydown);
-  }
-
-  wrapper.addEventListener("pointerleave", handlePointerLeave);
-
-  // Resize handler
-  function handleResize() {
-    if (currentSquare) {
-      setSquare(currentSquare);
-    }
-  }
-  window.addEventListener("resize", handleResize);
-
-  // Reset pan-zoom
   function reset() {
-    if (panZoom) {
-      panZoom.reset();
-    }
+    if (panZoom) panZoom.reset();
   }
 
-  // Cleanup
   function destroy() {
-    pointerSurface.removeEventListener("pointermove", handlePointerMove);
-    pointerSurface.removeEventListener("pointerdown", handlePointerMove);
-    pointerSurface.removeEventListener("pointerleave", handlePointerLeave);
-    pointerSurface.removeEventListener("click", handleClick);
-    pointerSurface.removeEventListener("pointerup", handleClick);
-    pointerSurface.removeEventListener("touchend", handleClick);
-
-    if (grid && enableKeyboard) {
-      grid.removeEventListener("focusin", handleGridFocus);
-      grid.removeEventListener("focusout", handleGridFocusOut);
-      grid.removeEventListener("keydown", handleGridKeydown);
-    }
-
-    wrapper.removeEventListener("pointerleave", handlePointerLeave);
-    window.removeEventListener("resize", handleResize);
-
-    if (panZoom) {
-      panZoom.destroy();
-    }
+    events.destroy();
+    if (panZoom) panZoom.destroy();
   }
 
-  // Return controller
   return {
     get currentSquare() {
       return currentSquare;
@@ -403,9 +523,20 @@ export function createBillboard(container, options = {}) {
     },
     panZoom,
     gridState,
+    overrideManager,
   };
 }
 
-// Re-export utilities for convenience
+// Re-export utilities for convenience (you can stop using these in wrappers if you want strict ownership imports)
 export { createResetButton, createMobileHint } from "./billboard-view.js";
 export { isTouchDevice, GRID_DIMENSION, TOTAL_SQUARES } from "./billboard-utils.js";
+
+// Re-export core blocklist hooks (optional external use)
+export {
+  loadCoreBlocklistsOnce,
+  coreBlocklistsReady,
+  isCoreSquareBlocked,
+  isCoreHrefBlocked,
+  isCoreSquareTextHidden,
+  applyCoreSquareBlocklistOverrides,
+} from "./billboard-core-blocklists.js";

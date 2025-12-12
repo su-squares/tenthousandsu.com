@@ -2,6 +2,7 @@
   const baseurl = window.SITE_BASEURL || '';
   const DEFAULT_STYLESHEET_HREF = baseurl + "/assets/modals/leaving-modal/modal.css";
   const DEFAULT_ALLOWLIST_URL = baseurl + "/assets/modals/leaving-modal/allowlist.json";
+  const DEFAULT_BLOCKLIST_URL = baseurl + "/assets/blocklist/blocklist-domains.json";
   const TEMPLATE_HTML = `
     <div class="su-leaving-backdrop" aria-hidden="true">
       <div class="su-leaving" role="dialog" aria-modal="true" aria-label="Leaving this site">
@@ -20,9 +21,12 @@
   const VISIBLE_CLASS = "is-visible";
   const BUILT_IN_ALLOWED = ["localhost", "127.0.0.1", "tenthousandsu.com", "www.tenthousandsu.com"];
   const allowlist = new Set(BUILT_IN_ALLOWED);
+  const blocklist = new Set();
 
   let allowlistLoaded = false;
+  let blocklistLoaded = false;
   let allowlistUrl = DEFAULT_ALLOWLIST_URL;
+  let blocklistUrl = DEFAULT_BLOCKLIST_URL;
   let stylesheetHref = DEFAULT_STYLESHEET_HREF;
 
   let backdrop;
@@ -42,6 +46,11 @@
     if (options.allowlistUrl && options.allowlistUrl !== allowlistUrl) {
       allowlistLoaded = false;
       allowlistUrl = options.allowlistUrl;
+    }
+
+    if (options.blocklistUrl && options.blocklistUrl !== blocklistUrl) {
+      blocklistLoaded = false;
+      blocklistUrl = options.blocklistUrl;
     }
 
     if (options.stylesheetHref && options.stylesheetHref !== stylesheetHref) {
@@ -123,6 +132,7 @@
         ensureStylesheet();
         appendModal();
         loadAllowlist();
+        loadBlocklist();
         resolve(backdrop);
       };
 
@@ -165,6 +175,93 @@
       .catch(function () {
         // Keep built-in list on failure.
       });
+  }
+
+  function loadBlocklist(url) {
+    const fetchUrl = url || blocklistUrl;
+    if (blocklistLoaded && fetchUrl === blocklistUrl) {
+      return Promise.resolve(blocklist);
+    }
+
+    blocklistLoaded = true;
+    blocklistUrl = fetchUrl;
+
+    return fetch(fetchUrl)
+      .then(function (response) {
+        if (!response.ok) {
+          throw new Error("Blocklist fetch failed");
+        }
+        return response.json();
+      })
+      .then(function (items) {
+        if (!Array.isArray(items)) {
+          return;
+        }
+        items.forEach(function (item) {
+          if (typeof item === "string" && item.trim()) {
+            blocklist.add(item.trim().toLowerCase());
+          }
+        });
+      })
+      .catch(function () {
+        // Keep empty list on failure.
+      });
+  }
+
+  /**
+   * Get all domain parts for matching (domain + all parent domains)
+   * e.g., "a.b.c.com" → ["a.b.c.com", "b.c.com", "c.com", "com"]
+   */
+  function getDomainParts(domain) {
+    if (!domain) return [];
+    const parts = domain.split(".");
+    const result = [];
+    for (var i = 0; i < parts.length; i++) {
+      result.push(parts.slice(i).join("."));
+    }
+    return result;
+  }
+
+  /**
+   * Check if a domain is in the blocklist (includes subdomain/parent matching)
+   */
+  function isDomainBlocked(domain) {
+    if (!domain) return false;
+    var normalized = domain.toLowerCase();
+
+    // Check direct match
+    if (blocklist.has(normalized)) {
+      return true;
+    }
+
+    // Check if domain is subdomain of any blocked domain
+    var domainParts = getDomainParts(normalized);
+    for (var i = 0; i < domainParts.length; i++) {
+      if (blocklist.has(domainParts[i])) {
+        return true;
+      }
+    }
+
+    // Check if any blocked domain is subdomain of this domain
+    var blockedArray = Array.from(blocklist);
+    for (var j = 0; j < blockedArray.length; j++) {
+      var blockedParts = getDomainParts(blockedArray[j]);
+      if (blockedParts.indexOf(normalized) !== -1) {
+        return true;
+      }
+    }
+
+    return false;
+  }
+
+  /**
+   * Check if a URL is blocked
+   */
+  function isUrlBlocked(url) {
+    if (!url || !isHttpUrl(url)) {
+      return false;
+    }
+    return isDomainBlocked(url.hostname);
   }
 
   function hide() {
@@ -258,6 +355,16 @@
         return;
       }
 
+      // Check blocklist first - blocked URLs get the blocked modal
+      if (isUrlBlocked(destination)) {
+        event.preventDefault();
+        // Show blocked modal if available, otherwise just block
+        if (window.SuBlockedModal && typeof window.SuBlockedModal.show === "function") {
+          window.SuBlockedModal.show(destination);
+        }
+        return;
+      }
+
       if (!shouldWarnForUrl(destination)) {
         return;
       }
@@ -292,9 +399,11 @@
       show,
       hide,
       shouldWarnForUrl,
+      isUrlBlocked,
       gateAnchor,
       gateAnchors,
       loadAllowlist,
+      loadBlocklist,
       configure,
     };
   }

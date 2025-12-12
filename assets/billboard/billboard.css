@@ -3,25 +3,44 @@
  * Used by: index-billboard, modal-chooser, square-location
  */
 
+/* Outer billboard container (used by modal chooser and other embeds) */
+.billboard {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+.billboard.is-scrollable,
+.su-chooser .billboard {
+  overflow-x: hidden;
+  overflow-y: auto;
+  touch-action: none;
+  max-height: calc(90vh - 140px);
+}
+
 /* Container - transform target for pan-zoom */
 .billboard__wrapper {
   position: relative;
-  width: 100%;
+  width: min(1000px, 100%);
+  max-width: 100%;
   aspect-ratio: 1 / 1;
   overflow: hidden;
   touch-action: none;
   transform-origin: 0 0;
   will-change: transform;
+  flex-shrink: 0;
 }
 
 /* Main image */
 .billboard__image {
   width: 100%;
   height: 100%;
-  object-fit: contain;
+  object-fit: cover;
   display: block;
   image-rendering: pixelated;
   background: rgba(0, 0, 0, 0.1);
+  cursor: pointer;
 }
 
 /* 100x100 grid overlay */
@@ -72,15 +91,42 @@
   padding: 0.35rem 0.6rem;
   pointer-events: none;
   display: none;
-  white-space: nowrap;
+  white-space: normal;
+  max-width: 220px;
+  min-width: 150px;
   z-index: 20;
   box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(4px);
 }
 
+/* Disabled tooltip style (matches chooser modal: black bg, red border, yellow text) */
 .billboard__tooltip[data-disabled="true"] {
   border: 4px solid #ff4d4f;
-  background: black;
+  background: #000;
+  background-image: none;
+  color: var(--color-accent, #ffd700);
+}
+
+/* Blocked tooltip style (FORCE it to match disabled exactly) */
+.billboard__tooltip--blocked {
+  border: 4px solid #ff4d4f;
+  background: #000;
+  background-image: none;
+  color: var(--color-accent, #ffd700);
+}
+
+/* Override cell styles - blocked square */
+.billboard__cell[data-override="true"] {
+  background: #000;
+  cursor: not-allowed;
+}
+
+/* Override cell - custom styling hook */
+.billboard__cell[data-override="true"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
 }
 
 /* Reset zoom button */

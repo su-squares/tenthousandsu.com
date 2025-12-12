@@ -1,27 +1,19 @@
 /**
  * Homepage billboard wrapper
- * Electric fence animation, link handling, leaving-modal integration
+ * Now a real wrapper around createBillboard():
+ * - Core handles: grid, hover/click, keyboard nav (when grid focused), tooltip/highlight rendering, core blocklists
+ * - Wrapper handles: linkAnchor wiring, leaving-modal integration, electric fence animation, global keyboard nav (when grid not focused)
  */
 
-import { createPanZoom } from "../../js/pan-zoom.js";
-import {
-  GRID_DIMENSION,
-  squareToCoords,
-} from "../billboard-utils.js";
-import {
-  createGrid,
-  updateGridSelection,
-  clearGridSelection,
-  getSquareFromCell,
-} from "../billboard-view.js";
+import { createBillboard, GRID_DIMENSION } from "../billboard-core.js";
 
 /**
  * Initialize the homepage billboard
  * @param {Object} options
- * @param {HTMLElement} options.mapWrapper - The .map-wrapper element
- * @param {HTMLImageElement} options.image - The billboard image element
- * @param {HTMLElement} options.positionDiv - The highlight/position indicator
- * @param {HTMLElement} options.tooltipDiv - The tooltip element
+ * @param {HTMLElement} options.mapWrapper - The .map-wrapper element (acts as mounted wrapper)
+ * @param {HTMLImageElement} options.image - The billboard image element (already in DOM)
+ * @param {HTMLElement} options.positionDiv - The highlight/position indicator (already in DOM)
+ * @param {HTMLElement} options.tooltipDiv - The tooltip element (already in DOM)
  * @param {HTMLElement} options.fenceContainer - Container for electric fence elements
  * @param {HTMLAnchorElement} options.linkAnchor - The #wheretogo anchor
  * @param {HTMLButtonElement} [options.resetButton] - Optional reset zoom button
@@ -42,270 +34,227 @@ export function initHomepageBillboard(options) {
     normalizeHref = (href) => href,
   } = options;
 
-  if (!mapWrapper || !image) {
+  if (!mapWrapper || !image || !positionDiv || !tooltipDiv) {
     console.error("Homepage billboard: missing required elements");
     return null;
   }
 
-  // State
+  // Ensure homepage tooltip uses core tooltip styling (purple gradient + yellow text)
+  // while retaining the homepage layout class (map-tooltip).
+  tooltipDiv.classList.add("billboard__tooltip");
+
+  // Data state
   let squarePersonalizations = [];
+
+  // Tracks last “position” even if selection is cleared (for global keyboard nav)
   let positionSquareNumber = 1;
-  let hasActiveSelection = false;
-  const gridState = {
-    activeCell: null,
-    tabStopCell: null,
-  };
 
   // Electric fence state
   const fence = new Set();
   let litUpEdge = new Set();
   const wasEverLitUp = new Set();
 
-  // Initialize pan-zoom
-  const panZoom = createPanZoom(mapWrapper);
-
-  // Create grid
-  const { grid, cells } = createGrid({
-    gridClassName: "map-grid",
-    cellClassName: "map-grid__cell",
-    ariaLabel: "Su Squares billboard",
-    testId: "billboard-grid",
-  });
-
-  if (cells[0]) {
-    gridState.tabStopCell = cells[0];
-  }
-  mapWrapper.appendChild(grid);
-
-  // Wire up reset button
-  if (resetButton && panZoom) {
-    resetButton.addEventListener("click", () => panZoom.reset());
-  }
-
   // Remove initial href from link anchor
   if (linkAnchor) {
     linkAnchor.removeAttribute("href");
   }
 
-  // Helper: get effective cell size
-  function getEffectiveCellSize() {
-    if (panZoom && panZoom.isActive) {
-      return mapWrapper.offsetWidth / GRID_DIMENSION;
+  /**
+   * Build UI model for a square (used for tooltip text + link behavior + cursor),
+   * given info computed by core (blocklists, href, etc).
+   */
+  function getSquareUi(squareNumber, ctx, info) {
+    const personalization = ctx?.personalization;
+    const pLabel = Array.isArray(personalization) ? personalization[0] : null;
+    const pHrefRaw = Array.isArray(personalization) ? personalization[1] : null;
+
+    const isSquareBlocked = Boolean(info?.isSquareBlocked);
+    const isDomainBlocked = Boolean(info?.isDomainBlocked);
+    const isBlockedAny = isSquareBlocked || isDomainBlocked;
+
+    // Destination logic
+    let destinationHref = null;
+
+    if (isBlockedAny) {
+      destinationHref = null;
+    } else if (!personalization) {
+      destinationHref = `${baseurl}/buy?square=${squareNumber}`;
+    } else if (!pLabel && !pHrefRaw) {
+      destinationHref = null;
+    } else {
+      const normalized = normalizeHref(pHrefRaw);
+      destinationHref = normalized ? normalized : null;
     }
-    const rect = image.getBoundingClientRect();
-    return rect.width ? rect.width / GRID_DIMENSION : 10;
+
+    // Tooltip text
+    // IMPORTANT: For blocked squares OR blocked domains, show the same "disabled" type.
+    let tooltipText = `#${squareNumber}`;
+
+    if (isBlockedAny) {
+      tooltipText = `Square #${squareNumber} — For your protection, this square is disabled`;
+    } else if (!personalization) {
+      tooltipText = `Square #${squareNumber} is available for sale, click to buy.`;
+    } else if (!pLabel && !pHrefRaw) {
+      tooltipText = `Square #${squareNumber} WAS PURCHASED BUT NOT YET PERSONALIZED`;
+    } else {
+      tooltipText = pLabel ? `Square #${squareNumber} ${pLabel}` : `Square #${squareNumber}`;
+    }
+
+    // Cursor
+    let cursor = "not-allowed";
+    if (!isBlockedAny) {
+      if (!personalization) cursor = "pointer";
+      else if (!pLabel && !pHrefRaw) cursor = "not-allowed";
+      else cursor = destinationHref ? "pointer" : "not-allowed";
+    }
+
+    return {
+      destinationHref,
+      tooltipText,
+      cursor,
+      clickable: Boolean(destinationHref),
+    };
   }
 
-  // Set position/highlight for a square
-  function setPosition(squareNumber) {
-    positionSquareNumber = squareNumber;
-    hasActiveSelection = true;
+  /**
+   * Core billboard instance mounted into existing DOM.
+   */
+  const billboard = createBillboard(mapWrapper, {
+    mode: "interactive",
+    enableGrid: true,
+    enableKeyboard: true,
+    enablePanZoom: true,
+    enableCoreBlocklists: true,
 
-    if (!linkAnchor) return;
+    // Use homepage grid classes
+    gridClassName: "map-grid",
+    cellClassName: "map-grid__cell",
+    ariaLabel: "Su Squares billboard",
+    gridTestId: "billboard-grid",
 
-    const cellSize = getEffectiveCellSize();
-    const { row, col } = squareToCoords(squareNumber);
-    const personalization = squarePersonalizations[squareNumber - 1];
-    const normalizedHref = normalizeHref(personalization?.[1]);
+    // CRITICAL: prevent core from applying a special "blocked" tooltip class.
+    // We want blocked/domain-blocked squares to look like "disabled" (data-disabled="true"),
+    // not like a separate blocked theme.
+    blockedTooltipCssClass: "",
 
-    // Update cursor and tooltip based on square state
-    if (!personalization) {
+    // Mount existing DOM nodes so we don't create duplicates
+    mount: {
+      wrapper: mapWrapper,
+      image,
+      highlight: positionDiv,
+      tooltip: tooltipDiv,
+    },
+
+    getPersonalization(squareNumber) {
+      return squarePersonalizations[squareNumber - 1] ?? null;
+    },
+
+    // Core uses this for domain-block checks
+    getHref(squareNumber, ctx) {
+      const p = ctx?.personalization;
+      if (!p || !Array.isArray(p)) return null;
+      const raw = p[1];
+      const normalized = normalizeHref(raw);
+      return normalized ? normalized : null;
+    },
+
+    // Disable clicking for “minted but not personalized” or missing href,
+    // while still allowing hover/selection.
+    filter(squareNumber, ctx) {
+      const personalization = ctx?.personalization;
+
       // Available for sale
-      image.style.cursor = "pointer";
-      tooltipDiv.textContent = `Square #${squareNumber} is available for sale, click to buy.`;
-      linkAnchor.href = `${baseurl}/buy?square=${squareNumber}`;
-    } else if (!personalization[0] && !personalization[1]) {
-      // Minted but not personalized
-      image.style.cursor = "not-allowed";
-      tooltipDiv.textContent = `Square #${squareNumber} WAS PURCHASED BUT NOT YET PERSONALIZED`;
-      linkAnchor.removeAttribute("href");
-    } else {
-      // Personalized
-      image.style.cursor = "pointer";
-      tooltipDiv.textContent = `Square #${squareNumber} ${personalization[0]}`;
-      if (normalizedHref) {
-        linkAnchor.href = normalizedHref;
+      if (!personalization) return true;
+
+      if (Array.isArray(personalization)) {
+        const label = personalization[0];
+        const hrefRaw = personalization[1];
+
+        // Minted but not personalized
+        if (!label && !hrefRaw) {
+          return {
+            allowed: false,
+            showDisabledTooltip: false,
+            reason: "minted-empty",
+          };
+        }
+
+        // Personalized but missing/invalid href
+        const normalized = normalizeHref(hrefRaw);
+        if (!normalized) {
+          return {
+            allowed: false,
+            showDisabledTooltip: true,
+            reason: "invalid-href",
+          };
+        }
+
+        return true;
+      }
+
+      return false;
+    },
+
+    // Homepage tooltip content
+    getTooltipContent(squareNumber, ctx, info) {
+      const ui = getSquareUi(squareNumber, ctx, info);
+      return ui.tooltipText;
+    },
+
+    // Always return null so the homepage uses the default core tooltip styling
+    // for normal squares, and the core disabled styling for any not-allowed squares.
+    getTooltipCssClass() {
+      return null;
+    },
+
+    // Keep linkAnchor + cursor synced with current selection
+    onSquareHover(squareNumber, ctx, info) {
+      positionSquareNumber = squareNumber;
+
+      const ui = getSquareUi(squareNumber, ctx, info);
+
+      if (image) {
+        image.style.cursor = ui.cursor;
+      }
+
+      if (!linkAnchor) return;
+
+      if (ui.destinationHref) {
+        linkAnchor.href = ui.destinationHref;
       } else {
         linkAnchor.removeAttribute("href");
       }
-    }
+    },
 
-    // Position highlight
-    positionDiv.style.width = `${cellSize}px`;
-    positionDiv.style.height = `${cellSize}px`;
-    positionDiv.style.left = `${col * cellSize}px`;
-    positionDiv.style.top = `${row * cellSize}px`;
-    positionDiv.style.display = "block";
-
-    // Position tooltip with axis-flipping
-    const isLeftHalf = col < GRID_DIMENSION / 2;
-    const isTopHalf = row < GRID_DIMENSION / 2;
-
-    if (isLeftHalf) {
-      tooltipDiv.style.left = `${col * cellSize + cellSize * 1.5}px`;
-      tooltipDiv.style.right = "auto";
-    } else {
-      tooltipDiv.style.left = "auto";
-      tooltipDiv.style.right = `${(GRID_DIMENSION - col - 1) * cellSize + cellSize * 1.5}px`;
-    }
-
-    if (isTopHalf) {
-      tooltipDiv.style.top = `${(row + 1) * cellSize}px`;
-      tooltipDiv.style.transformOrigin = `${isLeftHalf ? "left" : "right"} top`;
-    } else {
-      tooltipDiv.style.top = `${row * cellSize}px`;
-      tooltipDiv.style.transformOrigin = `${isLeftHalf ? "left" : "right"} bottom`;
-    }
-
-    // Scale tooltip with pan-zoom
-    const yTransform = isTopHalf ? "" : "translateY(-100%)";
-    if (panZoom && panZoom.isActive && panZoom.scale) {
-      tooltipDiv.style.transform = `${yTransform} scale(${1 / panZoom.scale})`;
-    } else {
-      tooltipDiv.style.transform = yTransform;
-    }
-
-    tooltipDiv.style.display = "block";
-    updateGridSelection(cells, squareNumber, gridState);
-  }
-
-  // Clear selection
-  function clearSelection() {
-    if (grid && grid.contains(document.activeElement)) {
-      return;
-    }
-    positionDiv.style.display = "none";
-    tooltipDiv.style.display = "none";
-    hasActiveSelection = false;
-    if (linkAnchor) {
-      linkAnchor.removeAttribute("href");
-    }
-    clearGridSelection(gridState);
-  }
-
-  // Activate a square (trigger navigation)
-  function activateSquare(squareNumber) {
-    setPosition(squareNumber);
-    if (!linkAnchor) return;
-
-    const href = linkAnchor.getAttribute("href");
-    if (!href || href === "#") return;
-
-    linkAnchor.click();
-  }
-
-  // Event handlers
-  function handleGridPointerMove(event) {
-    if (event.pointerType === "touch") return;
-
-    const cell = event.target.closest(".map-grid__cell");
-    const squareNumber = getSquareFromCell(cell);
-    if (!squareNumber) return;
-
-    setPosition(squareNumber);
-  }
-
-  function handleGridPointerLeave() {
-    if (grid && grid.contains(document.activeElement)) return;
-    clearSelection();
-  }
-
-  function handleGridClick(event) {
-    if (panZoom && panZoom.hasPanned && panZoom.hasPanned()) return;
-
-    const cell = event.target.closest(".map-grid__cell");
-    const squareNumber = getSquareFromCell(cell);
-    if (!squareNumber) return;
-
-    updateGridSelection(cells, squareNumber, gridState, {
-      focusCell: true,
-      updateTabStop: true,
-    });
-    activateSquare(squareNumber);
-  }
-
-  function handleGridFocus(event) {
-    const cell = event.target.closest(".map-grid__cell");
-    const squareNumber = getSquareFromCell(cell);
-    if (!squareNumber) return;
-
-    updateGridSelection(cells, squareNumber, gridState, { updateTabStop: true });
-    setPosition(squareNumber);
-  }
-
-  function handleGridKeydown(event) {
-    const cell = event.target.closest(".map-grid__cell");
-    if (!cell) return;
-
-    const squareNumber = getSquareFromCell(cell);
-    if (!squareNumber) return;
-
-    const key = event.key.toLowerCase();
-    let nextSquare = null;
-
-    if (key === "w" || key === "," || key === "arrowup") {
-      if (squareNumber > GRID_DIMENSION) nextSquare = squareNumber - GRID_DIMENSION;
-    } else if (key === "a" || key === "arrowleft") {
-      if ((squareNumber - 1) % GRID_DIMENSION !== 0) nextSquare = squareNumber - 1;
-    } else if (key === "s" || key === "o" || key === "arrowdown") {
-      if (squareNumber <= GRID_DIMENSION * (GRID_DIMENSION - 1)) nextSquare = squareNumber + GRID_DIMENSION;
-    } else if (key === "d" || key === "e" || key === "arrowright") {
-      if (squareNumber % GRID_DIMENSION !== 0) nextSquare = squareNumber + 1;
-    } else if (key === "enter" || key === " " || key === "spacebar") {
-      event.preventDefault();
-      event.stopPropagation();
-      activateSquare(squareNumber);
-      return;
-    } else {
-      return;
-    }
-
-    if (nextSquare) {
-      event.preventDefault();
-      event.stopPropagation();
-      updateGridSelection(cells, nextSquare, gridState, {
-        focusCell: true,
-        updateTabStop: true,
-      });
-      setPosition(nextSquare);
-    }
-  }
-
-  function handleGridFocusOut(event) {
-    const nextFocus = event.relatedTarget;
-    if (!nextFocus || !grid.contains(nextFocus)) {
-      clearSelection();
-    }
-  }
-
-  // Global keyboard navigation (when grid not focused)
-  function handleDocumentKeydown(event) {
-    if (grid && event.target && grid.contains(event.target)) return;
-
-    const key = event.key.toLowerCase();
-
-    if (key === "w" || key === "," || key === "arrowup") {
-      if (positionSquareNumber > GRID_DIMENSION) setPosition(positionSquareNumber - GRID_DIMENSION);
-      event.preventDefault();
-    } else if (key === "a" || key === "arrowleft") {
-      if (positionSquareNumber % GRID_DIMENSION !== 1) setPosition(positionSquareNumber - 1);
-    } else if (key === "s" || key === "o" || key === "arrowdown") {
-      if (positionSquareNumber <= GRID_DIMENSION * (GRID_DIMENSION - 1)) setPosition(positionSquareNumber + GRID_DIMENSION);
-      event.preventDefault();
-    } else if (key === "d" || key === "e" || key === "arrowright") {
-      if (positionSquareNumber % GRID_DIMENSION !== 0) setPosition(positionSquareNumber + 1);
-    } else if (key === "enter") {
-      if (hasActiveSelection && linkAnchor && linkAnchor.hasAttribute("href")) {
-        linkAnchor.click();
+    onClearSelection() {
+      if (image) {
+        image.style.cursor = "";
       }
-    }
+      if (linkAnchor) {
+        linkAnchor.removeAttribute("href");
+      }
+    },
 
-    updateGridSelection(cells, positionSquareNumber, gridState);
+    // Activate: click the anchor (leaving modal handler will intercept if needed)
+    onSquareActivate(squareNumber, event, ctx, info) {
+      if (!linkAnchor) return;
+
+      const ui = getSquareUi(squareNumber, ctx, info);
+      if (!ui.destinationHref) return;
+
+      linkAnchor.href = ui.destinationHref;
+      linkAnchor.click();
+    },
+  });
+
+  // Wire up reset button to core billboard reset
+  if (resetButton) {
+    resetButton.addEventListener("click", () => billboard.reset());
   }
 
-  // Leaving modal integration
+  // Leaving modal integration (same behavior as before)
   function handleLinkClick(event) {
-    if (panZoom && panZoom.hasPanned && panZoom.hasPanned()) {
+    if (billboard.panZoom && billboard.panZoom.hasPanned && billboard.panZoom.hasPanned()) {
       event.preventDefault();
       return;
     }
@@ -333,7 +282,44 @@ export function initHomepageBillboard(options) {
     modal.show(destination, linkAnchor.getAttribute("target") || "_self");
   }
 
-  // Electric fence animation
+  if (linkAnchor) {
+    linkAnchor.addEventListener("click", handleLinkClick);
+  }
+
+  // Global keyboard navigation (when grid is NOT focused) — preserves your old behavior
+  function handleDocumentKeydown(event) {
+    const grid = billboard.elements.grid;
+    if (grid && event.target && grid.contains(event.target)) return;
+
+    const key = event.key.toLowerCase();
+    let nextSquare = null;
+
+    if (key === "w" || key === "," || key === "arrowup") {
+      if (positionSquareNumber > GRID_DIMENSION) nextSquare = positionSquareNumber - GRID_DIMENSION;
+      event.preventDefault();
+    } else if (key === "a" || key === "arrowleft") {
+      if (positionSquareNumber % GRID_DIMENSION !== 1) nextSquare = positionSquareNumber - 1;
+    } else if (key === "s" || key === "o" || key === "arrowdown") {
+      if (positionSquareNumber <= GRID_DIMENSION * (GRID_DIMENSION - 1)) nextSquare = positionSquareNumber + GRID_DIMENSION;
+      event.preventDefault();
+    } else if (key === "d" || key === "e" || key === "arrowright") {
+      if (positionSquareNumber % GRID_DIMENSION !== 0) nextSquare = positionSquareNumber + 1;
+    } else if (key === "enter") {
+      billboard.activateSquare(positionSquareNumber, event);
+      return;
+    } else {
+      return;
+    }
+
+    if (nextSquare) {
+      positionSquareNumber = nextSquare;
+      billboard.setSquare(nextSquare);
+    }
+  }
+
+  document.addEventListener("keydown", handleDocumentKeydown);
+
+  // Electric fence animation (unchanged)
   function lightUpFence(edge) {
     // Clean up previous edge
     litUpEdge.forEach((s) => {
@@ -364,7 +350,6 @@ export function initHomepageBillboard(options) {
       if (squarePersonalizations[square - 1] !== null) {
         litUpEdge.add(square);
 
-        // Add adjacent squares to next edge
         if (square > GRID_DIMENSION && !wasEverLitUp.has(square - GRID_DIMENSION)) {
           nextEdge.add(square - GRID_DIMENSION);
         }
@@ -387,49 +372,30 @@ export function initHomepageBillboard(options) {
     }
   }
 
-  // Attach event listeners
-  grid.addEventListener("pointermove", handleGridPointerMove);
-  grid.addEventListener("pointerdown", handleGridPointerMove);
-  grid.addEventListener("pointerleave", handleGridPointerLeave);
-  grid.addEventListener("click", handleGridClick);
-  grid.addEventListener("focusin", handleGridFocus);
-  grid.addEventListener("keydown", handleGridKeydown);
-  grid.addEventListener("focusout", handleGridFocusOut);
-
-  mapWrapper.addEventListener("pointerleave", handleGridPointerLeave);
-  document.addEventListener("keydown", handleDocumentKeydown);
-
-  if (linkAnchor) {
-    linkAnchor.addEventListener("click", handleLinkClick);
-  }
-
-  // Resize handler
-  window.addEventListener("resize", () => {
-    if (tooltipDiv.style.display === "block") {
-      setPosition(positionSquareNumber);
-    }
-  });
-
-  // Return controller
   return {
-    setData(personalizations, _extra) {
-      squarePersonalizations = personalizations;
-      // extra data available if needed for future features
+    async setData(personalizations, _extra) {
+      squarePersonalizations = personalizations || [];
     },
 
     startFenceAnimation() {
       lightUpFence(new Set([1]));
     },
 
-    setPosition,
-    clearSelection,
+    setPosition(squareNumber) {
+      positionSquareNumber = squareNumber;
+      billboard.setSquare(squareNumber);
+    },
+
+    clearSelection() {
+      billboard.clearSelection();
+    },
 
     get currentSquare() {
       return positionSquareNumber;
     },
 
-    panZoom,
-    grid,
-    cells,
+    panZoom: billboard.panZoom,
+    grid: billboard.elements.grid,
+    cells: billboard.elements.cells,
   };
 }

@@ -104,6 +104,7 @@ if (input && chooseButton && submitButton) {
         },
         updateInput: false,
         title: "Choose square from billboard",
+        tooltipMode: "lookup",
       });
       return billboardChooserHandle;
     };

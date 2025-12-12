@@ -147,13 +147,28 @@ export function updateHighlight(element, position) {
  * @param {Object} options.position - From calculateTooltipPosition
  * @param {boolean} [options.visible=true]
  * @param {boolean} [options.disabled=false]
+ * @param {string} [options.cssClass] - Additional CSS class for styling
  */
 export function updateTooltip(element, options) {
-  const { content, position, visible = true, disabled = false } = options;
+  const { content, position, visible = true, disabled = false, cssClass = null } = options;
 
   element.style.display = visible ? "block" : "none";
   element.textContent = content;
   element.dataset.disabled = disabled ? "true" : "false";
+
+  // Handle custom CSS class
+  // Remove any previous custom class (stored in data attribute)
+  const prevClass = element.dataset.customClass;
+  if (prevClass) {
+    element.classList.remove(prevClass);
+    delete element.dataset.customClass;
+  }
+
+  // Add new custom class if provided
+  if (cssClass) {
+    element.classList.add(cssClass);
+    element.dataset.customClass = cssClass;
+  }
 
   if (position) {
     element.style.left = position.left;
@@ -240,11 +255,12 @@ export function getSquareFromCell(element) {
  * @param {number} options.cellSize
  * @param {number} [options.scale=1]
  * @param {string} options.tooltipContent
+ * @param {string} [options.tooltipCssClass] - Additional CSS class for tooltip
  * @param {boolean} [options.disabled=false]
  */
 export function showSquare(elements, squareNumber, options) {
   const { highlight, tooltip } = elements;
-  const { cellSize, scale = 1, tooltipContent, disabled = false } = options;
+  const { cellSize, scale = 1, tooltipContent, tooltipCssClass = null, disabled = false } = options;
 
   // Update highlight
   const highlightPos = calculateHighlightPosition(squareNumber, cellSize);
@@ -257,6 +273,7 @@ export function showSquare(elements, squareNumber, options) {
     position: tooltipPos,
     visible: true,
     disabled,
+    cssClass: tooltipCssClass,
   });
 }
 
