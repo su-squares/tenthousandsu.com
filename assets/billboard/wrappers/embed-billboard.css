@@ -1,0 +1,215 @@
+/**
+ * Embed Page Styles
+ *
+ * Styles for the embedded billboard view (embed.html).
+ * Designed to fill iframe space and support transparent backgrounds.
+ */
+
+/* Reset and base */
+.embed-body {
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  color: #ffd700;
+  background: transparent;
+  overflow: hidden;
+}
+
+/* When background is set */
+.embed-body[data-bg] {
+  background: var(--embed-bg, transparent);
+}
+
+/* Header */
+.embed-header {
+  flex-shrink: 0;
+  padding: 0.75rem 1rem;
+  text-align: center;
+  background: none;
+}
+
+.embed-header--hidden {
+  display: none;
+}
+
+.embed-header__title {
+  margin: 0;
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #ffd700;
+  letter-spacing: 0.02em;
+}
+
+/* Main container */
+.embed-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  min-height: 0;
+  align-items: center;
+  justify-content: center;
+  padding: 0.5rem;
+}
+
+.embed-body[data-fullbleed="true"] .embed-main {
+  padding: 0;
+}
+
+/* Billboard container - must have position: relative for contained modal */
+.embed-container {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+  max-width: min(100vw, 100vh - 120px); /* Leave room for header + controls */
+  aspect-ratio: 1 / 1;
+}
+
+/* Billboard wrapper inside container */
+.embed-billboard {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  touch-action: none;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+/* When no header, allow more space */
+.embed-body:has(.embed-header--hidden) .embed-container {
+  max-width: min(100vw, 100vh - 60px);
+}
+
+.embed-body[data-fullbleed="true"] .embed-container {
+  max-width: min(100vw, 100vh);
+  width: 100%;
+}
+
+/* Billboard image */
+.embed-billboard__image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  user-select: none;
+  -webkit-user-drag: none;
+}
+
+/* Grid overlay */
+.embed-billboard__grid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(100, 1fr);
+  grid-template-rows: repeat(100, 1fr);
+}
+
+.embed-billboard__cell {
+  cursor: pointer;
+}
+
+.embed-billboard__cell[data-disabled="true"] {
+  cursor: not-allowed;
+}
+
+/* Tooltip and highlight use core billboard classes from billboard.css */
+
+/* Loading state */
+.embed-loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 100;
+}
+
+.embed-loading__spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(255, 215, 0, 0.3);
+  border-top-color: #ffd700;
+  border-radius: 50%;
+  animation: embed-spin 0.8s linear infinite;
+}
+
+@keyframes embed-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* Error state */
+.embed-error {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.8);
+  color: #ff6b6b;
+  text-align: center;
+  z-index: 100;
+}
+
+.embed-error__message {
+  font-size: 0.875rem;
+  margin-bottom: 1rem;
+}
+
+.embed-error__retry {
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: 1px solid #ff6b6b;
+  border-radius: 0.375rem;
+  color: #ff6b6b;
+  cursor: pointer;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+  .embed-header {
+    padding: 0.5rem 0.75rem;
+  }
+
+  .embed-header__title {
+    font-size: 1rem;
+  }
+
+  .embed-billboard__tooltip {
+    font-size: 0.75rem;
+    padding: 0.375rem 0.5rem;
+  }
+}
+
+/* When embedded in very small container */
+@media (max-height: 300px) {
+  .embed-header {
+    padding: 0.25rem 0.5rem;
+  }
+
+  .embed-header__title {
+    font-size: 0.875rem;
+  }
+}
+
+/* Dark mode support (for when transparent bg shows through) */
+@media (prefers-color-scheme: light) {
+  .embed-body[data-bg="transparent"] {
+    color: #2d3c96;
+  }
+
+  .embed-body[data-bg="transparent"] .embed-header {
+    background: rgba(255, 255, 255, 0.8);
+  }
+
+  .embed-body[data-bg="transparent"] .embed-header__title {
+    color: #2d3c96;
+  }
+}

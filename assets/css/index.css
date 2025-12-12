@@ -408,3 +408,86 @@ article {
     grid-column: 1 / -1;
   }
 }
+
+/* Billboard Embed section */
+.billboard-embed {
+  margin-top: 2rem;
+  gap: 0.5rem;
+}
+
+.billboard-embed__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-start;
+  margin-top: 1rem;
+}
+
+/* Dropdown container */
+.billboard-embed__dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+/* Shared button styles */
+.billboard-embed__trigger,
+.billboard-embed__option,
+.billboard-embed__link {
+  padding: 0.65rem 1.25rem;
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  color: var(--color-accent);
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 600;
+  text-decoration: none;
+  background: rgba(0, 0, 0, 0.25);
+  transition: background 120ms ease, transform 120ms ease;
+  min-width: 140px;
+  text-align: center;
+}
+
+.billboard-embed__trigger:hover,
+.billboard-embed__option:hover,
+.billboard-embed__link:hover {
+  background: rgba(0, 0, 0, 0.4);
+  transform: translateY(-1px);
+}
+
+/* Dropdown menu - hidden by default, covers trigger when open */
+.billboard-embed__menu {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: none;
+  flex-direction: column;
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  z-index: 10;
+}
+
+.billboard-embed__dropdown.is-open .billboard-embed__menu {
+  display: flex;
+}
+
+.billboard-embed__dropdown.is-open .billboard-embed__trigger {
+  visibility: hidden; /* Hide trigger text but keep space for layout */
+}
+
+.billboard-embed__option {
+  border: none;
+  border-radius: 0;
+  padding: 0.65rem 1.25rem;
+  width: 100%;
+}
+
+.billboard-embed__option:first-child {
+  border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+/* Link button */
+.billboard-embed__link {
+  display: inline-block;
+}

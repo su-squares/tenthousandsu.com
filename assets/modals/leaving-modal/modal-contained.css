@@ -1,0 +1,111 @@
+/**
+ * Contained Leaving Modal - CSS variant for embedding inside a container
+ *
+ * This variant positions the modal inside a parent container using position: absolute
+ * instead of fixed. The parent container must have:
+ *   - position: relative
+ *   - overflow: hidden
+ *
+ * All visual styles are inherited from modal.css via the base .su-leaving classes.
+ * This file only overrides positioning-related properties.
+ */
+
+/* Backdrop container - positioned inside parent, not viewport */
+.su-leaving-backdrop--contained {
+  position: absolute;
+  inset: 0;
+  z-index: 100; /* Lower z-index since scoped to container */
+
+  /* Inherit visual styles from base */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: rgba(0, 0, 0, 0.65);
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 0.25s ease, visibility 0.25s ease;
+}
+
+.su-leaving-backdrop--contained.is-visible {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+/* Modal dialog - inherits all styles from .su-leaving */
+.su-leaving-backdrop--contained .su-leaving {
+  /* Use percentage-based width for contained context */
+  width: 90%;
+  max-width: 480px;
+  max-height: 90%;
+  overflow-y: auto;
+
+  /* Visual styles inherited from modal.css */
+  background-image: linear-gradient(to bottom right, #2d3c96, #d53392);
+  border: 1px solid #ffd700;
+  color: var(--color-accent, #ffd700);
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 1.25rem;
+  box-sizing: border-box;
+  opacity: 0;
+  transform: translateY(12px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+  text-align: center;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+}
+
+.su-leaving-backdrop--contained.is-visible .su-leaving {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* Contained modal inherits all other .su-leaving__* styles from modal.css */
+/* Title, message, URL, actions, buttons all remain the same */
+
+/* Ensure Go There button is yellow like the original */
+.su-leaving-backdrop--contained .su-leaving__button--go {
+  background: var(--color-accent, #ffd700);
+  color: #2d3c96;
+  border-color: var(--color-accent, #ffd700);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.25);
+}
+
+.su-leaving-backdrop--contained .su-leaving__button--go:hover {
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.35);
+}
+
+/* Responsive adjustments for small containers */
+@media (max-width: 400px) {
+  .su-leaving-backdrop--contained {
+    padding: 0.5rem;
+  }
+
+  .su-leaving-backdrop--contained .su-leaving {
+    padding: 1rem;
+    gap: 0.5rem;
+  }
+
+  .su-leaving-backdrop--contained .su-leaving__title {
+    font-size: 1.1rem;
+  }
+
+  .su-leaving-backdrop--contained .su-leaving__message {
+    font-size: 0.9rem;
+    line-height: 1.4;
+  }
+
+  .su-leaving-backdrop--contained .su-leaving__actions {
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .su-leaving-backdrop--contained .su-leaving__button {
+    width: 100%;
+    min-width: unset;
+    padding: 0.5rem 0.75rem;
+  }
+}

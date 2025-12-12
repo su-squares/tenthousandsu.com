@@ -122,6 +122,9 @@ export function createBillboard(container, options = {}) {
     getTooltipCssClass,
     shouldShowDisabledTooltip,
     allowWrapperTooltipOverride = false,
+    missingLinkTooltipSuffix = null,
+    missingTextTooltipSuffix = null,
+    missingLinkFilterReason = "invalid-href",
 
     imageSrc,
     imageAlt = "All Su Squares",
@@ -138,6 +141,26 @@ export function createBillboard(container, options = {}) {
 
   const mountObj = mount && typeof mount === "object" ? mount : {};
   const wrapperProvided = Boolean(mountObj.wrapper);
+  const missingLinkSuffixResolver =
+    typeof missingLinkTooltipSuffix === "function"
+      ? missingLinkTooltipSuffix
+      : missingLinkTooltipSuffix
+      ? () => missingLinkTooltipSuffix
+      : null;
+  const missingTextSuffixResolver =
+    typeof missingTextTooltipSuffix === "function"
+      ? missingTextTooltipSuffix
+      : missingTextTooltipSuffix
+      ? () => missingTextTooltipSuffix
+      : null;
+
+  function appendTooltipSuffix(base, suffix) {
+    if (!suffix) return base;
+    const suffixStr = String(suffix);
+    if (!suffixStr) return base;
+    const needsSpace = base && !/\s$/.test(base) && !/^\s/.test(suffixStr);
+    return `${base}${needsSpace ? " " : ""}${suffixStr}`;
+  }
 
   // State
   let currentSquare = null;
@@ -289,6 +312,12 @@ export function createBillboard(container, options = {}) {
     currentSquare = squareNumber;
 
     const ctx = getSquareContext(squareNumber);
+    const personalization = ctx.personalization;
+    const hasPersonalizationArray = Array.isArray(personalization);
+    const personalizationLabel = hasPersonalizationArray ? personalization[0] : null;
+    const personalizationHref = hasPersonalizationArray ? personalization[1] : null;
+    const isMintedEmpty =
+      hasPersonalizationArray && !personalizationLabel && !personalizationHref;
     const status = describeSquareStatus(ctx.personalization, ctx.extra);
     const coreInfo = computeCoreBlockInfo(squareNumber, ctx);
 
@@ -381,6 +410,32 @@ export function createBillboard(container, options = {}) {
       }
     }
 
+    let missingLinkSuffixApplied = false;
+
+    if (
+      missingTextSuffixResolver &&
+      hasPersonalizationArray &&
+      !isMintedEmpty &&
+      !personalizationLabel
+    ) {
+      const suffix = missingTextSuffixResolver(squareNumber, ctx, info);
+      if (suffix) {
+        tooltipContent = appendTooltipSuffix(tooltipContent, suffix);
+      }
+    }
+
+    if (
+      missingLinkSuffixResolver &&
+      filterResult.reason === missingLinkFilterReason &&
+      !isMintedEmpty
+    ) {
+      const suffix = missingLinkSuffixResolver(squareNumber, ctx, info);
+      if (suffix) {
+        tooltipContent = appendTooltipSuffix(tooltipContent, suffix);
+        missingLinkSuffixApplied = true;
+      }
+    }
+
     if (typeof shouldShowDisabledTooltip === "function") {
       try {
         const disabledOverride = shouldShowDisabledTooltip(squareNumber, ctx, info);
@@ -390,6 +445,10 @@ export function createBillboard(container, options = {}) {
       } catch {
         // ignore
       }
+    }
+
+    if (missingLinkSuffixApplied) {
+      shouldShowDisabled = false;
     }
 
     const effectiveWidth = getEffectiveWidth();

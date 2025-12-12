@@ -1,0 +1,81 @@
+---
+layout: null
+title: Su Squares Billboard Embed
+---
+<!doctype html>
+<html lang="en">
+
+<head>
+  <script>window.SITE_BASEURL = "{{ site.baseurl }}";</script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Su Squares Billboard</title>
+  <meta name="robots" content="noindex">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/billboard/billboard.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/billboard/wrappers/embed-billboard.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/modals/leaving-modal/modal.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/modals/leaving-modal/modal-contained.css">
+  <style>
+    /* Critical inline styles for fast render */
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+  </style>
+</head>
+
+<body class="embed-body">
+  <header id="embed-header" class="embed-header">
+    <h1 id="embed-header-title" class="embed-header__title">Su Squares Billboard</h1>
+  </header>
+
+  <main id="embed-main" class="embed-main">
+    <div id="embed-container" class="embed-container">
+      <!-- Billboard will be initialized here -->
+      <div id="embed-loading" class="embed-loading">
+        <div class="embed-loading__spinner"></div>
+      </div>
+    </div>
+  </main>
+
+  <script type="module">
+    import { initEmbedBillboard } from "{{ site.baseurl }}/assets/billboard/wrappers/embed-billboard.js";
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const container = document.getElementById("embed-container");
+      const header = document.getElementById("embed-header");
+      const headerTitle = document.getElementById("embed-header-title");
+      const loading = document.getElementById("embed-loading");
+
+      const embed = initEmbedBillboard({
+        container,
+        header,
+        headerTitle,
+        baseurl: window.SITE_BASEURL || "",
+        normalizeHref: (href) => {
+          if (!href || typeof href !== "string") return null;
+          const trimmed = href.trim();
+          if (!trimmed) return null;
+          // Ensure href has protocol
+          if (!/^https?:\/\//i.test(trimmed)) {
+            return "https://" + trimmed;
+          }
+          return trimmed;
+        },
+        onReady: () => {
+          // Hide loading spinner
+          if (loading) {
+            loading.style.display = "none";
+          }
+        },
+      });
+
+      // Expose for debugging
+      window.suEmbed = embed;
+    });
+  </script>
+</body>
+
+</html>

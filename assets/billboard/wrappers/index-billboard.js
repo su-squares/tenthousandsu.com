@@ -67,6 +67,7 @@ export function initHomepageBillboard(options) {
     const personalization = ctx?.personalization;
     const pLabel = Array.isArray(personalization) ? personalization[0] : null;
     const pHrefRaw = Array.isArray(personalization) ? personalization[1] : null;
+    const mintedEmpty = !pLabel && !pHrefRaw;
 
     const isSquareBlocked = Boolean(info?.isSquareBlocked);
     const isDomainBlocked = Boolean(info?.isDomainBlocked);
@@ -79,7 +80,7 @@ export function initHomepageBillboard(options) {
       destinationHref = null;
     } else if (!personalization) {
       destinationHref = `${baseurl}/buy?square=${squareNumber}`;
-    } else if (!pLabel && !pHrefRaw) {
+    } else if (mintedEmpty) {
       destinationHref = null;
     } else {
       const normalized = normalizeHref(pHrefRaw);
@@ -94,7 +95,7 @@ export function initHomepageBillboard(options) {
       tooltipText = `Square #${squareNumber} — For your protection, this square is disabled`;
     } else if (!personalization) {
       tooltipText = `Square #${squareNumber} is available for sale, click to buy.`;
-    } else if (!pLabel && !pHrefRaw) {
+    } else if (mintedEmpty) {
       tooltipText = `Square #${squareNumber} WAS PURCHASED BUT NOT YET PERSONALIZED`;
     } else {
       tooltipText = pLabel ? `Square #${squareNumber} ${pLabel}` : `Square #${squareNumber}`;
@@ -104,7 +105,7 @@ export function initHomepageBillboard(options) {
     let cursor = "not-allowed";
     if (!isBlockedAny) {
       if (!personalization) cursor = "pointer";
-      else if (!pLabel && !pHrefRaw) cursor = "not-allowed";
+      else if (mintedEmpty) cursor = "not-allowed";
       else cursor = destinationHref ? "pointer" : "not-allowed";
     }
 
@@ -136,6 +137,8 @@ export function initHomepageBillboard(options) {
     // We want blocked/domain-blocked squares to look like "disabled" (data-disabled="true"),
     // not like a separate blocked theme.
     blockedTooltipCssClass: "",
+    missingLinkTooltipSuffix: "(Square has no link)",
+    missingTextTooltipSuffix: "(Square has no text)",
 
     // Mount existing DOM nodes so we don't create duplicates
     mount: {
@@ -184,7 +187,7 @@ export function initHomepageBillboard(options) {
         if (!normalized) {
           return {
             allowed: false,
-            showDisabledTooltip: true,
+            showDisabledTooltip: false,
             reason: "invalid-href",
           };
         }
