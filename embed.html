@@ -15,6 +15,7 @@ title: Su Squares Billboard Embed
   <link rel="stylesheet" href="{{ site.baseurl }}/assets/billboard/wrappers/embed-billboard.css">
   <link rel="stylesheet" href="{{ site.baseurl }}/assets/modals/leaving-modal/modal.css">
   <link rel="stylesheet" href="{{ site.baseurl }}/assets/modals/leaving-modal/modal-contained.css">
+  <script type="module" src="{{ site.baseurl }}/assets/js/global-init.js"></script>
   <style>
     /* Critical inline styles for fast render */
     html, body {
@@ -28,7 +29,9 @@ title: Su Squares Billboard Embed
 
 <body class="embed-body">
   <header id="embed-header" class="embed-header">
-    <h1 id="embed-header-title" class="embed-header__title">Su Squares Billboard</h1>
+    <h1 class="embed-header__heading">
+      <a id="embed-header-title" class="embed-header__title" href="{{ site.baseurl }}/" target="_blank" rel="noopener">Su Squares Billboard</a>
+    </h1>
   </header>
 
   <main id="embed-main" class="embed-main">
@@ -55,10 +58,12 @@ title: Su Squares Billboard Embed
         headerTitle,
         baseurl: window.SITE_BASEURL || "",
         normalizeHref: (href) => {
+          if (window.suNormalizeHref) {
+            return window.suNormalizeHref(href) || null;
+          }
           if (!href || typeof href !== "string") return null;
           const trimmed = href.trim();
           if (!trimmed) return null;
-          // Ensure href has protocol
           if (!/^https?:\/\//i.test(trimmed)) {
             return "https://" + trimmed;
           }

@@ -6,6 +6,8 @@
  */
 
 import { createBillboard, GRID_DIMENSION } from "../billboard-core.js";
+import { isMintInternalLink, shouldHideUriLabel } from "./link-label-utils.js";
+import { extractScheme, isBlockedScheme } from "../../js/link-utils.js";
 
 /**
  * Initialize the homepage billboard
@@ -75,17 +77,24 @@ export function initHomepageBillboard(options) {
 
     // Destination logic
     let destinationHref = null;
+    const hrefRawString = typeof pHrefRaw === "string" ? pHrefRaw.trim() : "";
+    const scheme = hrefRawString ? extractScheme(hrefRawString) : null;
+    const isBlockedUriScheme = Boolean(scheme && isBlockedScheme(scheme));
 
-    if (isBlockedAny) {
+    if (isSquareBlocked) {
       destinationHref = null;
     } else if (!personalization) {
-      destinationHref = `${baseurl}/buy?square=${squareNumber}`;
+      destinationHref = isBlockedAny ? null : `${baseurl}/buy?square=${squareNumber}`;
     } else if (mintedEmpty) {
+      destinationHref = null;
+    } else if (isBlockedUriScheme) {
       destinationHref = null;
     } else {
       const normalized = normalizeHref(pHrefRaw);
       destinationHref = normalized ? normalized : null;
     }
+
+    const hideUriLabel = shouldHideUriLabel(pLabel, destinationHref, baseurl);
 
     // Tooltip text
     // IMPORTANT: For blocked squares OR blocked domains, show the same "disabled" type.
@@ -97,6 +106,10 @@ export function initHomepageBillboard(options) {
       tooltipText = `Square #${squareNumber} is available for sale, click to buy.`;
     } else if (mintedEmpty) {
       tooltipText = `Square #${squareNumber} WAS PURCHASED BUT NOT YET PERSONALIZED`;
+    } else if (isBlockedUriScheme) {
+      tooltipText = `Square #${squareNumber} — Link blocked for your protection`;
+    } else if (hideUriLabel) {
+      tooltipText = `Square #${squareNumber} — Personalized link available`;
     } else {
       tooltipText = pLabel ? `Square #${squareNumber} ${pLabel}` : `Square #${squareNumber}`;
     }
@@ -126,6 +139,7 @@ export function initHomepageBillboard(options) {
     enableKeyboard: true,
     enablePanZoom: true,
     enableCoreBlocklists: true,
+    allowBlockedSelection: true,
 
     // Use homepage grid classes
     gridClassName: "map-grid",
@@ -182,6 +196,14 @@ export function initHomepageBillboard(options) {
           };
         }
 
+        // Allow activation for blocked URI schemes so we can show the blocked modal.
+        if (typeof hrefRaw === "string") {
+          const scheme = extractScheme(hrefRaw.trim());
+          if (scheme && isBlockedScheme(scheme)) {
+            return true;
+          }
+        }
+
         // Personalized but missing/invalid href
         const normalized = normalizeHref(hrefRaw);
         if (!normalized) {
@@ -222,7 +244,13 @@ export function initHomepageBillboard(options) {
 
       if (!linkAnchor) return;
 
-      if (ui.destinationHref) {
+      const shouldExposeHref =
+        Boolean(ui.destinationHref) &&
+        !info?.isSquareBlocked &&
+        !info?.isDomainBlocked &&
+        isMintInternalLink(ui.destinationHref, baseurl);
+
+      if (shouldExposeHref) {
         linkAnchor.href = ui.destinationHref;
       } else {
         linkAnchor.removeAttribute("href");
@@ -238,24 +266,77 @@ export function initHomepageBillboard(options) {
       }
     },
 
-    // Activate: click the anchor (leaving modal handler will intercept if needed)
     onSquareActivate(squareNumber, event, ctx, info) {
-      if (!linkAnchor) return;
+      if (event && typeof event.preventDefault === "function") {
+        event.preventDefault();
+      }
+      if (event && typeof event.stopPropagation === "function") {
+        event.stopPropagation();
+      }
+
+      if (info?.isSquareBlocked) {
+        const blockedModal = window.SuBlockedModal;
+        if (blockedModal && typeof blockedModal.show === "function") {
+          blockedModal.show(`Square #${squareNumber}`, { variant: "square" });
+        }
+        return;
+      }
+
+      // Handle blocked URI schemes (javascript:, data:, etc.) by showing blocked modal.
+      const rawHref = Array.isArray(ctx?.personalization) ? ctx.personalization[1] : null;
+      if (typeof rawHref === "string" && rawHref.trim()) {
+        const scheme = extractScheme(rawHref.trim());
+        if (scheme && isBlockedScheme(scheme)) {
+          const modal = window.SuLeavingModal;
+          const target = linkAnchor?.getAttribute("target") || "_self";
+          if (modal && typeof modal.gateLinkNavigation === "function") {
+            modal.gateLinkNavigation(rawHref, event, target);
+            return;
+          }
+          const blockedModal = window.SuBlockedModal;
+          if (blockedModal && typeof blockedModal.show === "function") {
+            blockedModal.show(`${scheme}:`, { variant: "uri" });
+          }
+          return;
+        }
+      }
 
       const ui = getSquareUi(squareNumber, ctx, info);
       if (!ui.destinationHref) return;
 
-      linkAnchor.href = ui.destinationHref;
-      linkAnchor.click();
+      if (info?.isDomainBlocked) {
+        const blockedModal = window.SuBlockedModal;
+        if (blockedModal && typeof blockedModal.show === "function") {
+          blockedModal.show(info.href || ui.destinationHref, { variant: "domain" });
+        }
+        return;
+      }
+
+      const target = linkAnchor?.getAttribute("target") || "_self";
+      const modal = window.SuLeavingModal;
+
+      if (modal && typeof modal.gateLinkNavigation === "function") {
+        const handled = modal.gateLinkNavigation(ui.destinationHref, event, target);
+        if (handled) return;
+      }
+
+      if (target === "_self") {
+        window.location.assign(ui.destinationHref);
+      } else {
+        window.open(ui.destinationHref, target, "noopener");
+      }
     },
   });
+
+  // Touch UX is handled in billboard-core-events.js:
+  // first tap previews (tooltip), second tap activates.
 
   // Wire up reset button to core billboard reset
   if (resetButton) {
     resetButton.addEventListener("click", () => billboard.reset());
   }
 
-  // Leaving modal integration (same behavior as before)
+  // Leaving modal integration with unified URI gating
   function handleLinkClick(event) {
     if (billboard.panZoom && billboard.panZoom.hasPanned && billboard.panZoom.hasPanned()) {
       event.preventDefault();
@@ -268,6 +349,15 @@ export function initHomepageBillboard(options) {
     if (!href || href === "#") return;
 
     const modal = window.SuLeavingModal;
+
+    // Use unified gateLinkNavigation if available (handles all URI types)
+    if (modal && typeof modal.gateLinkNavigation === "function") {
+      const target = linkAnchor.getAttribute("target") || "_self";
+      modal.gateLinkNavigation(href, event, target);
+      return;
+    }
+
+    // Fallback to legacy behavior
     if (!modal || typeof modal.shouldWarnForUrl !== "function" || typeof modal.show !== "function") {
       return;
     }

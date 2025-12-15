@@ -11,6 +11,9 @@ import { coreBlocklistsReady } from "../billboard-core-blocklists.js";
 import { SquareBlocklist } from "../blocklist/blocklist-squares.js";
 import { DomainBlocklist } from "../../blocklist/blocklist-domains.js";
 import { createContainedLeavingModal } from "../../modals/leaving-modal/leaving-modal-contained.js";
+import { createContainedBlockedModal } from "../../modals/blocked-modal/blocked-modal-contained.js";
+import { shouldHideUriLabel } from "./link-label-utils.js";
+import { extractScheme, isBlockedScheme } from "../../js/link-utils.js";
 import {
   DEFAULT_CONFIG,
   GRADIENT_BACKGROUND,
@@ -150,10 +153,13 @@ export function initEmbedBillboard(options) {
 
   // Data state
   let squarePersonalizations = [];
+  let positionSquareNumber = 1;
 
-  // Create contained leaving modal
+  // Create contained blocked + leaving modals (blocked feeds into leaving modal)
+  const blockedModal = createContainedBlockedModal(container);
   const modal = createContainedLeavingModal(container, {
     blocklist: config.blockDomains,
+    blockedModal,
   });
 
   /**
@@ -163,6 +169,7 @@ export function initEmbedBillboard(options) {
     const personalization = ctx?.personalization;
     const pLabel = Array.isArray(personalization) ? personalization[0] : null;
     const pHrefRaw = Array.isArray(personalization) ? personalization[1] : null;
+    const mintedEmpty = !pLabel && !pHrefRaw;
 
     const isSquareBlocked = Boolean(info?.isSquareBlocked);
     const isDomainBlocked = Boolean(info?.isDomainBlocked);
@@ -170,19 +177,26 @@ export function initEmbedBillboard(options) {
 
     // Destination logic
     let destinationHref = null;
+    const hrefRawString = typeof pHrefRaw === "string" ? pHrefRaw.trim() : "";
+    const scheme = hrefRawString ? extractScheme(hrefRawString) : null;
+    const isBlockedUriScheme = Boolean(scheme && isBlockedScheme(scheme));
 
-    if (isBlockedAny) {
+    if (isSquareBlocked) {
       destinationHref = null;
     } else if (!personalization) {
       // Available for sale - link to buy page
-      destinationHref = `${baseurl}/buy?square=${squareNumber}`;
-    } else if (!pLabel && !pHrefRaw) {
+      destinationHref = isBlockedAny ? null : `${baseurl}/buy?square=${squareNumber}`;
+    } else if (mintedEmpty) {
       // Minted but not personalized
+      destinationHref = null;
+    } else if (isBlockedUriScheme) {
       destinationHref = null;
     } else {
       const normalized = normalizeHref(pHrefRaw);
       destinationHref = normalized || null;
     }
+
+    const hideUriLabel = shouldHideUriLabel(pLabel, destinationHref, baseurl);
 
     // Tooltip text
     let tooltipText = `#${squareNumber}`;
@@ -191,8 +205,12 @@ export function initEmbedBillboard(options) {
       tooltipText = `Square #${squareNumber} — For your protection, this square is disabled`;
     } else if (!personalization) {
       tooltipText = `Square #${squareNumber} is available for sale`;
-    } else if (!pLabel && !pHrefRaw) {
+    } else if (mintedEmpty) {
       tooltipText = `Square #${squareNumber} — Purchased but not yet personalized`;
+    } else if (isBlockedUriScheme) {
+      tooltipText = `Square #${squareNumber} — Link blocked for your protection`;
+    } else if (hideUriLabel) {
+      tooltipText = `Square #${squareNumber} — Personalized link available`;
     } else {
       tooltipText = pLabel ? `Square #${squareNumber} — ${pLabel}` : `Square #${squareNumber}`;
     }
@@ -222,6 +240,7 @@ export function initEmbedBillboard(options) {
     enableKeyboard: true,
     enablePanZoom: panzoomEnabled,
     enableCoreBlocklists: true,
+    allowBlockedSelection: true,
 
     // Embed-specific classes
     gridClassName: "embed-billboard__grid",
@@ -271,6 +290,14 @@ export function initEmbedBillboard(options) {
           };
         }
 
+        // Allow activation for blocked URI schemes so we can show the blocked modal.
+        if (typeof hrefRaw === "string") {
+          const scheme = extractScheme(hrefRaw.trim());
+          if (scheme && isBlockedScheme(scheme)) {
+            return true;
+          }
+        }
+
         const normalized = normalizeHref(hrefRaw);
         if (!normalized) {
           return {
@@ -296,6 +323,7 @@ export function initEmbedBillboard(options) {
     },
 
     onSquareHover(squareNumber, ctx, info) {
+      positionSquareNumber = squareNumber;
       const ui = getSquareUi(squareNumber, ctx, info);
       if (image) {
         image.style.cursor = ui.cursor;
@@ -309,10 +337,52 @@ export function initEmbedBillboard(options) {
     },
 
     onSquareActivate(squareNumber, event, ctx, info) {
+      if (info?.isSquareBlocked) {
+        if (blockedModal && typeof blockedModal.show === "function") {
+          blockedModal.show(`Square #${squareNumber}`, { variant: "square" });
+        }
+        event?.preventDefault();
+        return;
+      }
+
+      // Handle blocked URI schemes (javascript:, data:, etc.) by showing blocked modal.
+      const rawHref = Array.isArray(ctx?.personalization) ? ctx.personalization[1] : null;
+      if (typeof rawHref === "string" && rawHref.trim()) {
+        const scheme = extractScheme(rawHref.trim());
+        if (scheme && isBlockedScheme(scheme)) {
+          event?.preventDefault();
+          if (modal && typeof modal.gateLinkNavigation === "function") {
+            modal.gateLinkNavigation(rawHref, event, "_blank");
+            return;
+          }
+          if (blockedModal && typeof blockedModal.show === "function") {
+            blockedModal.show(`${scheme}:`, { variant: "uri" });
+          }
+          return;
+        }
+      }
+
       const ui = getSquareUi(squareNumber, ctx, info);
       if (!ui.destinationHref) return;
 
-      // Check if modal should intercept
+      if (info?.isDomainBlocked) {
+        if (blockedModal && typeof blockedModal.show === "function") {
+          blockedModal.show(info.href || ui.destinationHref, { variant: "domain" });
+        }
+        event?.preventDefault();
+        return;
+      }
+
+      // Use unified gateLinkNavigation if available (handles all URI types)
+      if (modal && typeof modal.gateLinkNavigation === "function") {
+        const handled = modal.gateLinkNavigation(ui.destinationHref, event, "_blank");
+        if (handled) return;
+        // If not handled, navigate directly
+        window.open(ui.destinationHref, "_blank", "noopener");
+        return;
+      }
+
+      // Fallback to legacy behavior
       let destination;
       try {
         destination = new URL(ui.destinationHref, window.location.href);
@@ -335,6 +405,48 @@ export function initEmbedBillboard(options) {
       window.open(destination.href, "_blank", "noopener");
     },
   });
+
+  // Global keyboard navigation (when grid is NOT focused) — mirrors homepage behavior
+  function handleDocumentKeydown(event) {
+    const grid = billboard.elements.grid;
+    if (grid && event.target && grid.contains(event.target)) return;
+
+    // If a modal is open, let it handle keys
+    if ((modal && modal.isVisible) || (blockedModal && blockedModal.isVisible)) return;
+
+    const target = event.target;
+    const tag = target && target.tagName ? target.tagName.toLowerCase() : "";
+    if (tag === "input" || tag === "textarea" || tag === "select" || (target && target.isContentEditable)) {
+      return;
+    }
+
+    const key = (event.key || "").toLowerCase();
+    let nextSquare = null;
+
+    if (key === "w" || key === "," || key === "arrowup") {
+      if (positionSquareNumber > GRID_DIMENSION) nextSquare = positionSquareNumber - GRID_DIMENSION;
+      event.preventDefault();
+    } else if (key === "a" || key === "arrowleft") {
+      if (positionSquareNumber % GRID_DIMENSION !== 1) nextSquare = positionSquareNumber - 1;
+    } else if (key === "s" || key === "o" || key === "arrowdown") {
+      if (positionSquareNumber <= GRID_DIMENSION * (GRID_DIMENSION - 1)) nextSquare = positionSquareNumber + GRID_DIMENSION;
+      event.preventDefault();
+    } else if (key === "d" || key === "e" || key === "arrowright") {
+      if (positionSquareNumber % GRID_DIMENSION !== 0) nextSquare = positionSquareNumber + 1;
+    } else if (key === "enter") {
+      billboard.activateSquare(positionSquareNumber, event);
+      return;
+    } else {
+      return;
+    }
+
+    if (nextSquare) {
+      positionSquareNumber = nextSquare;
+      billboard.setSquare(nextSquare);
+    }
+  }
+
+  document.addEventListener("keydown", handleDocumentKeydown);
 
   const shouldShowPanzoomUi = panzoomEnabled && billboard.panZoom && billboard.panZoom.isActive;
   if (shouldShowPanzoomUi) {
@@ -403,8 +515,10 @@ export function initEmbedBillboard(options) {
     },
 
     destroy() {
+      document.removeEventListener("keydown", handleDocumentKeydown);
       billboard.destroy();
       if (modal) modal.destroy();
+      if (blockedModal) blockedModal.destroy();
     },
   };
 }

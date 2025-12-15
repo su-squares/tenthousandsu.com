@@ -1,51 +1,76 @@
 (function () {
-  const baseurl = window.SITE_BASEURL || '';
-  const DEFAULT_STYLESHEET_HREF = baseurl + "/assets/modals/leaving-modal/modal.css";
-  const DEFAULT_ALLOWLIST_URL = baseurl + "/assets/modals/leaving-modal/allowlist.json";
-  const DEFAULT_BLOCKLIST_URL = baseurl + "/assets/blocklist/blocklist-domains.json";
-  const TEMPLATE_HTML = `
-    <div class="su-leaving-backdrop" aria-hidden="true">
-      <div class="su-leaving" role="dialog" aria-modal="true" aria-label="Leaving this site">
-        <div class="su-leaving__title">You are leaving this site</div>
-        <p class="su-leaving__message">
-          We do NOT vet these links and assume no responsibility if you choose to visit it. Proceed at your own discretion.
-        </p>
-        <a class="su-leaving__url" href="#" target="_blank" rel="noopener"></a>
-        <div class="su-leaving__actions">
-          <button type="button" class="su-leaving__button su-leaving__button--stay">Stay Here</button>
-          <button type="button" class="su-leaving__button su-leaving__button--go">Go There</button>
-        </div>
-      </div>
-    </div>
-  `;
-  const VISIBLE_CLASS = "is-visible";
-  const BUILT_IN_ALLOWED = ["localhost", "127.0.0.1", "tenthousandsu.com", "www.tenthousandsu.com"];
-  const allowlist = new Set(BUILT_IN_ALLOWED);
-  const blocklist = new Set();
+  var baseurl = window.SITE_BASEURL || '';
+  var DEFAULT_STYLESHEET_HREF = baseurl + "/assets/modals/leaving-modal/modal.css";
+  var DEFAULT_BLOCKLIST_URL = baseurl + "/assets/blocklist/blocklist-domains.json";
 
-  let allowlistLoaded = false;
-  let blocklistLoaded = false;
-  let allowlistUrl = DEFAULT_ALLOWLIST_URL;
-  let blocklistUrl = DEFAULT_BLOCKLIST_URL;
-  let stylesheetHref = DEFAULT_STYLESHEET_HREF;
+  // Modal variant configurations
+  var VARIANTS = {
+    standard: {
+      title: "You are leaving this site",
+      message: "We do NOT vet these links and assume no responsibility if you choose to visit it. Proceed at your own discretion.",
+      cancelText: "Stay Here",
+      confirmText: "Go There",
+    },
+    deeplink: {
+      title: "You are using a deeplink",
+      message: "We don't vet URIs and assume no responsibility if you choose to open it on your device. Proceed at your own discretion.",
+      cancelText: "Cancel",
+      confirmText: "Open",
+    },
+  };
 
-  let backdrop;
-  let urlNode;
-  let stayButton;
-  let goButton;
-  let lastFocusedElement;
-  let readyPromise;
-  let pendingUrl;
-  let pendingTarget;
+  var TEMPLATE_HTML = '\
+    <div class="su-leaving-backdrop" aria-hidden="true">\
+      <div class="su-leaving" role="dialog" aria-modal="true" aria-labelledby="su-leaving-title">\
+        <div class="su-leaving__title" id="su-leaving-title">You are leaving this site</div>\
+        <p class="su-leaving__message">\
+          We do NOT vet these links and assume no responsibility if you choose to visit it. Proceed at your own discretion.\
+        </p>\
+        <a class="su-leaving__url" href="#" target="_blank" rel="noopener"></a>\
+        <div class="su-leaving__actions">\
+          <button type="button" class="su-leaving__button su-leaving__button--stay">Stay Here</button>\
+          <button type="button" class="su-leaving__button su-leaving__button--go">Go There</button>\
+        </div>\
+      </div>\
+    </div>\
+  ';
+
+  var VISIBLE_CLASS = "is-visible";
+  var blocklist = new Set();
+
+  var blocklistLoaded = false;
+  var blocklistUrl = DEFAULT_BLOCKLIST_URL;
+  var stylesheetHref = DEFAULT_STYLESHEET_HREF;
+
+  var backdrop;
+  var titleNode;
+  var messageNode;
+  var urlNode;
+  var stayButton;
+  var goButton;
+  var lastFocusedElement;
+  var readyPromise;
+  var pendingUrl;
+  var pendingTarget;
+  var currentVariant = "standard";
+
+  function triggerDeeplink(urlString) {
+    try {
+      var link = document.createElement("a");
+      link.href = urlString;
+      link.rel = "noopener";
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (e) {
+      window.location.href = urlString;
+    }
+  }
 
   function configure(options) {
     if (!options) {
       return;
-    }
-
-    if (options.allowlistUrl && options.allowlistUrl !== allowlistUrl) {
-      allowlistLoaded = false;
-      allowlistUrl = options.allowlistUrl;
     }
 
     if (options.blocklistUrl && options.blocklistUrl !== blocklistUrl) {
@@ -59,12 +84,12 @@
   }
 
   function ensureStylesheet() {
-    const existing = document.querySelector(`link[href="${stylesheetHref}"]`);
+    var existing = document.querySelector('link[href="' + stylesheetHref + '"]');
     if (existing) {
       return;
     }
 
-    const link = document.createElement("link");
+    var link = document.createElement("link");
     link.rel = "stylesheet";
     link.href = stylesheetHref;
     document.head.appendChild(link);
@@ -75,9 +100,11 @@
       return;
     }
 
-    const wrapper = document.createElement("div");
+    var wrapper = document.createElement("div");
     wrapper.innerHTML = TEMPLATE_HTML.trim();
     backdrop = wrapper.firstElementChild;
+    titleNode = backdrop.querySelector(".su-leaving__title");
+    messageNode = backdrop.querySelector(".su-leaving__message");
     urlNode = backdrop.querySelector(".su-leaving__url");
     stayButton = backdrop.querySelector(".su-leaving__button--stay");
     goButton = backdrop.querySelector(".su-leaving__button--go");
@@ -95,13 +122,37 @@
         return;
       }
 
-      const target = pendingTarget || "_self";
-      if (target === "_self") {
-        window.location.assign(pendingUrl.href);
+      var target = pendingTarget || "_self";
+
+      // For deeplinks (non-HTTP URIs), trigger via real link navigation
+      if (currentVariant === "deeplink") {
+        var urlString = typeof pendingUrl === "string" ? pendingUrl : pendingUrl.href;
+        triggerDeeplink(urlString);
       } else {
-        window.open(pendingUrl.href, target, "noopener");
+        // Standard HTTP navigation
+        if (target === "_self") {
+          window.location.assign(pendingUrl.href);
+        } else {
+          window.open(pendingUrl.href, target, "noopener");
+        }
       }
 
+      hide();
+    });
+
+    urlNode.addEventListener("click", function (event) {
+      if (currentVariant !== "deeplink") {
+        return;
+      }
+      if (!pendingUrl) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      var urlString = typeof pendingUrl === "string" ? pendingUrl : pendingUrl.href;
+      triggerDeeplink(urlString);
       hide();
     });
 
@@ -128,10 +179,9 @@
     }
 
     readyPromise = new Promise(function (resolve) {
-      const setup = function () {
+      var setup = function () {
         ensureStylesheet();
         appendModal();
-        loadAllowlist();
         loadBlocklist();
         resolve(backdrop);
       };
@@ -146,39 +196,8 @@
     return readyPromise;
   }
 
-  function loadAllowlist(url) {
-    const fetchUrl = url || allowlistUrl;
-    if (allowlistLoaded && fetchUrl === allowlistUrl) {
-      return Promise.resolve(allowlist);
-    }
-
-    allowlistLoaded = true;
-    allowlistUrl = fetchUrl;
-
-    return fetch(fetchUrl)
-      .then(function (response) {
-        if (!response.ok) {
-          throw new Error("Allowlist fetch failed");
-        }
-        return response.json();
-      })
-      .then(function (items) {
-        if (!Array.isArray(items)) {
-          return;
-        }
-        items.forEach(function (item) {
-          if (typeof item === "string" && item.trim()) {
-            allowlist.add(item.trim().toLowerCase());
-          }
-        });
-      })
-      .catch(function () {
-        // Keep built-in list on failure.
-      });
-  }
-
   function loadBlocklist(url) {
-    const fetchUrl = url || blocklistUrl;
+    var fetchUrl = url || blocklistUrl;
     if (blocklistLoaded && fetchUrl === blocklistUrl) {
       return Promise.resolve(blocklist);
     }
@@ -214,8 +233,8 @@
    */
   function getDomainParts(domain) {
     if (!domain) return [];
-    const parts = domain.split(".");
-    const result = [];
+    var parts = domain.split(".");
+    var result = [];
     for (var i = 0; i < parts.length; i++) {
       result.push(parts.slice(i).join("."));
     }
@@ -273,31 +292,77 @@
     backdrop.setAttribute("aria-hidden", "true");
     pendingUrl = null;
     pendingTarget = null;
+    currentVariant = "standard";
 
-    const focusTarget = lastFocusedElement && document.contains(lastFocusedElement) ? lastFocusedElement : document.body;
+    var focusTarget = lastFocusedElement && document.contains(lastFocusedElement) ? lastFocusedElement : document.body;
     if (focusTarget && typeof focusTarget.focus === "function") {
       focusTarget.focus({ preventScroll: true });
     }
   }
 
-  function show(targetUrl, target) {
+  /**
+   * Show the leaving modal
+   * @param {URL|string} targetUrl - The target URL/URI to display
+   * @param {string} [target='_self'] - Link target attribute
+   * @param {Object} [options] - Display options
+   * @param {string} [options.variant='standard'] - Modal variant: 'standard' or 'deeplink'
+   */
+  function show(targetUrl, target, options) {
+    var opts = options || {};
+    var variant = opts.variant || "standard";
+    var config = VARIANTS[variant] || VARIANTS.standard;
+    currentVariant = variant;
+
     init().then(function (node) {
       if (!node || !urlNode || !stayButton || !goButton) {
-        if (target === "_self") {
-          window.location.assign(targetUrl.href);
+        // Fallback navigation
+        var urlString = typeof targetUrl === "string" ? targetUrl : targetUrl.href;
+        if (variant === "deeplink") {
+          window.location.href = urlString;
+        } else if (target === "_self") {
+          window.location.assign(urlString);
         } else {
-          window.open(targetUrl.href, target || "_self");
+          window.open(urlString, target || "_self");
         }
         return;
       }
 
-      const active = document.activeElement;
+      var active = document.activeElement;
       lastFocusedElement = active && active !== document.body ? active : null;
       pendingUrl = targetUrl;
       pendingTarget = target || "_self";
 
-      urlNode.textContent = targetUrl.href;
-      urlNode.href = targetUrl.href;
+      // Apply variant content
+      if (titleNode) {
+        titleNode.textContent = config.title;
+      }
+
+      if (messageNode) {
+        messageNode.textContent = config.message;
+      }
+
+      if (stayButton) {
+        stayButton.textContent = config.cancelText;
+      }
+
+      if (goButton) {
+        goButton.textContent = config.confirmText;
+      }
+
+      var displayUrl = typeof targetUrl === "string" ? targetUrl : targetUrl.href;
+      urlNode.textContent = displayUrl;
+
+      // For deeplinks, the URL display shouldn't be a clickable link
+      if (variant === "deeplink") {
+        urlNode.href = displayUrl;
+        urlNode.style.cursor = "pointer";
+        urlNode.style.pointerEvents = "";
+      } else {
+        urlNode.href = displayUrl;
+        urlNode.style.cursor = "";
+        urlNode.style.pointerEvents = "";
+      }
+
       node.setAttribute("aria-hidden", "false");
       node.classList.add(VISIBLE_CLASS);
 
@@ -311,23 +376,106 @@
     return url && (url.protocol === "http:" || url.protocol === "https:");
   }
 
+  /**
+   * Check if URL should show warning modal (any external HTTP/HTTPS URL)
+   */
   function shouldWarnForUrl(url) {
     if (!url || !isHttpUrl(url)) {
       return false;
     }
 
-    const currentHost = window.location.hostname;
-    const hostname = url.hostname.toLowerCase();
+    var currentHost = window.location.hostname;
+    var hostname = url.hostname.toLowerCase();
 
     if (hostname === currentHost.toLowerCase()) {
       return false;
     }
 
-    if (allowlist.has(hostname)) {
+    return true;
+  }
+
+  /**
+   * Unified link gate function - classifies URI and shows appropriate modal
+   * @param {string} href - The href to gate
+   * @param {Event} [event] - The click event (to prevent default)
+   * @param {string} [target='_self'] - Link target attribute
+   * @returns {boolean} - True if navigation was handled/blocked, false if should proceed
+   */
+  function gateLinkNavigation(href, event, target) {
+    if (!href) return false;
+
+    var linkTarget = target || "_self";
+
+    // Use SuLinkUtils if available (from link-utils.js)
+    var SuLinkUtils = window.SuLinkUtils;
+    if (!SuLinkUtils || !SuLinkUtils.classifyUri) {
+      // Fallback to legacy behavior if link-utils not loaded
+      var destination;
+      try {
+        destination = new URL(href, window.location.href);
+      } catch (e) {
+        return false;
+      }
+
+      if (isUrlBlocked(destination)) {
+        if (event) event.preventDefault();
+        if (window.SuBlockedModal && typeof window.SuBlockedModal.show === "function") {
+          window.SuBlockedModal.show(destination, { variant: "domain" });
+        }
+        return true;
+      }
+
+      if (shouldWarnForUrl(destination)) {
+        if (event) event.preventDefault();
+        show(destination, linkTarget, { variant: "standard" });
+        return true;
+      }
+
       return false;
     }
 
-    return true;
+    var classification = SuLinkUtils.classifyUri(href);
+
+    switch (classification.classification) {
+      case SuLinkUtils.URI_CLASSIFICATION.BLOCKED:
+        // Show blocked modal (uri variant)
+        if (event) event.preventDefault();
+        if (window.SuBlockedModal && typeof window.SuBlockedModal.show === "function") {
+          window.SuBlockedModal.show(classification.displayUri, { variant: "uri" });
+        }
+        return true;
+
+      case SuLinkUtils.URI_CLASSIFICATION.DEEPLINK:
+        // Show deeplink warning modal
+        if (event) event.preventDefault();
+        show(classification.displayUri, linkTarget, { variant: "deeplink" });
+        return true;
+
+      case SuLinkUtils.URI_CLASSIFICATION.EXTERNAL:
+        // Check domain blocklist first
+        if (classification.url && isUrlBlocked(classification.url)) {
+          if (event) event.preventDefault();
+          if (window.SuBlockedModal && typeof window.SuBlockedModal.show === "function") {
+            window.SuBlockedModal.show(classification.url, { variant: "domain" });
+          }
+          return true;
+        }
+        // Show standard leaving modal
+        if (event) event.preventDefault();
+        show(classification.url || classification.displayUri, linkTarget, { variant: "standard" });
+        return true;
+
+      case SuLinkUtils.URI_CLASSIFICATION.INTERNAL:
+        // Check for safe internal paths (like /mint)
+        if (classification.url && SuLinkUtils.isSafeInternalPath(classification.url)) {
+          return false; // Allow direct navigation
+        }
+        // For other internal links, allow navigation
+        return false;
+
+      default:
+        return false;
+    }
   }
 
   function gateAnchor(anchor) {
@@ -343,34 +491,13 @@
     anchor.dataset.suLeavingGuarded = "1";
 
     anchor.addEventListener("click", function (event) {
-      const href = anchor.getAttribute("href");
+      var href = anchor.getAttribute("href");
       if (!href) {
         return;
       }
 
-      let destination;
-      try {
-        destination = new URL(href, window.location.href);
-      } catch (error) {
-        return;
-      }
-
-      // Check blocklist first - blocked URLs get the blocked modal
-      if (isUrlBlocked(destination)) {
-        event.preventDefault();
-        // Show blocked modal if available, otherwise just block
-        if (window.SuBlockedModal && typeof window.SuBlockedModal.show === "function") {
-          window.SuBlockedModal.show(destination);
-        }
-        return;
-      }
-
-      if (!shouldWarnForUrl(destination)) {
-        return;
-      }
-
-      event.preventDefault();
-      show(destination, anchor.getAttribute("target") || "_self");
+      var target = anchor.getAttribute("target") || "_self";
+      gateLinkNavigation(href, event, target);
     });
   }
 
@@ -379,7 +506,7 @@
       return;
     }
 
-    let anchors;
+    var anchors;
     if (typeof selector === "string") {
       anchors = document.querySelectorAll(selector);
     } else if (selector instanceof NodeList || Array.isArray(selector)) {
@@ -395,16 +522,16 @@
 
   if (!window.SuLeavingModal) {
     window.SuLeavingModal = {
-      init,
-      show,
-      hide,
-      shouldWarnForUrl,
-      isUrlBlocked,
-      gateAnchor,
-      gateAnchors,
-      loadAllowlist,
-      loadBlocklist,
-      configure,
+      init: init,
+      show: show,
+      hide: hide,
+      shouldWarnForUrl: shouldWarnForUrl,
+      isUrlBlocked: isUrlBlocked,
+      gateAnchor: gateAnchor,
+      gateAnchors: gateAnchors,
+      gateLinkNavigation: gateLinkNavigation,
+      loadBlocklist: loadBlocklist,
+      configure: configure,
     };
   }
 

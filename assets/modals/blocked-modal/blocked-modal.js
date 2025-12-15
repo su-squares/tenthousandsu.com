@@ -10,11 +10,31 @@
     </svg>
   `;
 
+  // Modal variant configurations
+  const VARIANTS = {
+    domain: {
+      title: "This link has been blocked for your protection",
+      message: "",
+      buttonText: "Okay",
+    },
+    uri: {
+      title: "This deeplink is disallowed",
+      message: "Certain URIs are known for malicious activity so we disable them by default.",
+      buttonText: "Okay",
+    },
+    square: {
+      title: "This square is disabled for your protection",
+      message: "",
+      buttonText: "Okay",
+    },
+  };
+
   const TEMPLATE_HTML = `
     <div class="su-blocked-backdrop" aria-hidden="true">
-      <div class="su-blocked" role="alertdialog" aria-modal="true" aria-label="Link blocked">
+      <div class="su-blocked" role="alertdialog" aria-modal="true" aria-labelledby="su-blocked-title">
         <div class="su-blocked__icon">${X_ICON_SVG}</div>
-        <div class="su-blocked__title">This link has been blocked for your protection</div>
+        <div class="su-blocked__title" id="su-blocked-title">This link has been blocked for your protection</div>
+        <p class="su-blocked__message"></p>
         <div class="su-blocked__url"></div>
         <div class="su-blocked__actions">
           <button type="button" class="su-blocked__button">Okay</button>
@@ -27,6 +47,8 @@
 
   let stylesheetHref = DEFAULT_STYLESHEET_HREF;
   let backdrop;
+  let titleNode;
+  let messageNode;
   let urlNode;
   let okayButton;
   let lastFocusedElement;
@@ -62,6 +84,8 @@
     const wrapper = document.createElement("div");
     wrapper.innerHTML = TEMPLATE_HTML.trim();
     backdrop = wrapper.firstElementChild;
+    titleNode = backdrop.querySelector(".su-blocked__title");
+    messageNode = backdrop.querySelector(".su-blocked__message");
     urlNode = backdrop.querySelector(".su-blocked__url");
     okayButton = backdrop.querySelector(".su-blocked__button");
 
@@ -128,19 +152,45 @@
 
   /**
    * Show the blocked modal
-   * @param {URL|string} targetUrl - The blocked URL to display
+   * @param {URL|string} targetUrl - The blocked URL/URI to display
+   * @param {Object} [options] - Display options
+   * @param {string} [options.variant='domain'] - Modal variant: 'domain' or 'uri'
    */
-  function show(targetUrl) {
+  function show(targetUrl, options) {
+    var opts = options || {};
+    var variant = opts.variant || "domain";
+    var config = VARIANTS[variant] || VARIANTS.domain;
+
     init().then(function (node) {
       if (!node || !urlNode || !okayButton) {
         return;
       }
 
-      const active = document.activeElement;
+      var active = document.activeElement;
       lastFocusedElement = active && active !== document.body ? active : null;
 
-      const urlString = typeof targetUrl === "string" ? targetUrl : targetUrl.href;
+      // Apply variant content
+      if (titleNode) {
+        titleNode.textContent = config.title;
+      }
+
+      if (messageNode) {
+        if (config.message) {
+          messageNode.textContent = config.message;
+          messageNode.style.display = "";
+        } else {
+          messageNode.textContent = "";
+          messageNode.style.display = "none";
+        }
+      }
+
+      if (okayButton) {
+        okayButton.textContent = config.buttonText;
+      }
+
+      var urlString = typeof targetUrl === "string" ? targetUrl : targetUrl.href;
       urlNode.textContent = urlString;
+
       node.setAttribute("aria-hidden", "false");
       node.classList.add(VISIBLE_CLASS);
 

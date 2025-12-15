@@ -47,6 +47,13 @@ export function attachBillboardEvents(ctx) {
 
   const { wrapper, image, grid, cells } = elements;
 
+  function isTouchLikeEvent(event) {
+    if (!event) return false;
+    if ("pointerType" in event && event.pointerType === "touch") return true;
+    if (event.touches || event.changedTouches) return true;
+    return Boolean(panZoom && panZoom.isActive);
+  }
+
   function getSquareFromEvent(event) {
     let clientX = event.clientX;
     let clientY = event.clientY;
@@ -114,7 +121,21 @@ export function attachBillboardEvents(ctx) {
       return;
     }
 
-    const squareNumber = getCurrentSquare() || getSquareFromEventOrCell(event);
+    const squareNumber = getSquareFromEventOrCell(event);
+    if (!squareNumber) {
+      return;
+    }
+
+    // Touch UX: first tap previews (shows tooltip), second tap activates.
+    if (isTouchLikeEvent(event)) {
+      const current = getCurrentSquare();
+      if (!current || current !== squareNumber) {
+        if (event.preventDefault) event.preventDefault();
+        if (event.stopPropagation) event.stopPropagation();
+        setSquare(squareNumber);
+        return;
+      }
+    }
 
     if (squareNumber && enableGrid && cellClosestSelector && event?.target?.closest) {
       const cell = event.target.closest(cellClosestSelector);
@@ -199,8 +220,6 @@ export function attachBillboardEvents(ctx) {
   pointerSurface.addEventListener("pointerdown", handlePointerMove);
   pointerSurface.addEventListener("pointerleave", handlePointerLeave);
   pointerSurface.addEventListener("click", handleClick);
-  pointerSurface.addEventListener("pointerup", handleClick);
-  pointerSurface.addEventListener("touchend", handleClick);
 
   if (grid && enableKeyboard) {
     grid.addEventListener("focusin", handleGridFocus);
@@ -216,8 +235,6 @@ export function attachBillboardEvents(ctx) {
     pointerSurface.removeEventListener("pointerdown", handlePointerMove);
     pointerSurface.removeEventListener("pointerleave", handlePointerLeave);
     pointerSurface.removeEventListener("click", handleClick);
-    pointerSurface.removeEventListener("pointerup", handleClick);
-    pointerSurface.removeEventListener("touchend", handleClick);
 
     if (grid && enableKeyboard) {
       grid.removeEventListener("focusin", handleGridFocus);

@@ -42,6 +42,22 @@
   font-weight: 700;
   color: #ffd700;
   letter-spacing: 0.02em;
+  text-decoration: none;
+  display: inline-block;
+}
+
+.embed-header__title:visited {
+  color: inherit;
+}
+
+.embed-header__title:hover {
+  text-decoration: underline;
+}
+
+.embed-header__title:focus-visible {
+  outline: 2px solid rgba(255, 215, 0, 0.75);
+  outline-offset: 3px;
+  border-radius: 4px;
 }
 
 /* Main container */

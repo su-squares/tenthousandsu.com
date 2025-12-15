@@ -13,24 +13,39 @@
  * - Focus trap scoped to container
  */
 
-const TEMPLATE_HTML = `
-  <div class="su-leaving-backdrop su-leaving-backdrop--contained" aria-hidden="true">
-    <div class="su-leaving" role="dialog" aria-modal="true" aria-label="Leaving this site">
-      <div class="su-leaving__title">You are leaving this site</div>
-      <p class="su-leaving__message">
-        We do NOT vet these links and assume no responsibility if you choose to visit it. Proceed at your own discretion.
-      </p>
-      <a class="su-leaving__url" href="#" target="_blank" rel="noopener"></a>
-      <div class="su-leaving__actions">
-        <button type="button" class="su-leaving__button su-leaving__button--stay">Stay Here</button>
-        <button type="button" class="su-leaving__button su-leaving__button--go">Go There</button>
-      </div>
-    </div>
-  </div>
-`;
+// Modal variant configurations
+var VARIANTS = {
+  standard: {
+    title: "You are leaving this site",
+    message: "We do NOT vet these links and assume no responsibility if you choose to visit it. Proceed at your own discretion.",
+    cancelText: "Stay Here",
+    confirmText: "Go There",
+  },
+  deeplink: {
+    title: "You are using a deeplink",
+    message: "We don't vet URIs and assume no responsibility if you choose to open it on your device. Proceed at your own discretion.",
+    cancelText: "Cancel",
+    confirmText: "Open",
+  },
+};
 
-const VISIBLE_CLASS = "is-visible";
-const BUILT_IN_ALLOWED = ["localhost", "127.0.0.1", "tenthousandsu.com", "www.tenthousandsu.com"];
+var TEMPLATE_HTML = '\
+  <div class="su-leaving-backdrop su-leaving-backdrop--contained" aria-hidden="true">\
+    <div class="su-leaving" role="dialog" aria-modal="true" aria-labelledby="su-leaving-contained-title">\
+      <div class="su-leaving__title" id="su-leaving-contained-title">You are leaving this site</div>\
+      <p class="su-leaving__message">\
+        We do NOT vet these links and assume no responsibility if you choose to visit it. Proceed at your own discretion.\
+      </p>\
+      <a class="su-leaving__url" href="#" target="_blank" rel="noopener"></a>\
+      <div class="su-leaving__actions">\
+        <button type="button" class="su-leaving__button su-leaving__button--stay">Stay Here</button>\
+        <button type="button" class="su-leaving__button su-leaving__button--go">Go There</button>\
+      </div>\
+    </div>\
+  </div>\
+';
+
+var VISIBLE_CLASS = "is-visible";
 
 /**
  * Get all domain parts for matching (domain + all parent domains)
@@ -38,9 +53,9 @@ const BUILT_IN_ALLOWED = ["localhost", "127.0.0.1", "tenthousandsu.com", "www.te
  */
 function getDomainParts(domain) {
   if (!domain) return [];
-  const parts = domain.split(".");
-  const result = [];
-  for (let i = 0; i < parts.length; i++) {
+  var parts = domain.split(".");
+  var result = [];
+  for (var i = 0; i < parts.length; i++) {
     result.push(parts.slice(i).join("."));
   }
   return result;
@@ -57,72 +72,111 @@ function isHttpUrl(url) {
  * Create a contained leaving modal instance
  * @param {HTMLElement} container - The parent element to contain the modal
  * @param {Object} [options] - Configuration options
- * @param {string[]} [options.allowlist] - Additional allowed domains
  * @param {string[]} [options.blocklist] - Additional blocked domains
+ * @param {Object} [options.blockedModal] - Contained blocked modal instance to show for blocked URIs/domains
  * @param {string} [options.baseStylesheetHref] - Path to base modal.css (if not already loaded)
  * @param {string} [options.containedStylesheetHref] - Path to modal-contained.css (if not already loaded)
  * @returns {Object} Modal controller
  */
-export function createContainedLeavingModal(container, options = {}) {
+export function createContainedLeavingModal(container, options) {
+  var opts = options || {};
+
   if (!container || !(container instanceof HTMLElement)) {
     console.error("[ContainedLeavingModal] Invalid container element");
     return null;
   }
 
+  var baseurl = window.SITE_BASEURL || "";
+
   // Ensure container has proper positioning
-  const containerStyle = window.getComputedStyle(container);
+  var containerStyle = window.getComputedStyle(container);
   if (containerStyle.position === "static") {
     container.style.position = "relative";
   }
 
-  // Instance state
-  const allowlist = new Set(BUILT_IN_ALLOWED);
-  const blocklist = new Set();
-  let backdrop = null;
-  let urlNode = null;
-  let stayButton = null;
-  let goButton = null;
-  let lastFocusedElement = null;
-  let pendingUrl = null;
-  let pendingTarget = null;
-  let destroyed = false;
+  // Blocked modal reference (optional, for showing blocked URI/domain modals)
+  var blockedModal = opts.blockedModal || null;
 
-  // Add custom allowlist/blocklist entries
-  if (options.allowlist && Array.isArray(options.allowlist)) {
-    options.allowlist.forEach((d) => {
-      if (typeof d === "string" && d.trim()) {
-        allowlist.add(d.trim().toLowerCase());
-      }
-    });
+  // Instance state
+  var blocklist = new Set();
+  var blocklistLoaded = false;
+  var blocklistUrl = opts.blocklistUrl || baseurl + "/assets/blocklist/blocklist-domains.json";
+  var backdrop = null;
+  var titleNode = null;
+  var messageNode = null;
+  var urlNode = null;
+  var stayButton = null;
+  var goButton = null;
+  var lastFocusedElement = null;
+  var pendingUrl = null;
+  var pendingTarget = null;
+  var currentVariant = "standard";
+  var destroyed = false;
+
+  function triggerDeeplink(urlString) {
+    try {
+      var link = document.createElement("a");
+      link.href = urlString;
+      link.rel = "noopener";
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+    } catch (e) {
+      window.location.href = urlString;
+    }
   }
 
-  if (options.blocklist && Array.isArray(options.blocklist)) {
-    options.blocklist.forEach((d) => {
+  // Add custom blocklist entries
+  if (opts.blocklist && Array.isArray(opts.blocklist)) {
+    opts.blocklist.forEach(function (d) {
       if (typeof d === "string" && d.trim()) {
         blocklist.add(d.trim().toLowerCase());
       }
     });
   }
 
+  function loadBlocklist(url) {
+    var fetchUrl = url || blocklistUrl;
+    if (blocklistLoaded && fetchUrl === blocklistUrl) {
+      return Promise.resolve();
+    }
+
+    blocklistLoaded = true;
+    blocklistUrl = fetchUrl;
+
+    return fetch(fetchUrl)
+      .then(function (response) {
+        if (!response.ok) throw new Error("Blocklist fetch failed");
+        return response.json();
+      })
+      .then(function (entries) {
+        addBlockedDomains(entries);
+      })
+      .catch(function () {
+        // Ignore errors, we still have any user-provided blocklist entries.
+      });
+  }
+
   /**
    * Ensure stylesheets are loaded
    */
   function ensureStylesheets() {
-    const baseurl = window.SITE_BASEURL || "";
+    var baseurl = window.SITE_BASEURL || "";
 
     // Base modal styles
-    const baseHref = options.baseStylesheetHref || baseurl + "/assets/modals/leaving-modal/modal.css";
-    if (!document.querySelector(`link[href="${baseHref}"]`)) {
-      const baseLink = document.createElement("link");
+    var baseHref = opts.baseStylesheetHref || baseurl + "/assets/modals/leaving-modal/modal.css";
+    if (!document.querySelector('link[href="' + baseHref + '"]')) {
+      var baseLink = document.createElement("link");
       baseLink.rel = "stylesheet";
       baseLink.href = baseHref;
       document.head.appendChild(baseLink);
     }
 
     // Contained variant styles
-    const containedHref = options.containedStylesheetHref || baseurl + "/assets/modals/leaving-modal/modal-contained.css";
-    if (!document.querySelector(`link[href="${containedHref}"]`)) {
-      const containedLink = document.createElement("link");
+    var containedHref = opts.containedStylesheetHref || baseurl + "/assets/modals/leaving-modal/modal-contained.css";
+    if (!document.querySelector('link[href="' + containedHref + '"]')) {
+      var containedLink = document.createElement("link");
       containedLink.rel = "stylesheet";
       containedLink.href = containedHref;
       document.head.appendChild(containedLink);
@@ -137,9 +191,11 @@ export function createContainedLeavingModal(container, options = {}) {
 
     ensureStylesheets();
 
-    const wrapper = document.createElement("div");
+    var wrapper = document.createElement("div");
     wrapper.innerHTML = TEMPLATE_HTML.trim();
     backdrop = wrapper.firstElementChild;
+    titleNode = backdrop.querySelector(".su-leaving__title");
+    messageNode = backdrop.querySelector(".su-leaving__message");
     urlNode = backdrop.querySelector(".su-leaving__url");
     stayButton = backdrop.querySelector(".su-leaving__button--stay");
     goButton = backdrop.querySelector(".su-leaving__button--go");
@@ -153,31 +209,55 @@ export function createContainedLeavingModal(container, options = {}) {
     // Event handlers
     stayButton.addEventListener("click", hide);
 
-    goButton.addEventListener("click", () => {
+    goButton.addEventListener("click", function () {
       if (!pendingUrl) {
         hide();
         return;
       }
 
-      const target = pendingTarget || "_self";
-      if (target === "_self") {
-        window.location.assign(pendingUrl.href);
+      var target = pendingTarget || "_self";
+
+      // For deeplinks (non-HTTP URIs), trigger via real link navigation
+      if (currentVariant === "deeplink") {
+        var urlString = typeof pendingUrl === "string" ? pendingUrl : pendingUrl.href;
+        triggerDeeplink(urlString);
       } else {
-        window.open(pendingUrl.href, target, "noopener");
+        // Standard HTTP navigation
+        if (target === "_self") {
+          window.location.assign(pendingUrl.href);
+        } else {
+          window.open(pendingUrl.href, target, "noopener");
+        }
       }
 
       hide();
     });
 
+    urlNode.addEventListener("click", function (event) {
+      if (currentVariant !== "deeplink") {
+        return;
+      }
+      if (!pendingUrl) {
+        return;
+      }
+
+      event.preventDefault();
+      event.stopPropagation();
+
+      var urlString = typeof pendingUrl === "string" ? pendingUrl : pendingUrl.href;
+      triggerDeeplink(urlString);
+      hide();
+    });
+
     // Click backdrop to close
-    backdrop.addEventListener("click", (event) => {
+    backdrop.addEventListener("click", function (event) {
       if (event.target === backdrop) {
         hide();
       }
     });
 
     // Escape key to close
-    backdrop.addEventListener("keydown", (event) => {
+    backdrop.addEventListener("keydown", function (event) {
       if (event.key === "Escape" && backdrop.classList.contains(VISIBLE_CLASS)) {
         event.stopPropagation();
         hide();
@@ -193,18 +273,19 @@ export function createContainedLeavingModal(container, options = {}) {
    */
   function isDomainBlocked(domain) {
     if (!domain) return false;
-    const normalized = domain.toLowerCase();
+    var normalized = domain.toLowerCase();
 
     if (blocklist.has(normalized)) return true;
 
-    const domainParts = getDomainParts(normalized);
-    for (const part of domainParts) {
-      if (blocklist.has(part)) return true;
+    var domainParts = getDomainParts(normalized);
+    for (var i = 0; i < domainParts.length; i++) {
+      if (blocklist.has(domainParts[i])) return true;
     }
 
-    for (const blockedDomain of blocklist) {
-      const blockedParts = getDomainParts(blockedDomain);
-      if (blockedParts.includes(normalized)) return true;
+    var blockedArray = Array.from(blocklist);
+    for (var j = 0; j < blockedArray.length; j++) {
+      var blockedParts = getDomainParts(blockedArray[j]);
+      if (blockedParts.indexOf(normalized) !== -1) return true;
     }
 
     return false;
@@ -219,16 +300,15 @@ export function createContainedLeavingModal(container, options = {}) {
   }
 
   /**
-   * Check if we should show warning for this URL
+   * Check if we should show warning for this URL (any external HTTP/HTTPS URL)
    */
   function shouldWarnForUrl(url) {
     if (!url || !isHttpUrl(url)) return false;
 
-    const currentHost = window.location.hostname.toLowerCase();
-    const hostname = url.hostname.toLowerCase();
+    var currentHost = window.location.hostname.toLowerCase();
+    var hostname = url.hostname.toLowerCase();
 
     if (hostname === currentHost) return false;
-    if (allowlist.has(hostname)) return false;
 
     return true;
   }
@@ -243,6 +323,7 @@ export function createContainedLeavingModal(container, options = {}) {
     backdrop.setAttribute("aria-hidden", "true");
     pendingUrl = null;
     pendingTarget = null;
+    currentVariant = "standard";
 
     // Restore focus within container
     if (lastFocusedElement && container.contains(lastFocusedElement)) {
@@ -252,38 +333,164 @@ export function createContainedLeavingModal(container, options = {}) {
 
   /**
    * Show the modal for a target URL
+   * @param {URL|string} targetUrl - The target URL/URI to display
+   * @param {string} [target='_self'] - Link target attribute
+   * @param {Object} [showOptions] - Display options
+   * @param {string} [showOptions.variant='standard'] - Modal variant: 'standard' or 'deeplink'
    */
-  function show(targetUrl, target = "_self") {
+  function show(targetUrl, target, showOptions) {
     if (destroyed) return;
+
+    var showOpts = showOptions || {};
+    var variant = showOpts.variant || "standard";
+    var config = VARIANTS[variant] || VARIANTS.standard;
+    currentVariant = variant;
 
     createModal();
 
     if (!backdrop || !urlNode || !stayButton) {
       // Fallback: navigate directly
-      if (target === "_self") {
-        window.location.assign(targetUrl.href);
+      var fallbackUrl = typeof targetUrl === "string" ? targetUrl : targetUrl.href;
+      if (variant === "deeplink") {
+        window.location.href = fallbackUrl;
+      } else if (target === "_self") {
+        window.location.assign(fallbackUrl);
       } else {
-        window.open(targetUrl.href, target, "noopener");
+        window.open(fallbackUrl, target || "_self", "noopener");
       }
       return;
     }
 
     // Save focus for restoration
-    const active = document.activeElement;
+    var active = document.activeElement;
     lastFocusedElement = active && container.contains(active) ? active : null;
 
     pendingUrl = targetUrl;
-    pendingTarget = target;
+    pendingTarget = target || "_self";
 
-    urlNode.textContent = targetUrl.href;
-    urlNode.href = targetUrl.href;
+    // Apply variant content
+    if (titleNode) {
+      titleNode.textContent = config.title;
+    }
+
+    if (messageNode) {
+      messageNode.textContent = config.message;
+    }
+
+    if (stayButton) {
+      stayButton.textContent = config.cancelText;
+    }
+
+    if (goButton) {
+      goButton.textContent = config.confirmText;
+    }
+
+    var displayUrl = typeof targetUrl === "string" ? targetUrl : targetUrl.href;
+    urlNode.textContent = displayUrl;
+
+    // For deeplinks, the URL display shouldn't be a clickable link
+    if (variant === "deeplink") {
+      urlNode.href = displayUrl;
+      urlNode.style.cursor = "pointer";
+      urlNode.style.pointerEvents = "";
+    } else {
+      urlNode.href = displayUrl;
+      urlNode.style.cursor = "";
+      urlNode.style.pointerEvents = "";
+    }
+
     backdrop.setAttribute("aria-hidden", "false");
     backdrop.classList.add(VISIBLE_CLASS);
 
     // Focus the stay button
-    setTimeout(() => {
+    setTimeout(function () {
       if (stayButton) stayButton.focus({ preventScroll: true });
     }, 0);
+  }
+
+  /**
+   * Unified link gate function - classifies URI and shows appropriate modal
+   * @param {string} href - The href to gate
+   * @param {Event} [event] - The click event (to prevent default)
+   * @param {string} [target='_self'] - Link target attribute
+   * @returns {boolean} - True if navigation was handled/blocked, false if should proceed
+   */
+  function gateLinkNavigation(href, event, target) {
+    if (!href) return false;
+
+    var linkTarget = target || "_self";
+
+    // Use SuLinkUtils if available (from link-utils.js)
+    var SuLinkUtils = window.SuLinkUtils;
+    if (!SuLinkUtils || !SuLinkUtils.classifyUri) {
+      // Fallback to legacy behavior if link-utils not loaded
+      var destination;
+      try {
+        destination = new URL(href, window.location.href);
+      } catch (e) {
+        return false;
+      }
+
+      if (isUrlBlocked(destination)) {
+        if (event) event.preventDefault();
+        // Show blocked modal if available
+        if (blockedModal && typeof blockedModal.show === "function") {
+          blockedModal.show(destination, { variant: "domain" });
+        }
+        return true;
+      }
+
+      if (shouldWarnForUrl(destination)) {
+        if (event) event.preventDefault();
+        show(destination, linkTarget, { variant: "standard" });
+        return true;
+      }
+
+      return false;
+    }
+
+    var classification = SuLinkUtils.classifyUri(href);
+
+    switch (classification.classification) {
+      case SuLinkUtils.URI_CLASSIFICATION.BLOCKED:
+        // Block dangerous URIs - show blocked modal if available
+        if (event) event.preventDefault();
+        if (blockedModal && typeof blockedModal.show === "function") {
+          blockedModal.show(classification.displayUri, { variant: "uri" });
+        }
+        return true;
+
+      case SuLinkUtils.URI_CLASSIFICATION.DEEPLINK:
+        // Show deeplink warning modal
+        if (event) event.preventDefault();
+        show(classification.displayUri, linkTarget, { variant: "deeplink" });
+        return true;
+
+      case SuLinkUtils.URI_CLASSIFICATION.EXTERNAL:
+        // Check domain blocklist first
+        if (classification.url && isUrlBlocked(classification.url)) {
+          if (event) event.preventDefault();
+          if (blockedModal && typeof blockedModal.show === "function") {
+            blockedModal.show(classification.url, { variant: "domain" });
+          }
+          return true;
+        }
+        // Show standard leaving modal
+        if (event) event.preventDefault();
+        show(classification.url || classification.displayUri, linkTarget, { variant: "standard" });
+        return true;
+
+      case SuLinkUtils.URI_CLASSIFICATION.INTERNAL:
+        // Check for safe internal paths (like /mint)
+        if (classification.url && SuLinkUtils.isSafeInternalPath(classification.url)) {
+          return false; // Allow direct navigation
+        }
+        // For other internal links, allow navigation
+        return false;
+
+      default:
+        return false;
+    }
   }
 
   /**
@@ -297,29 +504,12 @@ export function createContainedLeavingModal(container, options = {}) {
     if (anchor.dataset.suLeavingContainedGuarded === "1") return;
     anchor.dataset.suLeavingContainedGuarded = "1";
 
-    anchor.addEventListener("click", (event) => {
-      const href = anchor.getAttribute("href");
+    anchor.addEventListener("click", function (event) {
+      var href = anchor.getAttribute("href");
       if (!href) return;
 
-      let destination;
-      try {
-        destination = new URL(href, window.location.href);
-      } catch {
-        return;
-      }
-
-      // Check blocklist first
-      if (isUrlBlocked(destination)) {
-        event.preventDefault();
-        // For blocked URLs in contained context, just prevent navigation
-        // Could show a "blocked" message here if needed
-        return;
-      }
-
-      if (!shouldWarnForUrl(destination)) return;
-
-      event.preventDefault();
-      show(destination, anchor.getAttribute("target") || "_self");
+      var target = anchor.getAttribute("target") || "_self";
+      gateLinkNavigation(href, event, target);
     });
   }
 
@@ -328,21 +518,9 @@ export function createContainedLeavingModal(container, options = {}) {
    */
   function addBlockedDomains(domains) {
     if (!Array.isArray(domains)) return;
-    domains.forEach((d) => {
+    domains.forEach(function (d) {
       if (typeof d === "string" && d.trim()) {
         blocklist.add(d.trim().toLowerCase());
-      }
-    });
-  }
-
-  /**
-   * Add domains to the allowlist at runtime
-   */
-  function addAllowedDomains(domains) {
-    if (!Array.isArray(domains)) return;
-    domains.forEach((d) => {
-      if (typeof d === "string" && d.trim()) {
-        allowlist.add(d.trim().toLowerCase());
       }
     });
   }
@@ -359,6 +537,8 @@ export function createContainedLeavingModal(container, options = {}) {
     }
 
     backdrop = null;
+    titleNode = null;
+    messageNode = null;
     urlNode = null;
     stayButton = null;
     goButton = null;
@@ -369,17 +549,18 @@ export function createContainedLeavingModal(container, options = {}) {
 
   // Initialize modal DOM on creation
   createModal();
+  loadBlocklist();
 
   // Return the controller API
   return {
-    show,
-    hide,
-    gateAnchor,
-    shouldWarnForUrl,
-    isUrlBlocked,
-    addBlockedDomains,
-    addAllowedDomains,
-    destroy,
+    show: show,
+    hide: hide,
+    gateAnchor: gateAnchor,
+    gateLinkNavigation: gateLinkNavigation,
+    shouldWarnForUrl: shouldWarnForUrl,
+    isUrlBlocked: isUrlBlocked,
+    addBlockedDomains: addBlockedDomains,
+    destroy: destroy,
 
     // Expose state for debugging
     get isVisible() {

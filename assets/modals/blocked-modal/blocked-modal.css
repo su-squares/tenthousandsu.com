@@ -67,9 +67,21 @@
   line-height: 1.4;
 }
 
+.su-blocked__message {
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: #d4d4d4;
+  margin: 0;
+}
+
+.su-blocked__message:empty {
+  display: none;
+}
+
 .su-blocked__url {
   display: block;
-  width: 100%;
+  overflow-y: auto;
+  max-height: 100px;
   padding: 0.75rem;
   border: 2px dashed rgba(220, 38, 38, 0.6);
   border-radius: 0.5rem;
