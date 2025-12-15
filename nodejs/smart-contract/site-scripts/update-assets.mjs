@@ -14,6 +14,7 @@ import { loadContractsConfig, SETTLE_BLOCKS } from "./update-assets/contracts.mj
 import { createImagePipeline } from "./update-assets/image-processing.mjs";
 import { publishMetadataJson } from "./update-assets/metadata.mjs";
 import { NUM_SQUARES } from "./update-assets/geometry.mjs";
+import { queryFilterChunked } from "./event-listener/query-filter-chunked.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const repoRoot = path.resolve(__dirname, "..", "..", "..");
@@ -80,10 +81,10 @@ async function main() {
     fs.existsSync(paths.underlayPersonalizations) &&
     fs.existsSync(paths.squareExtra)
   ) {
-    state.loadedTo = JSON.parse(fs.readFileSync(paths.loadedTo));
-    state.squarePersonalizations = JSON.parse(fs.readFileSync(paths.squarePersonalizations));
-    state.underlayPersonalizations = JSON.parse(fs.readFileSync(paths.underlayPersonalizations));
-    state.squareExtra = JSON.parse(fs.readFileSync(paths.squareExtra));
+    state.loadedTo = JSON.parse(fs.readFileSync(paths.loadedTo, "utf8"));
+    state.squarePersonalizations = JSON.parse(fs.readFileSync(paths.squarePersonalizations, "utf8"));
+    state.underlayPersonalizations = JSON.parse(fs.readFileSync(paths.underlayPersonalizations, "utf8"));
+    state.squareExtra = JSON.parse(fs.readFileSync(paths.squareExtra, "utf8"));
   }
 
   const currentSettledBlock = (await provider.getBlockNumber()) - SETTLE_BLOCKS;
@@ -97,14 +98,28 @@ async function main() {
   const suSquaresConnected = suSquares.connect(provider);
   const underlayConnected = underlay.connect(provider);
 
-  const filterSold = suSquaresConnected.filters.Transfer(suSquares.getAddress(), null, null);
-  const sold = await suSquaresConnected.queryFilter(filterSold, state.loadedTo + 1, endBlock);
+  const INITIAL_STEP = parseInt(process.env.RPC_LOGS_CHUNK_SIZE || "2000", 10);
+  const MIN_STEP = parseInt(process.env.RPC_LOGS_MIN_CHUNK_SIZE || "25", 10);
+
+  const suSquaresAddress = await suSquaresConnected.getAddress();
+
+  const filterSold = suSquaresConnected.filters.Transfer(suSquaresAddress, null, null);
+  const sold = await queryFilterChunked(suSquaresConnected, filterSold, state.loadedTo + 1, endBlock, {
+    initialStep: Number.isFinite(INITIAL_STEP) ? INITIAL_STEP : 2000,
+    minStep: Number.isFinite(MIN_STEP) ? MIN_STEP : 25,
+  });
 
   const filterPersonalized = suSquaresConnected.filters.Personalized();
-  const personalized = await suSquaresConnected.queryFilter(filterPersonalized, state.loadedTo + 1, endBlock);
+  const personalized = await queryFilterChunked(suSquaresConnected, filterPersonalized, state.loadedTo + 1, endBlock, {
+    initialStep: Number.isFinite(INITIAL_STEP) ? INITIAL_STEP : 2000,
+    minStep: Number.isFinite(MIN_STEP) ? MIN_STEP : 25,
+  });
 
   const filterUnderlay = underlayConnected.filters.PersonalizedUnderlay();
-  const personalizedUnderlay = await underlayConnected.queryFilter(filterUnderlay, state.loadedTo + 1, endBlock);
+  const personalizedUnderlay = await queryFilterChunked(underlayConnected, filterUnderlay, state.loadedTo + 1, endBlock, {
+    initialStep: Number.isFinite(INITIAL_STEP) ? INITIAL_STEP : 2000,
+    minStep: Number.isFinite(MIN_STEP) ? MIN_STEP : 25,
+  });
 
   if (personalized.length > 100) {
     console.log(chalk.red("Too many personalized events, server will choke. Try updating fewer. Exiting."));
@@ -131,19 +146,19 @@ async function main() {
     personalize(squareNumber, "", "", nonpersonalizedPixelData);
   }
 
-for (const event of personalizedUnderlay) {
+  for (const event of personalizedUnderlay) {
     const squareNumber = Number(event.args.squareId ?? event.args.squareNumber);
     console.log(`Personalized underlay: ${squareNumber} at block ${event.blockNumber}`);
     state.underlayPersonalizations[squareNumber - 1] = [
-        event.args.title,
-        event.args.href,
-        event.args.rgbData.substr(2),
+      event.args.title,
+      event.args.href,
+      event.args.rgbData.substr(2),
     ];
     if (state.squareExtra[squareNumber - 1] && state.squareExtra[squareNumber - 1][2] === false) {
-        state.squareExtra[squareNumber - 1][1] = event.blockNumber;
-        personalize(squareNumber, event.args.title, event.args.href, Buffer.from(event.args.rgbData.substr(2), "hex"));
+      state.squareExtra[squareNumber - 1][1] = event.blockNumber;
+      personalize(squareNumber, event.args.title, event.args.href, Buffer.from(event.args.rgbData.substr(2), "hex"));
     }
-}
+  }
 
   for await (const event of personalized) {
     const squareNumber = Number(event.args.squareNumber);
