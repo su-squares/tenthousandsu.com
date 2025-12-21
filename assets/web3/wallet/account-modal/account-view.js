@@ -1,4 +1,4 @@
-import { getStoredSession, openWalletDeepLink } from "../wc-store.js";
+import { isMobileDevice, openWalletChooser } from "../wc-constants.js";
 import { truncateAddress } from "../../client/wagmi.js";
 import {
   getRefreshButtonHTML,
@@ -52,7 +52,11 @@ export function renderAccountView(target, data, options) {
   const chainIcon = getChainIcon(activeNetwork, presets);
   const ensLoading = loadingEns && !!account?.address && !ensName;
   const balanceLoading = loadingBalance && !!account?.address && !balance;
-  const wcSession = getStoredSession();
+
+  // Show "Open mobile wallet" button on mobile when connected via WalletConnect
+  const isWalletConnect = account?.connector?.id === "walletConnect";
+  const showOpenWalletButton = isMobileDevice() && isWalletConnect;
+
   const primaryFallback = account?.address ? truncateAddress(account.address) : "Not connected";
   const addressDisplay = ensName || (ensLoading ? "Fetching ENS..." : primaryFallback);
 
@@ -82,22 +86,19 @@ export function renderAccountView(target, data, options) {
         </div>
       </div>
       <div class="wallet-status__aside wallet-balance-wrapper">
-        ${
-          balanceLoading
-            ? `<div class="wallet-balance wallet-placeholder">Fetching balance...</div>`
-            : `<div class="wallet-balance">${
-                balance ? formatBalanceForDisplay(balance) : ""
-              }</div>`
-        }
+        ${balanceLoading
+      ? `<div class="wallet-balance wallet-placeholder">Fetching balance...</div>`
+      : `<div class="wallet-balance">${balance ? formatBalanceForDisplay(balance) : ""
+      }</div>`
+    }
         ${onRefresh ? getRefreshButtonHTML({ loading: balanceLoading }) : ""}
       </div>
     </div>
     <div class="wallet-actions" style="margin-top: 1rem;">
-      ${
-        wcSession
-          ? `<button class="wallet-btn" type="button" data-open-wallet>Open mobile wallet</button>`
-          : ""
-      }
+      ${showOpenWalletButton
+      ? `<button class="wallet-btn" type="button" data-open-wallet>Open mobile wallet</button>`
+      : ""
+    }
       <button class="wallet-btn wallet-btn--ghost" type="button" data-disconnect data-testid="disconnect-wallet-button">
         Disconnect Wallet
         <svg viewBox="0 0 36 24" fill="none" style="width: 24px; height: 16px; margin-left: 0.5rem; vertical-align: middle;">
@@ -140,7 +141,8 @@ export function renderAccountView(target, data, options) {
   });
 
   target.querySelector("[data-open-wallet]")?.addEventListener("click", () => {
-    openWalletDeepLink(undefined, { userInitiated: true });
+    // Opens OS app chooser with placeholder URI (no real session data)
+    openWalletChooser();
   });
 
   // Attach refresh button handler if onRefresh is provided

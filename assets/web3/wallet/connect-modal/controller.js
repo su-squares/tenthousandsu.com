@@ -1,11 +1,5 @@
 import { openInfoModal } from "../info-modal/index.js";
-import {
-  isWalletCapable,
-  openWalletDeepLink,
-  clearStoredSession,
-  clearWalletConnectStorage,
-} from "../wc-store.js";
-import { attachWalletConnectSession } from "../wc-session.js";
+import { isMobileDevice, openWalletDeepLink } from "../wc-constants.js";
 import { createConnectStore } from "./state.js";
 import { CONNECTING_VARIANT } from "./constants.js";
 import { renderListView } from "./views/list.js";
@@ -17,6 +11,53 @@ import { loadWagmiClient } from "../../client/wagmi.js";
 import { createDebugLogger } from "../../config/logger.js";
 
 const log = createDebugLogger("wallet-connect");
+
+// WalletConnect localStorage key prefixes for cleanup
+const WC_KEY_PREFIXES = ["wc@2:client:", "wc@2:", "walletconnect"];
+
+/**
+ * Clear WalletConnect-related localStorage keys when sessions become corrupted.
+ * This is a recovery mechanism for when WC gets into a bad state.
+ * @param {{ onlyEmpty?: boolean }} [options]
+ */
+function clearWalletConnectStorage(options = {}) {
+  const onlyEmpty = Boolean(options.onlyEmpty);
+  const removed = [];
+  try {
+    for (let i = localStorage.length - 1; i >= 0; i--) {
+      const key = localStorage.key(i);
+      if (!key || !WC_KEY_PREFIXES.some((prefix) => key.startsWith(prefix))) continue;
+
+      if (!onlyEmpty) {
+        removed.push(key);
+        localStorage.removeItem(key);
+        continue;
+      }
+
+      const value = localStorage.getItem(key);
+      if (!value || value === "{}") {
+        removed.push(key);
+        localStorage.removeItem(key);
+        continue;
+      }
+
+      try {
+        const parsed = JSON.parse(value);
+        if (!parsed || (typeof parsed === "object" && Object.keys(parsed).length === 0)) {
+          removed.push(key);
+          localStorage.removeItem(key);
+        }
+      } catch (_error) {
+        // keep non-empty/unparseable values when onlyEmpty=true
+      }
+    }
+    if (removed.length) {
+      log("cleared WalletConnect storage", { count: removed.length, onlyEmpty });
+    }
+  } catch (_error) {
+    /* ignore cleanup errors */
+  }
+}
 
 export function createConnectController(shell) {
   const store = createConnectStore();
@@ -42,7 +83,8 @@ export function createConnectController(shell) {
               navigator.clipboard.writeText(state.qrUri).then(() => setCopied(true));
             }
           },
-          onOpenWallet: () => openWalletDeepLink(state.qrUri, { userInitiated: true }),
+          // Real URI for initial connection - this is the ONLY place with actual WC session data
+          onOpenWallet: () => openWalletDeepLink(state.qrUri),
         });
         break;
       case "connecting":
@@ -52,7 +94,8 @@ export function createConnectController(shell) {
           variant: state.connectingVariant || CONNECTING_VARIANT.DEFAULT,
           hasUri: Boolean(state.qrUri),
           onCancel: () => finalize(null),
-          onOpenWallet: () => openWalletDeepLink(state.qrUri, { userInitiated: true }),
+          // Real URI for initial connection
+          onOpenWallet: () => openWalletDeepLink(state.qrUri),
           onShowQr: () => store.setState({ view: "qr" }),
         });
         break;
@@ -123,27 +166,28 @@ export function createConnectController(shell) {
   };
 
   const handleConnector = async (connector) => {
-    let removeDisplayListener = null;
+    let displayUriHandler = null;
     try {
       const isWalletConnect = connector.id === "walletConnect";
-      const mobileCapable = isWalletCapable();
+      const mobileCapable = isMobileDevice();
 
       if (isWalletConnect) {
         const provider = await connector.getProvider();
         if (provider) {
-          removeDisplayListener = attachWalletConnectSession(provider, {
-            mobileCapable,
-            onDisplayUri: (uri) => {
-              setQr(uri);
-              if (mobileCapable) {
-                setConnectingVariant(CONNECTING_VARIANT.WALLETCONNECT);
-                setView("connecting");
-              } else {
-                setConnectingVariant(CONNECTING_VARIANT.DEFAULT);
-                setView("qr");
-              }
-            },
-          });
+          // Listen for display_uri and store in-memory (not localStorage)
+          displayUriHandler = (uri) => {
+            setQr(uri);
+            if (mobileCapable) {
+              // On mobile, trigger deep link immediately during connection
+              openWalletDeepLink(uri);
+              setConnectingVariant(CONNECTING_VARIANT.WALLETCONNECT);
+              setView("connecting");
+            } else {
+              setConnectingVariant(CONNECTING_VARIANT.DEFAULT);
+              setView("qr");
+            }
+          };
+          provider.on("display_uri", displayUriHandler);
         }
         setConnectingVariant(mobileCapable ? CONNECTING_VARIANT.WALLETCONNECT : CONNECTING_VARIANT.DEFAULT);
         setView(mobileCapable ? "connecting" : "qr");
@@ -153,20 +197,20 @@ export function createConnectController(shell) {
       }
 
       await wagmi.connect({ connector });
-      
+
       // Connection successful - finalize immediately
       // Network switching is handled automatically by wallets during transactions
       const account = wagmi.getAccount();
       if (account?.isConnected) {
-        log("Connected successfully", { 
-          address: account.address, 
-          connector: account.connector?.id 
+        log("Connected successfully", {
+          address: account.address,
+          connector: account.connector?.id
         });
         finalize(account);
       } else {
         finalize(null);
       }
-      
+
     } catch (error) {
       log("connect error", error);
       const message = typeof error?.message === "string" ? error.message : "";
@@ -178,7 +222,6 @@ export function createConnectController(shell) {
         message.includes("defaultChain") ||
         message.includes("Cannot convert undefined or null to object");
       if (isWalletConnect && wcNamespaceIssue) {
-        clearStoredSession();
         clearWalletConnectStorage({ onlyEmpty: false });
         log("reset WalletConnect storage after namespace error");
       }
@@ -192,7 +235,19 @@ export function createConnectController(shell) {
         );
       }
     } finally {
-      removeDisplayListener?.();
+      // Clean up display_uri listener
+      if (displayUriHandler) {
+        try {
+          const provider = await connector.getProvider?.();
+          if (provider?.removeListener) {
+            provider.removeListener("display_uri", displayUriHandler);
+          } else if (provider?.off) {
+            provider.off("display_uri", displayUriHandler);
+          }
+        } catch (_error) {
+          /* ignore cleanup errors */
+        }
+      }
       store.setState({ qrUri: "", copied: false });
     }
   };
@@ -228,9 +283,9 @@ export function createConnectController(shell) {
 
     const onAccount = wagmi.watchAccount((account) => {
       if (account.isConnected) {
-        log("Account connected via watcher", { 
-          address: account.address, 
-          connector: account.connector?.id 
+        log("Account connected via watcher", {
+          address: account.address,
+          connector: account.connector?.id
         });
         finalize(wagmi.getAccount());
       }

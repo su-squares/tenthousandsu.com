@@ -2,14 +2,12 @@ import { getWeb3Config } from "./config/index.js";
 import { createDebugLogger } from "./config/logger.js";
 import { loadWagmiClient } from "./client/wagmi.js";
 import { openConnectModal } from "./wallet/connect-modal/index.js";
-import {
-  clearStoredSession,
-  getStoredSession,
-  openWalletDeepLink,
-} from "./wallet/wc-store.js";
 import { isAllowedChain, getCurrentChainId } from "./wallet/network.js";
 import { clearAllEnsCache } from "./wallet/ens-store.js";
 import { activateWalletContext } from "./wallet/active-wallet-context.js";
+
+// Re-export utilities from wc-constants for use by pages
+export { isMobileDevice, openWalletChooser } from "./wallet/wc-constants.js";
 
 let cachedClients = null;
 let cachedChainKey = null;
@@ -53,11 +51,6 @@ function removeWalletConnectKeys({ onlyEmpty = false } = {}) {
 
 export function clearAllWalletStorage() {
   try {
-    clearStoredSession();
-  } catch (_error) {
-    /* ignore */
-  }
-  try {
     clearAllEnsCache();
   } catch (_error) {
     /* ignore */
@@ -76,13 +69,7 @@ export function clearAllWalletStorage() {
 }
 
 export function pruneWalletStorage() {
-  // Enforce TTL on our own WC session and drop empty WC client records.
-  try {
-    const session = getStoredSession();
-    log("pruneWalletStorage", { hasSession: Boolean(session) });
-  } catch (_error) {
-    /* ignore */
-  }
+  // Drop empty WC client records
   removeWalletConnectKeys({ onlyEmpty: true });
 }
 
@@ -112,9 +99,6 @@ function hasPersistedWagmiConnection() {
       if (key && wcKeyPrefixes.some((prefix) => key.startsWith(prefix))) {
         const value = localStorage.getItem(key);
         if (value && value !== "{}") return true;
-      }
-      if (key === "su-wc-session") {
-        return true;
       }
     }
   } catch (error) {
@@ -197,11 +181,6 @@ export async function ensureConnected(action) {
     });
 
     try {
-      const session = getStoredSession();
-      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-      if (session && isMobile) {
-        openWalletDeepLink();
-      }
       await openConnectModal();
       const account = wagmi.getAccount();
       if (account?.isConnected) {
@@ -231,16 +210,16 @@ export async function ensureConnected(action) {
 export async function ensureCorrectNetwork(clients) {
   const wagmi = clients || (await loadWeb3());
   const appConfig = getWeb3Config();
-  
+
   const currentChainId = getCurrentChainId(wagmi);
   const onCorrectNetwork = isAllowedChain(currentChainId);
-  
-  log("ensureCorrectNetwork check", { 
-    currentChainId, 
+
+  log("ensureCorrectNetwork check", {
+    currentChainId,
     expectedChainId: appConfig.activeNetwork.chainId,
-    onCorrectNetwork 
+    onCorrectNetwork
   });
-  
+
   // Just return the status - don't try to switch
   // Wallets handle this automatically during transactions
   return { onCorrectNetwork, currentChainId };
@@ -257,16 +236,16 @@ export async function isOnCorrectNetwork(wagmi) {
   return isAllowedChain(currentChainId);
 }
 
-export function clearCachedWalletSession() {
-  clearStoredSession();
-}
-
-export function hasWalletConnectSession() {
-  return Boolean(getStoredSession());
-}
-
-export function openWalletFromStore() {
-  const session = getStoredSession();
-  if (!session) return false;
-  return openWalletDeepLink(undefined, { userInitiated: true });
+/**
+ * Check if the current connection is via WalletConnect.
+ * @param {object} [wagmi] - Optional wagmi client
+ * @returns {boolean}
+ */
+export function isWalletConnectConnection(wagmi) {
+  try {
+    const account = wagmi?.getAccount?.();
+    return account?.connector?.id === "walletConnect";
+  } catch (_error) {
+    return false;
+  }
 }

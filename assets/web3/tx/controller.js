@@ -1,4 +1,4 @@
-import { hasWalletConnectSession, openWalletFromStore } from "../foundation.js";
+import { isMobileDevice, openWalletChooser } from "../foundation.js";
 import { ensureRefreshButtonStyles } from "../wallet/balance-refresh-button.js";
 import {
   initActiveWalletContext,
@@ -35,7 +35,7 @@ import { createBalanceManager } from "./balance-manager.js";
 
 /**
  * @typedef {Object} TxController
- * @property {(ctx: { hasSession?: boolean; isWalletConnect?: boolean }) => void} setWalletContext
+ * @property {(ctx: { isWalletConnect?: boolean }) => void} setWalletContext
  * @property {(pricing: Partial<import("./formatting.js").TxPricing>) => void} setPricing
  * @property {(title?: string) => void} setTitle
  * @property {(message?: string) => void} setMessage
@@ -66,7 +66,6 @@ export function createTxController(target, options = {}) {
   ensureRefreshButtonStyles();
 
   const state = createInitialState(options);
-  let hasWcSession = hasWalletConnectSession();
   let isWcConnector = false;
   const viewOptions = {
     variant: options.variant || "fixture",
@@ -74,7 +73,8 @@ export function createTxController(target, options = {}) {
   };
 
   const refreshWalletState = () => {
-    state.showWalletButton = Boolean(hasWcSession || isWcConnector);
+    // Show wallet button on mobile when connected via WalletConnect
+    state.showWalletButton = Boolean(isMobileDevice() && isWcConnector);
   };
 
   const render = () => {
@@ -107,16 +107,13 @@ export function createTxController(target, options = {}) {
   });
 
   const handleOpenWallet = () => {
-    const opened = openWalletFromStore();
-    if (!opened) {
-      window.alert("No WalletConnect session found yet. Tap Connect Wallet first.");
-    }
+    // Opens OS app chooser with placeholder URI (no real session data exposed)
+    openWalletChooser();
   };
 
   /** @type {TxController} */
   const controller = {
-    setWalletContext({ hasSession, isWalletConnect }) {
-      if (typeof hasSession === "boolean") hasWcSession = hasSession;
+    setWalletContext({ isWalletConnect }) {
       if (typeof isWalletConnect === "boolean") isWcConnector = isWalletConnect;
       refreshWalletState();
       render();
@@ -199,17 +196,11 @@ export function createTxController(target, options = {}) {
     },
     destroy() {
       balanceManager.destroy();
-      window.removeEventListener("su-wc-session-change", handleWcSessionChange);
       window.removeEventListener(WALLET_CONTEXT_CHANGE_EVENT, handleWalletContextChange);
     },
     getState() {
       return { ...state };
     },
-  };
-
-  const handleWcSessionChange = (event) => {
-    const hasSession = Boolean(event?.detail?.hasSession);
-    controller.setWalletContext({ hasSession });
   };
 
   const handleWalletContextChange = async (event) => {
@@ -225,7 +216,6 @@ export function createTxController(target, options = {}) {
     }
   };
 
-  window.addEventListener("su-wc-session-change", handleWcSessionChange);
   window.addEventListener(WALLET_CONTEXT_CHANGE_EVENT, handleWalletContextChange);
 
   initActiveWalletContext()
