@@ -7,6 +7,19 @@
   flex-wrap: wrap;
   align-items: center;
   gap: 0.75rem;
+  justify-content: center;
+}
+
+.personalize-modern-page .personalize-table__toolbar .btn,
+.personalize-modern-page .billboard-embed__trigger,
+.personalize-modern-page .billboard-embed__option {
+  background: var(--button-bg);
+}
+
+.personalize-modern-page .personalize-table__toolbar .btn:hover,
+.personalize-modern-page .billboard-embed__trigger:hover,
+.personalize-modern-page .billboard-embed__option:hover {
+  background: var(--button-bg-hover);
 }
 
 .personalize-modern-page .personalize-table__batch-actions {
@@ -27,15 +40,17 @@
 
 .personalize-modern-page .billboard-embed__trigger,
 .personalize-modern-page .billboard-embed__option {
-  padding: 0.65rem 1.25rem;
+  padding: 0.6rem 1.25rem;
   border: 2px solid var(--color-accent);
   border-radius: var(--radius-sm);
   min-width: 160px;
   text-align: center;
-  background: rgba(0, 0, 0, 0.25);
   color: var(--color-accent);
   cursor: pointer;
   transition: background 120ms ease, transform 120ms ease;
+  font-size: 0.9rem;
+  line-height: 1.2;
+  display: block;
 }
 
 .personalize-modern-page .billboard-embed__chevron {
@@ -47,7 +62,6 @@
 
 .personalize-modern-page .billboard-embed__trigger:hover,
 .personalize-modern-page .billboard-embed__option:hover {
-  background: rgba(0, 0, 0, 0.4);
   transform: translateY(-1px);
 }
 
@@ -78,7 +92,7 @@
   width: 100%;
 }
 
-.personalize-modern-page .billboard-embed__option:first-child {
+.personalize-modern-page .billboard-embed__option:not(:last-child) {
   border-bottom: 1px solid rgba(255, 215, 0, 0.3);
 }
 
@@ -292,7 +306,7 @@
 
 .personalize-modern-page .personalize-table__upload-btn {
   border: 1px solid var(--color-accent);
-  background: var(--color-primary);
+  background: var(--button-bg);
   border-radius: var(--radius-sm);
   color: var(--color-accent);
   padding: 0.5rem 0rem;

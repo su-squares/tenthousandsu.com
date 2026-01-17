@@ -3,6 +3,8 @@
   --color-primary: #2d3c96;
   --color-accent: #ffd700;
   --bg-gradient: linear-gradient(to bottom right, #2d3c96, #d53392);
+  --button-bg: #4c2b70;
+  --button-bg-hover: #412259;
   --font-sans: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   --radius-sm: 0.4rem;
   --radius-md: 0.5rem;
@@ -234,6 +236,7 @@ table th {
   padding: 10px;
   text-decoration: none;
   cursor: pointer;
+  font-size: .9rem;
 }
 
 .btn:hover {
