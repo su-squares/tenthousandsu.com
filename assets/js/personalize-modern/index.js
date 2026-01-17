@@ -24,6 +24,32 @@ import { initPersonalizeChooser } from "./chooser.js";
 const TITLE_MAX = 64;
 const URI_MAX = 96;
 
+const CSV_INSTRUCTIONS = [
+  "CSV Batch Instructions",
+  "- Format: CSV or TSV with columns square_id,title,uri (extra columns ignored).",
+  "- Square IDs can be 1 or 00001 (leading zeros are treated the same).",
+  "- Title max 64 bytes; URI max 96 bytes.",
+  "- If ownership data is loaded, Squares you don't own are rejected.",
+  "- Running CSV Batch replaces the table with only those Squares.",
+  "- Image Batch is additive only when it targets the same Square set.",
+].join("\n");
+
+const IMAGE_INSTRUCTIONS = [
+  "Image Batch Instructions",
+  "- Upload a folder of 10x10 images named by Square number (1.png or 00001.png).",
+  "- Mixed image formats are fine; duplicate names after normalization are rejected.",
+  "- If ownership data is loaded, Squares you don't own are rejected.",
+  "- Running Image Batch replaces the table with only those Squares.",
+  "- CSV Batch is additive only when it targets the same Square set.",
+].join("\n");
+
+const CSV_TEMPLATE_LINES = [
+  "square_id,title,uri",
+  "1,Example Square,https://example.com",
+  "00002,Second Example,mailto:hello@example.com",
+  "3,Third Example,https://tenthousandsu.com",
+];
+
 const overLimitFlags = new Map();
 
 function clearOverLimitFlags(rowId) {
@@ -75,6 +101,165 @@ function collectDuplicateCounts(rows) {
   return counts;
 }
 
+const encoder = new TextEncoder();
+
+function byteLength(value) {
+  return encoder.encode(value || "").length;
+}
+
+function normalizeSquareId(value) {
+  const trimmed = String(value ?? "").trim();
+  if (!trimmed) return null;
+  if (!/^\d+$/.test(trimmed)) return null;
+  const num = Number.parseInt(trimmed, 10);
+  if (!Number.isInteger(num)) return null;
+  return num;
+}
+
+function detectDelimiter(text) {
+  const lines = text.split(/\r\n|\n|\r/);
+  const sample = lines.find((line) => line.trim().length > 0) || "";
+  if (sample.includes("\t")) return "\t";
+  return ",";
+}
+
+function parseSeparatedValues(text, delimiter) {
+  const rows = [];
+  let row = [];
+  let field = "";
+  let inQuotes = false;
+
+  for (let i = 0; i < text.length; i += 1) {
+    const char = text[i];
+
+    if (inQuotes) {
+      if (char === "\"") {
+        if (text[i + 1] === "\"") {
+          field += "\"";
+          i += 1;
+        } else {
+          inQuotes = false;
+        }
+      } else {
+        field += char;
+      }
+      continue;
+    }
+
+    if (char === "\"") {
+      inQuotes = true;
+      continue;
+    }
+
+    if (char === delimiter) {
+      row.push(field);
+      field = "";
+      continue;
+    }
+
+    if (char === "\n") {
+      row.push(field);
+      rows.push(row);
+      row = [];
+      field = "";
+      continue;
+    }
+
+    if (char === "\r") {
+      if (text[i + 1] === "\n") {
+        i += 1;
+      }
+      row.push(field);
+      rows.push(row);
+      row = [];
+      field = "";
+      continue;
+    }
+
+    field += char;
+  }
+
+  if (field.length > 0 || row.length > 0) {
+    row.push(field);
+    rows.push(row);
+  }
+
+  return rows;
+}
+
+function buildBatchErrorMessage(title, groups) {
+  const lines = [title];
+  const addGroup = (label, values) => {
+    if (!values || values.length === 0) return;
+    lines.push(`${label}: ${values.join(", ")}`);
+  };
+
+  addGroup("Rows with missing columns", groups.missingColumns);
+  addGroup("Invalid Square numbers", groups.invalidSquare);
+  addGroup("Duplicate Squares", groups.duplicateSquares);
+  addGroup("Missing titles", groups.titleMissing);
+  addGroup("Titles too long", groups.titleTooLong);
+  addGroup("Missing URIs", groups.uriMissing);
+  addGroup("URIs too long", groups.uriTooLong);
+  addGroup("Squares not owned", groups.notOwned);
+  addGroup("Invalid filenames", groups.invalidFilenames);
+  addGroup("Duplicate image Squares", groups.duplicateImageSquares);
+  addGroup("Unreadable images", groups.unreadableImages);
+  addGroup("Invalid image size", groups.invalidImageSize);
+  addGroup("Animated images", groups.animatedImages);
+
+  return lines.join("\n");
+}
+
+function loadImageFromFile(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const image = new Image();
+    image.addEventListener("load", () => {
+      URL.revokeObjectURL(url);
+      resolve(image);
+    });
+    image.addEventListener("error", () => {
+      URL.revokeObjectURL(url);
+      reject(new Error("Unable to read file"));
+    });
+    image.src = url;
+  });
+}
+
+function buildImagePixelsHex(image) {
+  const canvas = document.createElement("canvas");
+  canvas.width = 10;
+  canvas.height = 10;
+  const context = canvas.getContext("2d");
+  context.drawImage(image, 0, 0);
+  const { data } = context.getImageData(0, 0, 10, 10);
+  let alphaWarning = false;
+  let hex = "0x";
+  for (let i = 0; i < data.length; i += 4) {
+    const red = data[i];
+    const green = data[i + 1];
+    const blue = data[i + 2];
+    const alpha = data[i + 3];
+    const mixedRed = Math.floor((red * alpha + 255 * (255 - alpha)) / 255);
+    const mixedGreen = Math.floor((green * alpha + 255 * (255 - alpha)) / 255);
+    const mixedBlue = Math.floor((blue * alpha + 255 * (255 - alpha)) / 255);
+    if (alpha !== 255) alphaWarning = true;
+    hex += mixedRed.toString(16).padStart(2, "0");
+    hex += mixedGreen.toString(16).padStart(2, "0");
+    hex += mixedBlue.toString(16).padStart(2, "0");
+  }
+  return { hex, previewUrl: canvas.toDataURL("image/png"), alphaWarning };
+}
+
+function extractSquareIdFromFilename(name) {
+  const base = String(name || "").replace(/\.[^/.]+$/, "");
+  if (!/^\d+$/.test(base)) return null;
+  const num = Number.parseInt(base, 10);
+  if (!Number.isInteger(num)) return null;
+  return num;
+}
+
 function initPage() {
   const tableBody = document.getElementById("personalize-table-body");
   const gutterBody = document.getElementById("personalize-table-gutter");
@@ -82,6 +267,15 @@ function initPage() {
   const openChooserButton = document.getElementById("open-square-chooser");
   const resetButton = document.getElementById("reset-all");
   const addRowButton = document.getElementById("add-row");
+  const csvBatchDropdown = document.getElementById("csv-batch-dropdown");
+  const csvBatchTrigger = document.getElementById("csv-batch-trigger");
+  const csvBatchInstructions = document.getElementById("csv-batch-instructions");
+  const csvBatchDownload = document.getElementById("csv-batch-download");
+  const csvBatchUpload = document.getElementById("csv-batch-upload");
+  const imageBatchDropdown = document.getElementById("image-batch-dropdown");
+  const imageBatchTrigger = document.getElementById("image-batch-trigger");
+  const imageBatchInstructions = document.getElementById("image-batch-instructions");
+  const imageBatchUpload = document.getElementById("image-batch-upload");
   const openWalletButton = document.getElementById("open-wallet-app");
   const personalizeButton = document.getElementById("personalize");
   const txFixtureDiv = document.getElementById("tx-fixture");
@@ -116,6 +310,359 @@ function initPage() {
       store.setRowError(row.id, "square", message);
     });
   };
+
+  const dropdowns = [csvBatchDropdown, imageBatchDropdown].filter(Boolean);
+
+  const closeDropdown = (dropdown) => {
+    if (dropdown) {
+      dropdown.classList.remove("is-open");
+    }
+  };
+
+  const closeAllDropdowns = (except) => {
+    dropdowns.forEach((dropdown) => {
+      if (dropdown && dropdown !== except) {
+        dropdown.classList.remove("is-open");
+      }
+    });
+  };
+
+  const applyBatchRows = (batchMap) => {
+    if (!batchMap || batchMap.size === 0) {
+      alert("No Squares found in the batch.");
+      return;
+    }
+
+    const batchIds = Array.from(batchMap.keys());
+    const stateRows = store.getState().rows.slice();
+
+    stateRows.forEach((row) => {
+      if (!batchMap.has(row.squareId)) {
+        store.removeRow(row.id);
+        clearOverLimitFlags(row.id);
+      }
+    });
+
+    batchIds.forEach((squareId) => {
+      const patch = batchMap.get(squareId) || {};
+      const existing = store.getState().rows.find((row) => row.squareId === squareId);
+      if (existing) {
+        store.updateRow(existing.id, (row) => {
+          Object.assign(row, patch);
+          if (Object.prototype.hasOwnProperty.call(patch, "title")) {
+            row.errors.title = "";
+          }
+          if (Object.prototype.hasOwnProperty.call(patch, "uri")) {
+            row.errors.uri = "";
+          }
+          if (Object.prototype.hasOwnProperty.call(patch, "imagePixelsHex")) {
+            row.errors.image = "";
+          }
+        });
+        clearOverLimitFlags(existing.id);
+      } else {
+        store.addRow({ squareId, ...patch });
+      }
+    });
+
+    store.pruneEmptyRows();
+    store.sortRows();
+    validateSquareErrors(false);
+  };
+
+  const downloadCsvTemplate = () => {
+    const blob = new Blob([CSV_TEMPLATE_LINES.join("\n")], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    link.download = "personalize-template.csv";
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 0);
+  };
+
+  const handleCsvUpload = async (file) => {
+    const text = await file.text();
+    const delimiter = detectDelimiter(text);
+    const rows = parseSeparatedValues(text, delimiter)
+      .map((row) => row.map((cell) => String(cell ?? "").trim()))
+      .filter((row) => row.some((cell) => cell.length > 0));
+
+    if (rows.length === 0) {
+      alert("No rows found in the CSV.");
+      return;
+    }
+
+    let startIndex = 0;
+    const headerCandidate = rows[0] || [];
+    const headerFirst = (headerCandidate[0] || "").toLowerCase();
+    const headerSecond = (headerCandidate[1] || "").toLowerCase();
+    if (
+      (headerFirst.includes("square") || headerFirst.includes("id")) &&
+      (headerSecond.includes("title") || headerSecond.includes("uri") || headerSecond.includes("url"))
+    ) {
+      startIndex = 1;
+    }
+
+    const errors = {
+      missingColumns: [],
+      invalidSquare: [],
+      duplicateSquares: [],
+      titleMissing: [],
+      titleTooLong: [],
+      uriMissing: [],
+      uriTooLong: [],
+      notOwned: [],
+      invalidFilenames: [],
+      duplicateImageSquares: [],
+      unreadableImages: [],
+      invalidImageSize: [],
+      animatedImages: [],
+    };
+
+    const duplicates = new Set();
+    const seenSquares = new Set();
+    const batchMap = new Map();
+
+    const ownershipReady =
+      store.getState().ownershipStatus === "ready" && store.getState().ownedSquares;
+    const ownedSquares = store.getState().ownedSquares;
+
+    for (let index = startIndex; index < rows.length; index += 1) {
+      const row = rows[index];
+      const rowNumber = index + 1;
+      if (row.length < 3) {
+        errors.missingColumns.push(`Row ${rowNumber}`);
+        continue;
+      }
+
+      const [squareText, titleValue, uriValue] = row;
+      const squareId = normalizeSquareId(squareText);
+      if (!squareId || !isValidSquareId(squareId)) {
+        errors.invalidSquare.push(`Row ${rowNumber}`);
+        continue;
+      }
+
+      if (seenSquares.has(squareId)) {
+        duplicates.add(squareId);
+      } else {
+        seenSquares.add(squareId);
+      }
+
+      const titleLength = byteLength(titleValue);
+      if (titleLength < 1) {
+        errors.titleMissing.push(`#${squareId}`);
+      } else if (titleLength > TITLE_MAX) {
+        errors.titleTooLong.push(`#${squareId}`);
+      }
+
+      const uriLength = byteLength(uriValue);
+      if (uriLength < 1) {
+        errors.uriMissing.push(`#${squareId}`);
+      } else if (uriLength > URI_MAX) {
+        errors.uriTooLong.push(`#${squareId}`);
+      }
+
+      if (ownershipReady && ownedSquares && !ownedSquares.has(squareId)) {
+        errors.notOwned.push(`#${squareId}`);
+      }
+
+      batchMap.set(squareId, { title: titleValue, uri: uriValue });
+    }
+
+    if (duplicates.size > 0) {
+      errors.duplicateSquares = Array.from(duplicates)
+        .sort((a, b) => a - b)
+        .map((id) => `#${id}`);
+    }
+
+    const hasErrors = Object.values(errors).some((list) => list.length > 0);
+    if (hasErrors) {
+      alert(buildBatchErrorMessage("CSV upload failed.", errors));
+      return;
+    }
+
+    applyBatchRows(batchMap);
+  };
+
+  const handleImageUpload = async (files) => {
+    const errors = {
+      missingColumns: [],
+      invalidSquare: [],
+      duplicateSquares: [],
+      titleMissing: [],
+      titleTooLong: [],
+      uriMissing: [],
+      uriTooLong: [],
+      notOwned: [],
+      invalidFilenames: [],
+      duplicateImageSquares: [],
+      unreadableImages: [],
+      invalidImageSize: [],
+      animatedImages: [],
+    };
+
+    const fileMap = new Map();
+    const duplicates = new Set();
+
+    Array.from(files || []).forEach((file) => {
+      const squareId = extractSquareIdFromFilename(file.name);
+      if (!squareId || !isValidSquareId(squareId)) {
+        errors.invalidFilenames.push(file.name);
+        return;
+      }
+      if (fileMap.has(squareId)) {
+        duplicates.add(squareId);
+        return;
+      }
+      fileMap.set(squareId, file);
+    });
+
+    if (duplicates.size > 0) {
+      errors.duplicateImageSquares = Array.from(duplicates)
+        .sort((a, b) => a - b)
+        .map((id) => `#${id}`);
+    }
+
+    const ownershipReady =
+      store.getState().ownershipStatus === "ready" && store.getState().ownedSquares;
+    const ownedSquares = store.getState().ownedSquares;
+
+    if (ownershipReady && ownedSquares) {
+      fileMap.forEach((_file, squareId) => {
+        if (!ownedSquares.has(squareId)) {
+          errors.notOwned.push(`#${squareId}`);
+        }
+      });
+    }
+
+    const batchMap = new Map();
+    const alphaWarnings = [];
+
+    await Promise.all(
+      Array.from(fileMap.entries()).map(async ([squareId, file]) => {
+        try {
+          const image = await loadImageFromFile(file);
+          if (image.width !== 10 || image.height !== 10) {
+            errors.invalidImageSize.push(`#${squareId}`);
+            return;
+          }
+          if (image.naturalWidth !== image.width || image.naturalHeight !== image.height) {
+            errors.animatedImages.push(`#${squareId}`);
+            return;
+          }
+          const { hex, previewUrl, alphaWarning } = buildImagePixelsHex(image);
+          if (alphaWarning) {
+            alphaWarnings.push(`#${squareId}`);
+          }
+          batchMap.set(squareId, { imagePixelsHex: hex, imagePreviewUrl: previewUrl });
+        } catch (_error) {
+          errors.unreadableImages.push(file.name);
+        }
+      })
+    );
+
+    const hasErrors = Object.values(errors).some((list) => list.length > 0);
+    if (hasErrors) {
+      alert(buildBatchErrorMessage("Image upload failed.", errors));
+      return;
+    }
+
+    applyBatchRows(batchMap);
+
+    if (alphaWarnings.length > 0) {
+      alert(
+        [
+          "WARNING: Some images included transparency and were mixed on white.",
+          `Affected Squares: ${alphaWarnings.join(", ")}`,
+        ].join("\n")
+      );
+    }
+  };
+
+  if (csvBatchTrigger && csvBatchDropdown) {
+    csvBatchTrigger.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const willOpen = !csvBatchDropdown.classList.contains("is-open");
+      closeAllDropdowns(csvBatchDropdown);
+      csvBatchDropdown.classList.toggle("is-open", willOpen);
+    });
+  }
+
+  if (imageBatchTrigger && imageBatchDropdown) {
+    imageBatchTrigger.addEventListener("click", (event) => {
+      event.stopPropagation();
+      const willOpen = !imageBatchDropdown.classList.contains("is-open");
+      closeAllDropdowns(imageBatchDropdown);
+      imageBatchDropdown.classList.toggle("is-open", willOpen);
+    });
+  }
+
+  if (dropdowns.length > 0) {
+    document.addEventListener("click", (event) => {
+      dropdowns.forEach((dropdown) => {
+        if (dropdown && !dropdown.contains(event.target)) {
+          dropdown.classList.remove("is-open");
+        }
+      });
+    });
+  }
+
+  if (csvBatchInstructions) {
+    csvBatchInstructions.addEventListener("click", () => {
+      alert(CSV_INSTRUCTIONS);
+      closeDropdown(csvBatchDropdown);
+    });
+  }
+
+  if (imageBatchInstructions) {
+    imageBatchInstructions.addEventListener("click", () => {
+      alert(IMAGE_INSTRUCTIONS);
+      closeDropdown(imageBatchDropdown);
+    });
+  }
+
+  if (csvBatchDownload) {
+    csvBatchDownload.addEventListener("click", () => {
+      downloadCsvTemplate();
+      closeDropdown(csvBatchDropdown);
+    });
+  }
+
+  if (csvBatchUpload) {
+    csvBatchUpload.addEventListener("change", async (event) => {
+      const file = event.target.files?.[0];
+      closeDropdown(csvBatchDropdown);
+      if (!file) {
+        return;
+      }
+      try {
+        await handleCsvUpload(file);
+      } catch (error) {
+        alert(error?.message || "Unable to read CSV.");
+      } finally {
+        event.target.value = "";
+      }
+    });
+  }
+
+  if (imageBatchUpload) {
+    imageBatchUpload.addEventListener("change", async (event) => {
+      const files = event.target.files;
+      closeDropdown(imageBatchDropdown);
+      if (!files || files.length === 0) {
+        return;
+      }
+      try {
+        await handleImageUpload(files);
+      } catch (error) {
+        alert(error?.message || "Unable to read images.");
+      } finally {
+        event.target.value = "";
+      }
+    });
+  }
 
   const handleFieldInput = (rowId, field, value) => {
     if (field === "square") {
@@ -283,7 +830,7 @@ function initPage() {
         row.squareId !== undefined &&
         row.squareId !== "";
       const titleLength = getTitleLength(row);
-    const uriLength = getUriLength(row);
+      const uriLength = getUriLength(row);
 
       if (!hasSquare) {
         if (hasData) {

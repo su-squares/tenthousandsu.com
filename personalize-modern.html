@@ -39,8 +39,33 @@ image: "{{ site.baseurl }}/assets/images/su-OG.png"
       with a flexible table for editing multiple Squares at once.
     </p>
 
-    <div class="personalize-table__toolbar">
+    <div class="personalize-table__toolbar billboard-embed__actions">
       <button id="open-square-chooser" type="button" class="btn">Choose Squares</button>
+      <div class="billboard-embed__dropdown" id="csv-batch-dropdown">
+        <button type="button" class="billboard-embed__trigger" id="csv-batch-trigger">
+          CSV Batch <span class="billboard-embed__chevron" aria-hidden="true">▾</span>
+        </button>
+        <div class="billboard-embed__menu" id="csv-batch-menu">
+          <button type="button" class="billboard-embed__option" id="csv-batch-instructions">Instructions</button>
+          <button type="button" class="billboard-embed__option" id="csv-batch-download">Download CSV</button>
+          <label class="billboard-embed__option personalize-batch__file">
+            Upload CSV
+            <input id="csv-batch-upload" type="file" accept=".csv,.tsv,text/csv,text/tab-separated-values" hidden>
+          </label>
+        </div>
+      </div>
+      <div class="billboard-embed__dropdown" id="image-batch-dropdown">
+        <button type="button" class="billboard-embed__trigger" id="image-batch-trigger">
+          Image Batch <span class="billboard-embed__chevron" aria-hidden="true">▾</span>
+        </button>
+        <div class="billboard-embed__menu" id="image-batch-menu">
+          <button type="button" class="billboard-embed__option" id="image-batch-instructions">Instructions</button>
+          <label class="billboard-embed__option personalize-batch__file">
+            Upload Folder
+            <input id="image-batch-upload" type="file" accept="image/*" webkitdirectory directory multiple hidden>
+          </label>
+        </div>
+      </div>
       <button id="reset-all" type="button" class="btn">Reset all</button>
     </div>
 

@@ -9,6 +9,83 @@
   gap: 0.75rem;
 }
 
+.personalize-modern-page .personalize-table__batch-actions {
+  margin-top: 0.25rem;
+}
+
+.personalize-modern-page .billboard-embed__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: flex-start;
+}
+
+.personalize-modern-page .billboard-embed__dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.personalize-modern-page .billboard-embed__trigger,
+.personalize-modern-page .billboard-embed__option {
+  padding: 0.65rem 1.25rem;
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  min-width: 160px;
+  text-align: center;
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--color-accent);
+  cursor: pointer;
+  transition: background 120ms ease, transform 120ms ease;
+}
+
+.personalize-modern-page .billboard-embed__chevron {
+  font-size: 1.5em;
+  line-height: 0;
+  vertical-align: middle;
+  display: inline-block;
+}
+
+.personalize-modern-page .billboard-embed__trigger:hover,
+.personalize-modern-page .billboard-embed__option:hover {
+  background: rgba(0, 0, 0, 0.4);
+  transform: translateY(-1px);
+}
+
+.personalize-modern-page .billboard-embed__menu {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  display: none;
+  flex-direction: column;
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  z-index: 10;
+}
+
+.personalize-modern-page .billboard-embed__dropdown.is-open .billboard-embed__menu {
+  display: flex;
+}
+
+.personalize-modern-page .billboard-embed__dropdown.is-open .billboard-embed__trigger {
+  visibility: hidden;
+}
+
+.personalize-modern-page .billboard-embed__option {
+  border: none;
+  border-radius: 0;
+  width: 100%;
+}
+
+.personalize-modern-page .billboard-embed__option:first-child {
+  border-bottom: 1px solid rgba(255, 215, 0, 0.3);
+}
+
+.personalize-modern-page .personalize-batch__file {
+  display: block;
+}
+
 .personalize-modern-page .personalize-table__wrapper {
   display: grid;
   grid-template-columns: auto 1fr;
@@ -95,7 +172,7 @@
   z-index: 3;
   text-align: center;
   font-weight: 700;
-  background: #2d3c96;
+  background: var(--color-primary);
   box-shadow: inset 0 1px 0 var(--color-accent), inset 0 -1px 0 var(--color-accent);
 }
 
@@ -215,7 +292,8 @@
 
 .personalize-modern-page .personalize-table__upload-btn {
   border: 1px solid var(--color-accent);
-  background: #2d3c96;
+  background: var(--color-primary);
+  border-radius: var(--radius-sm);
   color: var(--color-accent);
   padding: 0.5rem 0rem;
   cursor: pointer;
@@ -255,7 +333,7 @@
   border-radius: 50%;
   border: none;
   background: var(--color-accent);
-  color: #ff69b4;
+  color: var(--color-primary);
   font-size: 2rem;
   font-weight: 700;
   cursor: pointer;
