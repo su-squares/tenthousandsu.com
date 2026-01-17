@@ -53,25 +53,3 @@ export function isWalletConnectConnector(wagmi) {
     return false;
   }
 }
-
-/**
- * @deprecated No longer used - network switching happens automatically during transactions.
- */
-export function canSwitchNetwork(wagmi) {
-  return Boolean(wagmi?.switchNetwork);
-}
-
-/**
- * @deprecated No longer used - showing manual instructions instead.
- */
-export async function requestPreferredNetwork(wagmi, options = {}) {
-  log("requestPreferredNetwork called but no longer implemented - wallets handle switching during tx");
-  return { success: false, action: "deprecated" };
-}
-
-/**
- * @deprecated No longer used.
- */
-export async function attemptNetworkSwitch(wagmi, targetChainId = getPreferredChainId()) {
-  return false;
-}

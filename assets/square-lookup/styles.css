@@ -21,6 +21,7 @@
   border-radius: var(--radius-md);
   box-shadow: var(--shadow-strong);
   color: var(--color-accent);
+  position: relative;
   display: flex;
   flex-direction: column;
   gap: 0.8rem;
@@ -50,9 +51,12 @@
   background: transparent;
   color: var(--color-accent);
   border: none;
+  position: absolute;
+  top: 8px;
+  right: 8px;
   width: auto;
   height: auto;
-  font-size: 3.6rem;
+  font-size: 1.5rem;
   line-height: 1;
   padding: 0;
   cursor: pointer;
@@ -201,5 +205,77 @@
   .su-chooser--billboard {
     overflow: scroll;
     scrollbar-gutter: stable;
+  }
+}
+
+/* Checkbox variant - wider cells */
+.su-chooser__grid--checkbox {
+  --su-chooser-cell-width: 117px;
+}
+
+/* Checkbox cell layout */
+.su-chooser__cell--checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: flex-start;
+  padding-left: 0.5rem;
+}
+
+/* Checked cell - permanent darker background */
+.su-chooser__cell--checkbox.su-chooser__cell--checked {
+  background: rgba(0, 0, 0, 0.35);
+}
+
+/* Checkbox square */
+.su-chooser__checkbox {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #ffd700;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+}
+
+/* Pink checkmark when checked */
+.su-chooser__checkbox--checked::after {
+  content: "✓";
+  color: #ff69b4;
+  font-weight: bold;
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* Okay button container */
+.su-chooser__footer {
+  display: flex;
+  justify-content: center;
+  padding-top: 0.8rem;
+}
+
+/* Okay button */
+.su-chooser__okay-btn {
+  appearance: none;
+  padding: 0.6rem 2rem;
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--color-accent);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 120ms ease, transform 120ms ease;
+}
+
+.su-chooser__okay-btn:hover {
+  background: rgba(0, 0, 0, 0.4);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 600px) {
+  .su-chooser__grid--checkbox {
+    --su-chooser-cell-width: 100px;
   }
 }

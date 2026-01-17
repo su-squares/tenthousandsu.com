@@ -1,0 +1,96 @@
+---
+layout: null
+image: "{{ site.baseurl }}/assets/images/su-OG.png"
+---
+<!doctype html>
+<html lang="en" class="personalize-page personalize-modern-page">
+
+<head>
+  <script>window.SITE_BASEURL = "{{ site.baseurl }}";</script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% include pwa-meta-tags.html %}
+  {% seo %}
+  <title>Personalize your Squares (Experimental)</title>
+  <link rel="canonical" href="https://tenthousandsu.com/personalize-modern" />
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/main.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/personalize.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/personalize-modern.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/square-lookup/styles.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/web3/tx/styles.css">
+  {% include nav-menu-head.html %}
+  {% include alert-modal-head.html %}
+  {% include offline-modal-head.html %}
+  {% include jsonld-nav.html %}
+</head>
+
+<body>
+  {% include nav-header.html desktop_button_one_label="Mint" desktop_button_one_href="/buy" %}
+
+  <article class="lead">
+    <h1>Personalize (Experimental)</h1>
+    <p>
+      <em>If you have any questions, please mail <a
+          href="mailto:Su@TenThousandSu.com?subject=Personalize+underlay+modern">Su@TenThousandSu.com</a>. The price to
+        personalize is 0.001 Ether per Square.</em>
+    </p>
+    <p>
+      Use this page to personalize one or more Squares you own on TenThousandSu.com. This is an experimental workflow
+      with a flexible table for editing multiple Squares at once.
+    </p>
+
+    <div class="personalize-table__toolbar">
+      <button id="open-square-chooser" type="button" class="btn">Choose Squares</button>
+      <button id="reset-all" type="button" class="btn">Reset all</button>
+    </div>
+
+    <div class="personalize-table__wrapper">
+      <div class="personalize-table__gutter" aria-hidden="true">
+        <div class="personalize-table__gutter-header"></div>
+        <div class="personalize-table__gutter-body" id="personalize-table-gutter"></div>
+      </div>
+      <table class="personalize-table__grid" id="personalize-table">
+        <colgroup>
+          <col style="width: 125px">
+          <col>
+          <col>
+          <col>
+        </colgroup>
+        <thead>
+          <tr>
+            <th>Square #</th>
+            <th>Text</th>
+            <th>URI</th>
+            <th>Image</th>
+          </tr>
+        </thead>
+        <tbody id="personalize-table-body"></tbody>
+      </table>
+    </div>
+
+    <div class="personalize-table__add-row">
+      <button id="add-row" type="button" class="personalize-table__add-btn" aria-label="Add row">+</button>
+    </div>
+
+    <h2>Personalize</h2>
+    <p>Click this button to personalize your Squares.</p>
+    <div class="wallet-actions">
+      <button id="open-wallet-app" type="button" class="btn">Open mobile wallet</button>
+      <button id="personalize" class="btn btn-lg">Personalize</button>
+    </div>
+
+    <div id="tx-fixture"></div>
+  </article>
+
+  <footer>
+    <small>
+      No cookies. No analytics. To the extent possible under law, Su Entriken has waived all copyright and related or
+      neighboring rights to the TenThousandSu.com website. This work is published from the United States.
+    </small>
+  </footer>
+
+  <script type="module" src="{{ site.baseurl }}/assets/js/personalize-modern/index.js"></script>
+  <script src="{{ site.baseurl }}/assets/js/pwa-init.js"></script>
+</body>
+
+</html>

@@ -1,4 +1,4 @@
-import { loadSquareData } from "../js/square-data.js";
+﻿import { loadSquareData } from "../js/square-data.js";
 
 let chooserIdCounter = 0;
 
@@ -99,7 +99,7 @@ export function attachListChooser({
     const closeButton = document.createElement("button");
     closeButton.type = "button";
     closeButton.className = "su-chooser__close";
-    closeButton.textContent = "×";
+    closeButton.textContent = "\u2715";
     closeButton.setAttribute("aria-label", "Close chooser");
     closeButton.addEventListener("click", closeModal);
 
@@ -311,3 +311,4 @@ function handleGridKeydown(event) {
   event.preventDefault();
   moveFocus(cells, nextIndex);
 }
+
