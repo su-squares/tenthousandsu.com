@@ -95,6 +95,13 @@ function getSelectedSquares(rows) {
   return selected;
 }
 
+function getLocatorSquare(state) {
+  if (!state.locatorRowId) return null;
+  const row = state.rows.find((item) => item.id === state.locatorRowId);
+  if (!row || !isValidSquareId(row.squareId)) return null;
+  return row.squareId;
+}
+
 export function initPersonalizeBillboardUi({
   store,
   validateSquareErrors,
@@ -114,6 +121,7 @@ export function initPersonalizeBillboardUi({
   const cancelButton = document.getElementById("billboard-cancel");
   const uploadButton = document.getElementById("billboard-upload");
   const resetButton = document.getElementById("personalize-billboard-reset");
+  const locatorHideButton = document.getElementById("billboard-locator-hide");
 
   let mode = "owned";
   let previewTooltips = previewToggle ? previewToggle.checked : false;
@@ -248,6 +256,7 @@ export function initPersonalizeBillboardUi({
     const selectedSquares = isEditing ? stagedSelection : tableSelection;
     const previewRows = buildPreviewRows(rows);
     const errorMap = buildErrorMap(rows);
+    const locatorSquare = getLocatorSquare(state);
 
     controller.setState({
       mode,
@@ -257,10 +266,14 @@ export function initPersonalizeBillboardUi({
       selectedSquares,
       previewRows,
       errorMap,
+      locatorSquare,
     });
 
     const hasChanges = isEditing && !setsEqual(tableSelection, stagedSelection);
     syncControls(hasChanges);
+    if (locatorHideButton) {
+      locatorHideButton.hidden = !locatorSquare;
+    }
   }
 
   function clearUnownedSquares(state) {
@@ -327,6 +340,12 @@ export function initPersonalizeBillboardUi({
 
   if (resetButton) {
     resetButton.addEventListener("click", () => controller.billboard.reset());
+  }
+
+  if (locatorHideButton) {
+    locatorHideButton.addEventListener("click", () => {
+      store.setLocatorRow(null);
+    });
   }
 
   store.subscribe((state) => {

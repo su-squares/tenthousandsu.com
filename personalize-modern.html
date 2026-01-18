@@ -83,7 +83,13 @@ image: "{{ site.baseurl }}/assets/images/su-OG.png"
           </button>
         </div>
       </div>
-      <div class="personalize-billboard__view" id="personalize-billboard"></div>
+      <div class="personalize-billboard__view">
+        <div id="personalize-billboard"></div>
+        <button type="button" class="personalize-billboard__locator-btn" id="billboard-locator-hide" hidden>
+          <img src="{{ site.baseurl }}/assets/images/dr.png" alt="" aria-hidden="true">
+          Hide
+        </button>
+      </div>
       <button type="button" class="billboard__reset-btn personalize-billboard__reset" id="personalize-billboard-reset">
         Reset zoom
       </button>

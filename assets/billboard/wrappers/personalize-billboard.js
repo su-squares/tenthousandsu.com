@@ -4,7 +4,11 @@
  */
 
 import { createBillboard } from "../billboard-core.js";
-import { describeSquareStatus } from "../billboard-utils.js";
+import {
+  describeSquareStatus,
+  squareToCoords,
+  getQuadrant,
+} from "../billboard-utils.js";
 import { SquareBlocklist } from "../blocklist/blocklist-squares.js";
 import { DomainBlocklist } from "../../blocklist/blocklist-domains.js";
 import { loadSquareData } from "../../js/square-data.js";
@@ -47,6 +51,7 @@ export function initPersonalizeBillboard(options) {
     selectedSquares: new Set(),
     previewRows: new Map(),
     errorMap: new Map(),
+    locatorSquare: null,
   };
 
   let personalizations = [];
@@ -89,6 +94,13 @@ export function initPersonalizeBillboard(options) {
     wrapper: billboard.elements.wrapper,
     pulseTarget: document.querySelector(".personalize-billboard__map"),
   });
+  const arrowBasePath = `${baseurl || ""}/assets/images`;
+  const locatorArrow = document.createElement("img");
+  locatorArrow.className = "personalize-billboard__locator-arrow";
+  locatorArrow.alt = "";
+  locatorArrow.setAttribute("aria-hidden", "true");
+  locatorArrow.hidden = true;
+  billboard.elements.wrapper.appendChild(locatorArrow);
   const glowColors = {
     selected: "",
     "owned-unpersonalized": "",
@@ -116,6 +128,58 @@ export function initPersonalizeBillboard(options) {
     if (billboard.currentSquare) {
       billboard.setSquare(billboard.currentSquare);
     }
+  }
+
+  function updateLocatorPosition() {
+    const squareNumber = state.locatorSquare;
+    if (!squareNumber) {
+      locatorArrow.hidden = true;
+      return;
+    }
+
+    const { row, col } = squareToCoords(squareNumber);
+    const { isLeftHalf, isTopHalf } = getQuadrant(squareNumber);
+    const wrapper = billboard.elements.wrapper;
+    const actualWidth = wrapper.offsetWidth || wrapper.clientWidth || 0;
+    if (!actualWidth) return;
+
+    const scale = actualWidth / 1000;
+    const scalePosition = (value) => `${value * scale}px`;
+    const arrowSize = 100 * scale;
+
+    locatorArrow.style.width = `${arrowSize}px`;
+    locatorArrow.style.height = `${arrowSize}px`;
+
+    let arrowSrc;
+    let topPx;
+    let leftPx;
+
+    if (isTopHalf) {
+      if (isLeftHalf) {
+        arrowSrc = "ul";
+        topPx = row * 10 + 10;
+        leftPx = col * 10 + 10;
+      } else {
+        arrowSrc = "ur";
+        topPx = row * 10 + 10;
+        leftPx = col * 10 - 100;
+      }
+    } else {
+      if (isLeftHalf) {
+        arrowSrc = "dl";
+        topPx = row * 10 - 100;
+        leftPx = col * 10 + 10;
+      } else {
+        arrowSrc = "dr";
+        topPx = row * 10 - 100;
+        leftPx = col * 10 - 100;
+      }
+    }
+
+    locatorArrow.src = `${arrowBasePath}/${arrowSrc}.png`;
+    locatorArrow.style.top = scalePosition(topPx);
+    locatorArrow.style.left = scalePosition(leftPx);
+    locatorArrow.hidden = false;
   }
 
   function isOwned(squareNumber) {
@@ -337,6 +401,7 @@ export function initPersonalizeBillboard(options) {
     Object.assign(state, nextState);
     syncOverlays();
     refreshCurrentTooltip();
+    updateLocatorPosition();
   }
 
   loadSquareData()
@@ -361,6 +426,9 @@ export function initPersonalizeBillboard(options) {
 
   DomainBlocklist.loadOnce().catch(() => {});
 
+  const handleResize = () => updateLocatorPosition();
+  window.addEventListener("resize", handleResize);
+
   return {
     billboard,
     setState,
@@ -368,6 +436,7 @@ export function initPersonalizeBillboard(options) {
       if (glowCanvas) {
         glowCanvas.destroy();
       }
+      window.removeEventListener("resize", handleResize);
       billboard.destroy();
     },
   };

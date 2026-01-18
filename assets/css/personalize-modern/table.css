@@ -44,8 +44,46 @@
 
 .personalize-modern-page .personalize-table__gutter-row {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
+  gap: 1.2rem;
+}
+
+.personalize-modern-page .personalize-row-locate {
+  width: 28px;
+  height: 28px;
+  border: 2px solid transparent;
+  border-radius: 5px;
+  background: transparent;
+  padding: 0;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.personalize-modern-page .personalize-row-locate img {
+  width: 20px;
+  height: 20px;
+  opacity: 0.5;
+  display: block;
+}
+
+.personalize-modern-page .personalize-row-locate.is-active img {
+  opacity: 1;
+}
+
+.personalize-modern-page .personalize-row-locate[aria-pressed="true"] img {
+  opacity: 1;
+}
+
+.personalize-modern-page .personalize-row-locate.is-active {
+  border-color: var(--color-accent);
+}
+
+.personalize-modern-page .personalize-row-locate:hover img {
+  opacity: 0.75;
 }
 
 .personalize-modern-page .personalize-row-delete {

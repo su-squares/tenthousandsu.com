@@ -58,6 +58,7 @@ export function createPersonalizeStore({ initialRows = 1 } = {}) {
     ownershipStatus: "idle",
     ownershipError: "",
     highlightedRowId: null,
+    locatorRowId: null,
   };
 
   const notify = () => {
@@ -88,21 +89,29 @@ export function createPersonalizeStore({ initialRows = 1 } = {}) {
     },
     removeRow(rowId) {
       state.rows = state.rows.filter((row) => row.id !== rowId);
+      if (state.locatorRowId === rowId) {
+        state.locatorRowId = null;
+      }
       ensureAtLeastOneRow();
       notify();
     },
     resetRowsKeepFirst() {
       state.rows = [createRow()];
       state.highlightedRowId = null;
+      state.locatorRowId = null;
       notify();
     },
     updateRow(rowId, patch) {
       const row = getRow(rowId);
       if (!row) return;
+      const prevSquareId = row.squareId;
       if (typeof patch === "function") {
         patch(row);
       } else if (patch && typeof patch === "object") {
         Object.assign(row, patch);
+      }
+      if (state.locatorRowId === rowId && row.squareId !== prevSquareId) {
+        state.locatorRowId = null;
       }
       notify();
     },
@@ -161,6 +170,12 @@ export function createPersonalizeStore({ initialRows = 1 } = {}) {
     },
     highlightRow(rowId) {
       state.highlightedRowId = rowId;
+      notify();
+    },
+    setLocatorRow(rowId) {
+      const nextId = rowId || null;
+      if (state.locatorRowId === nextId) return;
+      state.locatorRowId = nextId;
       notify();
     },
   };

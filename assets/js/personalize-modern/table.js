@@ -1,4 +1,4 @@
-import { getTitleLength, getUriLength } from "./store.js";
+import { getTitleLength, getUriLength, isValidSquareId } from "./store.js";
 
 const encoder = new TextEncoder();
 const TITLE_MAX_BYTES = 64;
@@ -77,6 +77,7 @@ export function createPersonalizeTable({
   onFieldInput = () => {},
   onFieldBlur = () => {},
   onRowDelete = () => {},
+  onRowLocate = () => {},
 }) {
   const rowElements = new Map();
   let pendingGutterSync = false;
@@ -145,6 +146,20 @@ export function createPersonalizeTable({
     elements.row.classList.toggle(
       "personalize-table__row--highlighted",
       state.highlightedRowId === row.id
+    );
+    elements.locateButton.classList.toggle(
+      "is-active",
+      state.locatorRowId === row.id
+    );
+    const canLocate = isValidSquareId(row.squareId);
+    elements.locateButton.disabled = !canLocate;
+    elements.locateButton.setAttribute(
+      "aria-disabled",
+      canLocate ? "false" : "true"
+    );
+    elements.locateButton.setAttribute(
+      "aria-pressed",
+      state.locatorRowId === row.id ? "true" : "false"
     );
 
     if (row.imagePreviewUrl && row.imagePixelsHex) {
@@ -341,12 +356,24 @@ export function createPersonalizeTable({
     const gutterRow = document.createElement("div");
     gutterRow.className = "personalize-table__gutter-row";
     gutterRow.dataset.rowId = row.id;
+    const locateButton = document.createElement("button");
+    locateButton.type = "button";
+    locateButton.className = "personalize-row-locate";
+    locateButton.setAttribute("aria-label", "Locate square on billboard");
+    locateButton.setAttribute("aria-pressed", "false");
+    const locateIcon = document.createElement("img");
+    locateIcon.alt = "";
+    locateIcon.setAttribute("aria-hidden", "true");
+    locateIcon.src = `${window.SITE_BASEURL || ""}/assets/images/dr.png`;
+    locateButton.appendChild(locateIcon);
+    locateButton.addEventListener("click", () => onRowLocate(row.id));
     const deleteButton = document.createElement("button");
     deleteButton.type = "button";
     deleteButton.className = "personalize-row-delete";
     deleteButton.textContent = "x";
     deleteButton.setAttribute("aria-label", "Delete row");
     deleteButton.addEventListener("click", () => onRowDelete(row.id));
+    gutterRow.appendChild(locateButton);
     gutterRow.appendChild(deleteButton);
 
     return {
@@ -365,6 +392,7 @@ export function createPersonalizeTable({
       imageError,
       titleCounter,
       uriCounter,
+      locateButton,
     };
   }
 

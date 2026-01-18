@@ -36,6 +36,10 @@
   font-weight: 700;
 }
 
+.personalize-modern-page .personalize-billboard__mode-btn:not(.is-active):hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
 .personalize-modern-page .personalize-billboard__mode-btn.is-active {
   background: var(--color-accent);
   color: var(--color-primary);
@@ -116,6 +120,37 @@
   z-index: 2;
 }
 
+.personalize-modern-page .personalize-billboard__locator-btn {
+  position: absolute;
+  right: 0.5rem;
+  bottom: -50px;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: transparent;
+  border: 2px solid var(--color-accent);
+  border-radius: 20px;
+  color: var(--color-accent);
+  padding: 0.35rem 0.45rem;
+  cursor: pointer;
+  font-weight: 600;
+  z-index: 9;
+}
+
+.personalize-modern-page .personalize-billboard__locator-btn[hidden] {
+  display: none;
+}
+
+.personalize-modern-page .personalize-billboard__locator-btn img {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+.personalize-modern-page .personalize-billboard__locator-btn:hover {
+  filter: brightness(0.85);
+}
+
 .personalize-modern-page .personalize-billboard__glow-canvas {
   position: absolute;
   inset: 0;
@@ -123,6 +158,13 @@
   height: 100%;
   pointer-events: none;
   z-index: 6;
+}
+
+.personalize-modern-page .personalize-billboard__locator-arrow {
+  position: absolute;
+  pointer-events: none;
+  image-rendering: pixelated;
+  z-index: 12;
 }
 
 .personalize-modern-page .personalize-billboard-map {

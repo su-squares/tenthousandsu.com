@@ -126,6 +126,20 @@ function initPage() {
     validateSquareErrors(false);
   };
 
+  const handleRowLocate = (rowId) => {
+    const state = store.getState();
+    const current = state.locatorRowId;
+    if (current === rowId) {
+      store.setLocatorRow(null);
+      return;
+    }
+    const row = state.rows.find((item) => item.id === rowId);
+    if (!row || !isValidSquareId(row.squareId)) {
+      return;
+    }
+    store.setLocatorRow(rowId);
+  };
+
   const table = createPersonalizeTable({
     store,
     tableBody,
@@ -133,6 +147,7 @@ function initPage() {
     wrapper,
     onFieldInput: handleFieldInput,
     onRowDelete: handleRowDelete,
+    onRowLocate: handleRowLocate,
   });
 
   const syncSelectionToRows = (selectedIds) => {
