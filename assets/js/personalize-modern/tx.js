@@ -10,6 +10,7 @@ import { personalizeUnderlay } from "../../web3/services/underlay.js";
 import { personalizeUnderlayBatch } from "../../web3/services/underlay-batch.js";
 import { buildTxUrl } from "../../web3/services/explorer-links.js";
 import { fetchOwnedSquares } from "../../web3/services/ownership.js";
+import { isValidSquareId } from "./store.js";
 
 export function initPersonalizeTx(options) {
   const {
@@ -33,7 +34,22 @@ export function initPersonalizeTx(options) {
     pricing,
     mode: "personalize",
     title: "Personalization status",
+    showPersonalizeTotal: true,
   });
+
+  const syncTotal = () => {
+    const { rows } = store.getState();
+    const uniqueSquares = new Set();
+    rows.forEach((row) => {
+      if (isValidSquareId(row.squareId)) {
+        uniqueSquares.add(row.squareId);
+      }
+    });
+    txUi.setPersonalizeCount(uniqueSquares.size);
+  };
+
+  syncTotal();
+  store.subscribe(syncTotal);
 
   let currentWagmi = null;
 

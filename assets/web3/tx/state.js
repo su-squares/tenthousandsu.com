@@ -25,6 +25,8 @@ import { normalizePricing } from "./formatting.js";
  * @property {Array<{hash:string,url?:string}>} confirmed
  * @property {TxPricing} pricing
  * @property {TxMode} mode
+ * @property {number} personalizeCount
+ * @property {boolean} showPersonalizeTotal
  * @property {boolean} showWalletButton
  * @property {boolean} showBalance
  * @property {{ formatted: string, symbol?: string } | null} balance
@@ -52,6 +54,8 @@ export function createInitialState(options = {}) {
     confirmed: [],
     pricing: normalizePricing(options.pricing),
     mode: options.mode || "both",
+    personalizeCount: 0,
+    showPersonalizeTotal: Boolean(options.showPersonalizeTotal),
     showWalletButton: false,
     showBalance: options.showBalance ?? true,
     balance: null,

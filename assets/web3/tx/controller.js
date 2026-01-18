@@ -29,6 +29,7 @@ import { createBalanceManager } from "./balance-manager.js";
  * @property {Partial<TxPricing>} [pricing]
  * @property {TxMode} [mode]
  * @property {boolean} [showBalance]
+ * @property {boolean} [showPersonalizeTotal]
  * @property {"fixture"|"modal"} [variant]
  * @property {boolean} [showClose]
  */
@@ -37,6 +38,8 @@ import { createBalanceManager } from "./balance-manager.js";
  * @typedef {Object} TxController
  * @property {(ctx: { isWalletConnect?: boolean }) => void} setWalletContext
  * @property {(pricing: Partial<import("./formatting.js").TxPricing>) => void} setPricing
+ * @property {(count: number) => void} setPersonalizeCount
+ * @property {(enabled: boolean) => void} setShowPersonalizeTotal
  * @property {(title?: string) => void} setTitle
  * @property {(message?: string) => void} setMessage
  * @property {(helpText?: string) => void} setHelp
@@ -121,6 +124,17 @@ export function createTxController(target, options = {}) {
     setPricing(pricing) {
       commitState((draft) => {
         draft.pricing = normalizePricing(pricing);
+      });
+    },
+    setPersonalizeCount(count) {
+      const safeCount = Number.isFinite(count) ? Math.max(0, Math.floor(count)) : 0;
+      commitState((draft) => {
+        draft.personalizeCount = safeCount;
+      });
+    },
+    setShowPersonalizeTotal(enabled) {
+      commitState((draft) => {
+        draft.showPersonalizeTotal = Boolean(enabled);
       });
     },
     setTitle(title) {

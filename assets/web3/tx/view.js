@@ -136,6 +136,13 @@ function renderPricing(state) {
   if (state.status !== "idle") return "";
   const blocks = [];
 
+  const formatEthAmount = (value) => {
+    if (!Number.isFinite(value)) return "0";
+    const rounded = Math.round(value * 1e6) / 1e6;
+    const fixed = rounded.toFixed(6);
+    return fixed.replace(/\.?0+$/, "");
+  };
+
   if (state.mode === "mint" || state.mode === "both") {
     blocks.push(`
       <div class="su-tx-card__section su-tx-price">
@@ -153,6 +160,22 @@ function renderPricing(state) {
         <div class="su-tx-price__item">
           <span class="su-tx-price__label">Personalize:</span>
           <span>${state.pricing.personalizePriceEth} ETH each</span>
+        </div>
+      </div>
+    `);
+  }
+
+  if (state.mode === "personalize" && state.showPersonalizeTotal) {
+    const personalizeCount = Number.isFinite(state.personalizeCount)
+      ? state.personalizeCount
+      : 0;
+    const personalizePrice = state.pricing.personalizePriceEth;
+    const total = formatEthAmount(personalizeCount * personalizePrice);
+    blocks.push(`
+      <div class="su-tx-card__section su-tx-price">
+        <div class="su-tx-price__item">
+          <span class="su-tx-price__label">Total:</span>
+          <span>${personalizeCount} * ${personalizePrice} = ${total} ETH</span>
         </div>
       </div>
     `);
