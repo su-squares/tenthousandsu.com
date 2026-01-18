@@ -116,7 +116,7 @@ export function initPersonalizeBillboardUi({
   const resetButton = document.getElementById("personalize-billboard-reset");
 
   let mode = "owned";
-  let previewTooltips = true;
+  let previewTooltips = previewToggle ? previewToggle.checked : false;
   let isEditing = false;
   let stagedSelection = new Set();
   let lastOwnedSquares = null;

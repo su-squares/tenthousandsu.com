@@ -231,8 +231,10 @@ export function initPersonalizeBillboard(options) {
   }
 
   function getTooltipContent(squareNumber) {
-    if (state.mode === "preview" && !state.previewTooltips) {
-      return getPreviewTooltip(squareNumber);
+    if (state.mode === "preview") {
+      return state.previewTooltips
+        ? getPreviewTooltip(squareNumber)
+        : getOwnedTooltip(squareNumber);
     }
     return getOwnedTooltip(squareNumber);
   }
