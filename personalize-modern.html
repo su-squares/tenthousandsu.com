@@ -16,6 +16,7 @@ image: "{{ site.baseurl }}/assets/images/su-OG.png"
   <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/main.css">
   <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/personalize.css">
   <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/personalize-modern.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/billboard/billboard.css">
   <link rel="stylesheet" href="{{ site.baseurl }}/assets/square-lookup/styles.css">
   <link rel="stylesheet" href="{{ site.baseurl }}/assets/web3/tx/styles.css">
   {% include nav-menu-head.html %}
@@ -39,63 +40,127 @@ image: "{{ site.baseurl }}/assets/images/su-OG.png"
       with a flexible table for editing multiple Squares at once.
     </p>
 
-    <div class="personalize-table__toolbar billboard-embed__actions">
-      <button id="open-square-chooser" type="button" class="btn">Choose Squares</button>
-      <div class="billboard-embed__dropdown" id="csv-batch-dropdown">
-        <button type="button" class="billboard-embed__trigger" id="csv-batch-trigger">
-          CSV Batch <span class="billboard-embed__chevron" aria-hidden="true">▾</span>
-        </button>
-        <div class="billboard-embed__menu" id="csv-batch-menu">
-          <button type="button" class="billboard-embed__option" id="csv-batch-instructions">Instructions</button>
-          <button type="button" class="billboard-embed__option" id="csv-batch-download">Download CSV</button>
-          <label class="billboard-embed__option personalize-batch__file">
-            Upload CSV
-            <input id="csv-batch-upload" type="file" accept=".csv,.tsv,text/csv,text/tab-separated-values" hidden>
-          </label>
+    <section class="personalize-billboard-map" id="personalize-billboard-map">
+      <div class="personalize-billboard__map">
+        <h3>Billboard Map</h3>
+        <div class="personalize-billboard__map-list">
+          <div class="personalize-billboard__map-item">
+            <span class="personalize-billboard__map-swatch" data-color="owned-unpersonalized"></span>
+            Owned, not personalized
+          </div>
+          <div class="personalize-billboard__map-item">
+            <span class="personalize-billboard__map-swatch" data-color="owned-personalized"></span>
+            Owned, personalized
+          </div>
+          <div class="personalize-billboard__map-item">
+            <span class="personalize-billboard__map-swatch" data-color="selected"></span>
+            Selected
+          </div>
+          <div class="personalize-billboard__map-item">
+            <span class="personalize-billboard__map-swatch" data-color="error"></span>
+            Error
+          </div>
         </div>
       </div>
-      <div class="billboard-embed__dropdown" id="image-batch-dropdown">
-        <button type="button" class="billboard-embed__trigger" id="image-batch-trigger">
-          Image Batch <span class="billboard-embed__chevron" aria-hidden="true">▾</span>
-        </button>
-        <div class="billboard-embed__menu" id="image-batch-menu">
-          <button type="button" class="billboard-embed__option" id="image-batch-instructions">Instructions</button>
-          <label class="billboard-embed__option personalize-batch__file">
-            Upload Folder
-            <input id="image-batch-upload" type="file" accept="image/*" webkitdirectory directory multiple hidden>
-          </label>
+    </section>
+
+    <section class="personalize-billboard" id="personalize-billboard-section">
+      <div class="personalize-billboard__controls">
+        <div class="personalize-billboard__controls-left">
+          <button type="button" class="btn personalize-billboard__update is-invisible" id="billboard-update" hidden disabled>
+            Update
+          </button>
+        </div>
+        <div class="personalize-billboard__controls-right">
+          <button type="button" class="btn personalize-billboard__cancel" id="billboard-cancel" hidden>
+            Cancel
+          </button>
+          <button type="button" class="btn personalize-billboard__upload" id="billboard-upload" disabled aria-disabled="true">
+            Upload Image
+          </button>
         </div>
       </div>
-      <button id="reset-all" type="button" class="btn">Reset all</button>
-    </div>
-
-    <div class="personalize-table__wrapper">
-      <div class="personalize-table__gutter" aria-hidden="true">
-        <div class="personalize-table__gutter-header"></div>
-        <div class="personalize-table__gutter-body" id="personalize-table-gutter"></div>
+      <div class="personalize-billboard__view" id="personalize-billboard"></div>
+      <button type="button" class="billboard__reset-btn personalize-billboard__reset" id="personalize-billboard-reset">
+        Reset zoom
+      </button>
+      <div class="personalize-billboard__mode-row">
+        <div class="personalize-billboard__mode" role="group" aria-label="Billboard mode">
+          <button type="button" class="personalize-billboard__mode-btn is-active" data-mode="owned" aria-pressed="true">
+            Owned
+          </button>
+          <button type="button" class="personalize-billboard__mode-btn" data-mode="preview" aria-pressed="false">
+            Preview
+          </button>
+        </div>
+        <label class="personalize-billboard__toggle" id="preview-tooltips-toggle-label">
+          <input type="checkbox" id="preview-tooltips-toggle">
+          <span class="personalize-billboard__toggle-box" aria-hidden="true"></span>
+          <span class="personalize-billboard__toggle-text">Preview Tooltips</span>
+        </label>
       </div>
-      <table class="personalize-table__grid" id="personalize-table">
-        <colgroup>
-          <col style="width: 125px">
-          <col>
-          <col>
-          <col>
-        </colgroup>
-        <thead>
-          <tr>
-            <th>Square #</th>
-            <th>Text</th>
-            <th>URI</th>
-            <th>Image</th>
-          </tr>
-        </thead>
-        <tbody id="personalize-table-body"></tbody>
-      </table>
-    </div>
+      <p class="billboard__mobile-hint personalize-billboard__hint">Pinch to zoom, drag to pan.</p>
+    </section>
 
-    <div class="personalize-table__add-row">
-      <button id="add-row" type="button" class="personalize-table__add-btn" aria-label="Add row">+</button>
-    </div>
+    <section class="personalize-table-section">
+      <div class="personalize-table__toolbar billboard-embed__actions">
+        <button id="open-square-chooser" type="button" class="btn">Choose Squares</button>
+        <div class="billboard-embed__dropdown" id="csv-batch-dropdown">
+          <button type="button" class="billboard-embed__trigger" id="csv-batch-trigger">
+            CSV Batch <span class="billboard-embed__chevron" aria-hidden="true">▾</span>
+          </button>
+          <div class="billboard-embed__menu" id="csv-batch-menu">
+            <button type="button" class="billboard-embed__option" id="csv-batch-instructions">Instructions</button>
+            <button type="button" class="billboard-embed__option" id="csv-batch-download">Download CSV</button>
+            <label class="billboard-embed__option personalize-batch__file">
+              Upload CSV
+              <input id="csv-batch-upload" type="file" accept=".csv,.tsv,text/csv,text/tab-separated-values" hidden>
+            </label>
+          </div>
+        </div>
+        <div class="billboard-embed__dropdown" id="image-batch-dropdown">
+          <button type="button" class="billboard-embed__trigger" id="image-batch-trigger">
+            Image Batch <span class="billboard-embed__chevron" aria-hidden="true">▾</span>
+          </button>
+          <div class="billboard-embed__menu" id="image-batch-menu">
+            <button type="button" class="billboard-embed__option" id="image-batch-instructions">Instructions</button>
+            <label class="billboard-embed__option personalize-batch__file">
+              Upload Folder
+              <input id="image-batch-upload" type="file" accept="image/*" webkitdirectory directory multiple hidden>
+            </label>
+          </div>
+        </div>
+        <button id="reset-all" type="button" class="btn">Reset all</button>
+      </div>
+
+      <div class="personalize-table__wrapper">
+        <div class="personalize-table__gutter" aria-hidden="true">
+          <div class="personalize-table__gutter-header"></div>
+          <div class="personalize-table__gutter-body" id="personalize-table-gutter"></div>
+        </div>
+        <table class="personalize-table__grid" id="personalize-table">
+          <colgroup>
+            <col style="width: 125px">
+            <col>
+            <col>
+            <col>
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Square #</th>
+              <th>Text</th>
+              <th>URI</th>
+              <th>Image</th>
+            </tr>
+          </thead>
+          <tbody id="personalize-table-body"></tbody>
+        </table>
+      </div>
+
+      <div class="personalize-table__add-row">
+        <button id="add-row" type="button" class="personalize-table__add-btn" aria-label="Add row">+</button>
+      </div>
+    </section>
 
     <h2>Personalize</h2>
     <p>Click this button to personalize your Squares.</p>

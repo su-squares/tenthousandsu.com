@@ -18,6 +18,7 @@ import {
 } from "./validation/index.js";
 import { createBatchApplier, initBatchControls } from "./batch/index.js";
 import { initPersonalizeTx } from "./tx.js";
+import { initPersonalizeBillboardUi } from "./billboard.js";
 
 function initPage() {
   const tableBody = document.getElementById("personalize-table-body");
@@ -176,6 +177,12 @@ function initPage() {
       }
     },
     onOwnershipReady: () => validateSquareErrors(false),
+  });
+
+  initPersonalizeBillboardUi({
+    store,
+    validateSquareErrors,
+    clearOverLimitFlags,
   });
 
   if (resetButton) {
