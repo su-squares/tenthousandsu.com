@@ -11,6 +11,7 @@ import { loadSquareData } from "../../js/square-data.js";
 import { assetPath } from "../../js/asset-base.js";
 import { extractScheme, isBlockedScheme } from "../../js/link-utils.js";
 import { shouldHideUriLabel } from "./link-label-utils.js";
+import { createPersonalizeGlowCanvas } from "../overlays/personalize-glow-canvas.js";
 
 const TEXT_SILENCED_TOOLTIP = (squareNumber) =>
   `Square #${squareNumber} Personalization text hidden for your safety.`;
@@ -84,6 +85,32 @@ export function initPersonalizeBillboard(options) {
 
   const { cells } = billboard.elements;
   const applied = new Map();
+  const glowCanvas = createPersonalizeGlowCanvas({
+    wrapper: billboard.elements.wrapper,
+    pulseTarget: document.querySelector(".personalize-billboard__map"),
+  });
+  const glowColors = {
+    selected: "",
+    "owned-unpersonalized": "",
+    "owned-personalized": "",
+    error: "",
+  };
+
+  function resolveGlowColors() {
+    const styles = getComputedStyle(document.documentElement);
+    glowColors.selected =
+      styles.getPropertyValue("--billboard-glow-selected").trim() || "#39ff14";
+    glowColors["owned-unpersonalized"] =
+      styles.getPropertyValue("--billboard-glow-owned-unpersonalized").trim() ||
+      "#ffd700";
+    glowColors["owned-personalized"] =
+      styles.getPropertyValue("--billboard-glow-owned-personalized").trim() ||
+      "#4aa3ff";
+    glowColors.error =
+      styles.getPropertyValue("--billboard-glow-error").trim() || "#ff2d2d";
+  }
+
+  resolveGlowColors();
 
   function refreshCurrentTooltip() {
     if (billboard.currentSquare) {
@@ -238,16 +265,13 @@ export function initPersonalizeBillboard(options) {
       delete cell.dataset.preview;
       cell.style.removeProperty("--preview-image");
     }
-
-    if (config.glow) {
-      cell.dataset.glow = config.glow;
-    } else {
-      delete cell.dataset.glow;
-    }
+    delete cell.dataset.glow;
+    cell.style.removeProperty("--glow-color");
   }
 
   function syncOverlays() {
     const next = new Map();
+    const highlights = [];
     const selected = state.selectedSquares || new Set();
     const ownedReady = state.ownershipStatus === "ready" && state.ownedSquares;
 
@@ -296,7 +320,14 @@ export function initPersonalizeBillboard(options) {
     next.forEach((config, squareNumber) => {
       applySquareVisual(squareNumber, config);
       applied.set(squareNumber, config);
+      if (config.glow) {
+        const color = glowColors[config.glow] || "#fff";
+        highlights.push({ squareNumber, color });
+      }
     });
+    if (glowCanvas) {
+      glowCanvas.setHighlights(highlights);
+    }
   }
 
   function setState(nextState) {
@@ -332,6 +363,9 @@ export function initPersonalizeBillboard(options) {
     billboard,
     setState,
     destroy() {
+      if (glowCanvas) {
+        glowCanvas.destroy();
+      }
       billboard.destroy();
     },
   };

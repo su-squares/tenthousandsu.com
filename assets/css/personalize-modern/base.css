@@ -1,0 +1,25 @@
+.personalize-modern-page {
+  --billboard-glow-selected: #39ff14;
+  --billboard-glow-owned-unpersonalized: var(--color-accent);
+  --billboard-glow-owned-personalized: #4aa3ff;
+  --billboard-glow-error: #ff2d2d;
+  --glow-pulse: 0.5;
+}
+
+.personalize-modern-page article {
+  gap: 1.5rem;
+}
+
+.personalize-modern-page .personalize-table__toolbar .btn,
+.personalize-modern-page .personalize-billboard .btn,
+.personalize-modern-page .billboard-embed__trigger,
+.personalize-modern-page .billboard-embed__option {
+  background: var(--button-bg);
+}
+
+.personalize-modern-page .personalize-table__toolbar .btn:hover,
+.personalize-modern-page .personalize-billboard .btn:hover,
+.personalize-modern-page .billboard-embed__trigger:hover,
+.personalize-modern-page .billboard-embed__option:hover {
+  background: var(--button-bg-hover);
+}
