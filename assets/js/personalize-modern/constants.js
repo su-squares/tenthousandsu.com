@@ -21,7 +21,7 @@ export const IMAGE_INSTRUCTIONS = [
 
 export const CSV_TEMPLATE_LINES = [
   "square_id,title,uri",
-  "1,Example Square,https://example.com",
+  "1,Example Title,https://example.com",
   "00002,Second Example,mailto:hello@example.com",
   "3,Third Example,https://tenthousandsu.com",
 ];

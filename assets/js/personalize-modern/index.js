@@ -93,9 +93,9 @@ function initPage() {
       const row = store.getState().rows.find((item) => item.id === rowId);
       const length = row ? getTitleLength(row) : 0;
       if (length > TITLE_MAX) {
-        store.setRowError(rowId, "title", "Text is too long.");
+        store.setRowError(rowId, "title", "Title is too long.");
         if (setOverLimitFlag(rowId, "title", true)) {
-          alert("Text is too long, please try again.");
+          alert("Title is too long, please try again.");
         }
       } else {
         store.setRowError(rowId, "title", "");

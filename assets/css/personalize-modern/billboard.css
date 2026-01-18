@@ -129,7 +129,7 @@
   gap: 0.4rem;
   background: transparent;
   border: 2px solid var(--color-accent);
-  border-radius: 20px;
+  border-radius: var(--radius-sm);
   color: var(--color-accent);
   padding: 0.35rem 0.45rem;
   cursor: pointer;

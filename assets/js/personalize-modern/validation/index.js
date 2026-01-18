@@ -106,10 +106,10 @@ export function createValidationController(options) {
       }
 
       if (titleLength > titleMax) {
-        errors.title = "Text is too long.";
+        errors.title = "Title is too long.";
         issueRows.overLimit.add(row.id);
       } else if (titleLength < 1 && hasData) {
-        errors.title = "Text is required.";
+        errors.title = "Title is required.";
         issueRows.incomplete.add(row.id);
       }
 
