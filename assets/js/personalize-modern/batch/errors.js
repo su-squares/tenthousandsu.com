@@ -1,11 +1,10 @@
 export function createBatchErrorGroups() {
   return {
     missingColumns: [],
+    missingSquare: [],
     invalidSquare: [],
     duplicateSquares: [],
-    titleMissing: [],
     titleTooLong: [],
-    uriMissing: [],
     uriTooLong: [],
     notOwned: [],
     invalidFilenames: [],
@@ -24,11 +23,10 @@ export function buildBatchErrorMessage(title, groups) {
   };
 
   addGroup("Rows with missing columns", groups.missingColumns);
+  addGroup("Rows missing Square numbers", groups.missingSquare);
   addGroup("Invalid Square numbers", groups.invalidSquare);
   addGroup("Duplicate Squares", groups.duplicateSquares);
-  addGroup("Missing titles", groups.titleMissing);
   addGroup("Titles too long", groups.titleTooLong);
-  addGroup("Missing URIs", groups.uriMissing);
   addGroup("URIs too long", groups.uriTooLong);
   addGroup("Squares not owned", groups.notOwned);
   addGroup("Invalid filenames", groups.invalidFilenames);

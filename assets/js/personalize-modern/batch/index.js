@@ -15,18 +15,12 @@ export function createBatchApplier({ store, clearOverLimitFlags, validateSquareE
     const batchIds = Array.from(batchMap.keys());
     const stateRows = store.getState().rows.slice();
 
-    stateRows.forEach((row) => {
-      if (!batchMap.has(row.squareId)) {
-        store.removeRow(row.id);
-        clearOverLimitFlags(row.id);
-      }
-    });
-
     batchIds.forEach((squareId) => {
       const patch = batchMap.get(squareId) || {};
-      const existing = store.getState().rows.find((row) => row.squareId === squareId);
-      if (existing) {
-        store.updateRow(existing.id, (row) => {
+      const matches = store.getState().rows.filter((row) => row.squareId === squareId);
+      if (matches.length > 0) {
+        const [primary, ...duplicates] = matches;
+        store.updateRow(primary.id, (row) => {
           Object.assign(row, patch);
           if (Object.prototype.hasOwnProperty.call(patch, "title")) {
             row.errors.title = "";
@@ -38,13 +32,16 @@ export function createBatchApplier({ store, clearOverLimitFlags, validateSquareE
             row.errors.image = "";
           }
         });
-        clearOverLimitFlags(existing.id);
+        clearOverLimitFlags(primary.id);
+        duplicates.forEach((row) => {
+          store.removeRow(row.id);
+          clearOverLimitFlags(row.id);
+        });
       } else {
         store.addRow({ squareId, ...patch });
       }
     });
 
-    store.pruneEmptyRows();
     store.sortRows();
     validateSquareErrors(false);
   };

@@ -67,30 +67,34 @@ export function parseCsvBatchText(text, options) {
       continue;
     }
 
-    const [squareText, titleValue, uriValue] = row;
+    const [squareText, titleValueRaw, uriValueRaw] = row;
+    const titleValue = titleValueRaw || "";
+    const uriValue = uriValueRaw || "";
     const squareId = normalizeSquareId(squareText);
-    if (!squareId || !isValidSquareId(squareId)) {
-      errors.invalidSquare.push(`Row ${rowNumber}`);
+    if (!squareId && (titleValue || uriValue)) {
+      errors.missingSquare.push(`Row ${rowNumber}`);
       continue;
     }
+    if (!squareId || !isValidSquareId(squareId)) {
+      if (squareText || titleValue || uriValue) {
+        errors.invalidSquare.push(`Row ${rowNumber}`);
+      }
+      continue;
+    }
+
 
     if (seenSquares.has(squareId)) {
       duplicates.add(squareId);
     } else {
       seenSquares.add(squareId);
     }
-
     const titleLength = byteLength(titleValue);
-    if (titleLength < 1) {
-      errors.titleMissing.push(`#${squareId}`);
-    } else if (titleLength > titleMax) {
+    if (titleLength > titleMax) {
       errors.titleTooLong.push(`#${squareId}`);
     }
 
     const uriLength = byteLength(uriValue);
-    if (uriLength < 1) {
-      errors.uriMissing.push(`#${squareId}`);
-    } else if (uriLength > uriMax) {
+    if (uriLength > uriMax) {
       errors.uriTooLong.push(`#${squareId}`);
     }
 
@@ -98,7 +102,15 @@ export function parseCsvBatchText(text, options) {
       errors.notOwned.push(`#${squareId}`);
     }
 
-    batchMap.set(squareId, { title: titleValue, uri: uriValue });
+    const patch = {};
+    if (titleValue.length > 0) {
+      patch.title = titleValue;
+    }
+    if (uriValue.length > 0) {
+      patch.uri = uriValue;
+    }
+    batchMap.set(squareId, patch);
+
   }
 
   if (duplicates.size > 0) {

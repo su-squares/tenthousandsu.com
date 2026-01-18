@@ -7,8 +7,8 @@ export const CSV_INSTRUCTIONS = [
   "- Square IDs can be 1 or 00001 (leading zeros are treated the same).",
   "- Title max 64 bytes; URI max 96 bytes.",
   "- If ownership data is loaded, Squares you don't own are rejected.",
-  "- Running CSV Batch replaces the table with only those Squares.",
-  "- Image Batch is additive only when it targets the same Square set.",
+  "- Running CSV Batch adds/updates rows and does not delete other rows.",
+  "- Duplicate square IDs in the file are rejected.",
 ].join("\n");
 
 export const IMAGE_INSTRUCTIONS = [
@@ -16,8 +16,7 @@ export const IMAGE_INSTRUCTIONS = [
   "- Upload a folder of 10x10 images named by Square number (1.png or 00001.png).",
   "- Mixed image formats are fine; duplicate names after normalization are rejected.",
   "- If ownership data is loaded, Squares you don't own are rejected.",
-  "- Running Image Batch replaces the table with only those Squares.",
-  "- CSV Batch is additive only when it targets the same Square set.",
+  "- Running Image Batch adds/updates rows and does not delete other rows.",
 ].join("\n");
 
 export const CSV_TEMPLATE_LINES = [
