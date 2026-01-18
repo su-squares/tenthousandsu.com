@@ -107,6 +107,11 @@ image: "{{ site.baseurl }}/assets/images/su-OG.png"
       <input type="file" id="placement-image-input" accept="image/*" hidden>
       <div class="personalize-billboard__view">
         <div id="personalize-billboard"></div>
+        <div class="personalize-billboard__loading" id="placement-loading" hidden>
+          <div class="personalize-billboard__loading-text" aria-live="polite">
+            Adding images to table<span class="personalize-billboard__loading-dots" aria-hidden="true">...</span>
+          </div>
+        </div>
         <button type="button" class="personalize-billboard__locator-btn" id="billboard-locator-hide" hidden>
           <img src="{{ site.baseurl }}/assets/images/dr.png" alt="" aria-hidden="true">
           Hide

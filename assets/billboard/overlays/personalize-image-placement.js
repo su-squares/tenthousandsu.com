@@ -8,6 +8,18 @@ export function createPersonalizeImagePlacementOverlay({ wrapper, panZoom }) {
   overlay.hidden = true;
   overlay.tabIndex = 0;
   overlay.style.touchAction = "none";
+  overlay.style.userSelect = "none";
+
+  const swallowTouch = (event) => {
+    event.stopPropagation();
+    if (event.type === "touchmove") {
+      event.preventDefault();
+    }
+  };
+  overlay.addEventListener("touchstart", swallowTouch, { passive: true });
+  overlay.addEventListener("touchmove", swallowTouch, { passive: false });
+  overlay.addEventListener("touchend", swallowTouch, { passive: true });
+  overlay.addEventListener("touchcancel", swallowTouch, { passive: true });
 
   const image = document.createElement("img");
   image.className = "personalize-billboard__placement-image";

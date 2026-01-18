@@ -132,6 +132,11 @@
   color: var(--color-accent);
   font-size: 1.1rem;
   cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
 }
 
 .personalize-modern-page .personalize-billboard__resize-btn:hover {
@@ -170,11 +175,47 @@
   z-index: 2;
 }
 
+.personalize-modern-page .personalize-billboard__loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 14;
+  pointer-events: auto;
+}
+
+.personalize-modern-page .personalize-billboard__loading[hidden] {
+  display: none;
+}
+
+.personalize-modern-page .personalize-billboard__loading-text {
+  color: var(--color-accent);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  white-space: nowrap;
+}
+
+.personalize-modern-page .personalize-billboard__loading-dots {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: bottom;
+  width: 0;
+  white-space: nowrap;
+  line-height: 1;
+  writing-mode: horizontal-tb;
+  animation: personalize-billboard-dots 1.2s steps(3, end) infinite;
+}
+
 .personalize-modern-page .personalize-billboard__placement-overlay {
   position: absolute;
   border-radius: 0;
   border: 2px solid var(--billboard-glow-selected);
   outline: none;
+  background: transparent;
   box-shadow:
     0 0 12px var(--billboard-glow-selected),
     0 0 24px var(--billboard-glow-selected);
@@ -363,6 +404,14 @@
   display: none;
 }
 
+@keyframes personalize-billboard-dots {
+  0% {
+    width: 0;
+  }
+  100% {
+    width: 0.9em;
+  }
+}
 
 
 @media (max-width: 700px) {

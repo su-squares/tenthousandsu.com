@@ -103,6 +103,7 @@ function clamp(value, min, max) {
 
 const PLACEMENT_MAX_DIMENSION = 1000;
 const PLACEMENT_RESAMPLE_SMOOTH = true;
+const PLACEMENT_CHUNK_SIZE = 200;
 
 function revokePlacementUrl(url) {
   if (!url || typeof url !== "string") return;
@@ -169,6 +170,10 @@ function loadPlacementImage(file) {
   });
 }
 
+function nextFrame() {
+  return new Promise((resolve) => requestAnimationFrame(resolve));
+}
+
 function getCornerSquares({ row, col, widthSquares, heightSquares }) {
   const topLeft = coordsToSquare(row, col);
   const topRight = coordsToSquare(row, col + widthSquares - 1);
@@ -217,6 +222,9 @@ export function initPersonalizeBillboardUi({
   const placementTopRight = document.getElementById("placement-top-right");
   const placementBottomLeft = document.getElementById("placement-bottom-left");
   const placementBottomRight = document.getElementById("placement-bottom-right");
+  const placementLoading = document.getElementById("placement-loading");
+  const placementLoadingText =
+    placementLoading?.querySelector(".personalize-billboard__loading-text") || null;
 
   let mode = "owned";
   let previewTooltips = previewToggle ? previewToggle.checked : false;
@@ -229,6 +237,9 @@ export function initPersonalizeBillboardUi({
   let placementDragging = null;
   let placementOverlay = null;
   let placementInvalid = false;
+  let placementProcessing = false;
+  let placementWorker = null;
+  let placementWorkerId = 0;
   const RESIZE_STEP_SQUARES = 1;
 
   root.dataset.editing = "false";
@@ -427,6 +438,194 @@ export function initPersonalizeBillboardUi({
     }
   }
 
+  const placementWorkerUrl = `${window.SITE_BASEURL || ""}/assets/js/personalize-modern/placement-worker.js`;
+
+  function setPlacementLoading(active) {
+    if (placementLoading) {
+      placementLoading.hidden = !active;
+    }
+    if (placementLoadingText) {
+      const message = "Adding images to table";
+      if (active) {
+        if (placementLoadingText.firstChild) {
+          placementLoadingText.firstChild.nodeValue = message;
+        } else {
+          placementLoadingText.textContent = message;
+        }
+      }
+    }
+    if (placementAccept) {
+      placementAccept.disabled = active || placementInvalid;
+    }
+    if (placementCancel) {
+      placementCancel.disabled = active;
+    }
+    if (uploadButton) {
+      uploadButton.disabled = active;
+    }
+  }
+
+  function updatePlacementLoading(processed, total) {
+    if (!placementLoadingText || !total) return;
+    const percent = Math.min(100, Math.round((processed / total) * 100));
+    const message = `Adding images to table (${percent}%)`;
+    if (placementLoadingText.firstChild) {
+      placementLoadingText.firstChild.nodeValue = message;
+    } else {
+      placementLoadingText.textContent = message;
+    }
+  }
+
+  function getPlacementWorker() {
+    if (placementWorker) return placementWorker;
+    if (!("Worker" in window)) return null;
+    try {
+      placementWorker = new Worker(placementWorkerUrl);
+    } catch (error) {
+      placementWorker = null;
+    }
+    return placementWorker;
+  }
+
+  async function buildPlacementTilesWithWorker(state) {
+    const worker = getPlacementWorker();
+    if (!worker || typeof createImageBitmap !== "function") {
+      throw new Error("Placement worker not available.");
+    }
+    const bitmap = await createImageBitmap(state.image);
+    return new Promise((resolve, reject) => {
+      const id = placementWorkerId + 1;
+      placementWorkerId = id;
+
+      const handleMessage = (event) => {
+        const payload = event.data || {};
+        if (payload.id !== id) return;
+        if (payload.type === "progress") {
+          updatePlacementLoading(payload.processed, payload.total);
+          return;
+        }
+        cleanup();
+        if (payload.type === "error") {
+          reject(new Error(payload.message || "Placement worker failed."));
+          return;
+        }
+        resolve({
+          tiles: payload.tiles || [],
+          alphaWarning: Boolean(payload.alphaWarning),
+        });
+      };
+
+      const handleError = () => {
+        cleanup();
+        reject(new Error("Placement worker failed."));
+      };
+
+      const cleanup = () => {
+        worker.removeEventListener("message", handleMessage);
+        worker.removeEventListener("error", handleError);
+      };
+
+      worker.addEventListener("message", handleMessage);
+      worker.addEventListener("error", handleError);
+      worker.postMessage(
+        {
+          id,
+          bitmap,
+          widthSquares: state.widthSquares,
+          heightSquares: state.heightSquares,
+          row: state.row,
+          col: state.col,
+          chunkSize: PLACEMENT_CHUNK_SIZE,
+        },
+        [bitmap]
+      );
+    });
+  }
+
+  async function buildPlacementTilesChunked(state) {
+    const widthPx = state.widthSquares * 10;
+    const heightPx = state.heightSquares * 10;
+    const canvas = document.createElement("canvas");
+    canvas.width = widthPx;
+    canvas.height = heightPx;
+    const context = canvas.getContext("2d", { willReadFrequently: true });
+    context.drawImage(state.image, 0, 0, widthPx, heightPx);
+    const { data } = context.getImageData(0, 0, widthPx, heightPx);
+
+    const previewCanvas = document.createElement("canvas");
+    previewCanvas.width = 10;
+    previewCanvas.height = 10;
+    const previewContext = previewCanvas.getContext("2d");
+    const previewImageData = previewContext.createImageData(10, 10);
+    const tiles = [];
+    let alphaWarning = false;
+    const total = state.widthSquares * state.heightSquares;
+    let processed = 0;
+
+    for (let y = 0; y < state.heightSquares; y += 1) {
+      for (let x = 0; x < state.widthSquares; x += 1) {
+        let hex = "0x";
+        for (let py = 0; py < 10; py += 1) {
+          for (let px = 0; px < 10; px += 1) {
+            const sourceIndex =
+              ((y * 10 + py) * widthPx + (x * 10 + px)) * 4;
+            const red = data[sourceIndex];
+            const green = data[sourceIndex + 1];
+            const blue = data[sourceIndex + 2];
+            const alpha = data[sourceIndex + 3];
+            const mixedRed = Math.floor((red * alpha + 255 * (255 - alpha)) / 255);
+            const mixedGreen = Math.floor(
+              (green * alpha + 255 * (255 - alpha)) / 255
+            );
+            const mixedBlue = Math.floor((blue * alpha + 255 * (255 - alpha)) / 255);
+            if (alpha !== 255) alphaWarning = true;
+            hex += mixedRed.toString(16).padStart(2, "0");
+            hex += mixedGreen.toString(16).padStart(2, "0");
+            hex += mixedBlue.toString(16).padStart(2, "0");
+
+            const targetIndex = (py * 10 + px) * 4;
+            previewImageData.data[targetIndex] = mixedRed;
+            previewImageData.data[targetIndex + 1] = mixedGreen;
+            previewImageData.data[targetIndex + 2] = mixedBlue;
+            previewImageData.data[targetIndex + 3] = 255;
+          }
+        }
+
+        previewContext.putImageData(previewImageData, 0, 0);
+        const previewUrl = previewCanvas.toDataURL("image/png");
+        const squareId = coordsToSquare(state.row + y, state.col + x);
+        tiles.push({
+          squareId,
+          imagePixelsHex: hex,
+          imagePreviewUrl: previewUrl,
+        });
+        processed += 1;
+
+        if (processed % PLACEMENT_CHUNK_SIZE === 0) {
+          updatePlacementLoading(processed, total);
+          await nextFrame();
+        }
+      }
+    }
+
+    updatePlacementLoading(total, total);
+    return { tiles, alphaWarning };
+  }
+
+  async function buildPlacementTiles(state) {
+    if (!state || !state.image) {
+      return { tiles: [], alphaWarning: false };
+    }
+    try {
+      if ("Worker" in window && "OffscreenCanvas" in window) {
+        return await buildPlacementTilesWithWorker(state);
+      }
+    } catch (error) {
+      console.warn("[Personalize] Placement worker unavailable, using fallback.", error);
+    }
+    return buildPlacementTilesChunked(state);
+  }
+
   function computeInitialPlacement(image) {
     const aspect = image.width / image.height || 1;
     let widthSquares = Math.max(1, Math.round(image.width / 10));
@@ -498,10 +697,10 @@ export function initPersonalizeBillboardUi({
       placementOverlay.setInvalid(placementInvalid);
     }
     if (placementAccept) {
-      placementAccept.disabled = placementInvalid;
+      placementAccept.disabled = placementInvalid || placementProcessing;
       placementAccept.setAttribute(
         "aria-disabled",
-        placementInvalid ? "true" : "false"
+        placementInvalid || placementProcessing ? "true" : "false"
       );
     }
   }
@@ -568,68 +767,7 @@ export function initPersonalizeBillboardUi({
     revokePlacementUrl(imageUrl);
   }
 
-  function buildPlacementBatch(state) {
-    const batchMap = new Map();
-    if (!state || !state.image) return { batchMap, alphaWarning: false };
-
-    const widthPx = state.widthSquares * 10;
-    const heightPx = state.heightSquares * 10;
-    const canvas = document.createElement("canvas");
-    canvas.width = widthPx;
-    canvas.height = heightPx;
-    const context = canvas.getContext("2d");
-    context.drawImage(state.image, 0, 0, widthPx, heightPx);
-    const { data } = context.getImageData(0, 0, widthPx, heightPx);
-
-    const previewCanvas = document.createElement("canvas");
-    previewCanvas.width = 10;
-    previewCanvas.height = 10;
-    const previewContext = previewCanvas.getContext("2d");
-    const previewImageData = previewContext.createImageData(10, 10);
-    let alphaWarning = false;
-
-    for (let y = 0; y < state.heightSquares; y += 1) {
-      for (let x = 0; x < state.widthSquares; x += 1) {
-        let hex = "0x";
-        for (let py = 0; py < 10; py += 1) {
-          for (let px = 0; px < 10; px += 1) {
-            const sourceIndex =
-              ((y * 10 + py) * widthPx + (x * 10 + px)) * 4;
-            const red = data[sourceIndex];
-            const green = data[sourceIndex + 1];
-            const blue = data[sourceIndex + 2];
-            const alpha = data[sourceIndex + 3];
-            const mixedRed = Math.floor((red * alpha + 255 * (255 - alpha)) / 255);
-            const mixedGreen = Math.floor(
-              (green * alpha + 255 * (255 - alpha)) / 255
-            );
-            const mixedBlue = Math.floor((blue * alpha + 255 * (255 - alpha)) / 255);
-            if (alpha !== 255) alphaWarning = true;
-            hex += mixedRed.toString(16).padStart(2, "0");
-            hex += mixedGreen.toString(16).padStart(2, "0");
-            hex += mixedBlue.toString(16).padStart(2, "0");
-
-            const targetIndex = (py * 10 + px) * 4;
-            previewImageData.data[targetIndex] = mixedRed;
-            previewImageData.data[targetIndex + 1] = mixedGreen;
-            previewImageData.data[targetIndex + 2] = mixedBlue;
-            previewImageData.data[targetIndex + 3] = 255;
-          }
-        }
-
-        previewContext.putImageData(previewImageData, 0, 0);
-        const previewUrl = previewCanvas.toDataURL("image/png");
-        const squareId = coordsToSquare(state.row + y, state.col + x);
-        batchMap.set(squareId, { imagePixelsHex: hex, imagePreviewUrl: previewUrl });
-      }
-    }
-
-    return { batchMap, alphaWarning };
-  }
-
-  function applyPlacement() {
-    if (!placementState || placementInvalid) return;
-    const { batchMap, alphaWarning } = buildPlacementBatch(placementState);
+  async function applyPlacementTiles(tiles) {
     const rows = store.getState().rows;
     const rowBySquare = new Map();
     rows.forEach((row) => {
@@ -638,25 +776,65 @@ export function initPersonalizeBillboardUi({
       }
     });
 
-    batchMap.forEach((patch, squareId) => {
-      const row = rowBySquare.get(squareId) || null;
-      if (row) {
-        store.updateRow(row.id, (draft) => {
-          draft.imagePixelsHex = patch.imagePixelsHex;
-          draft.imagePreviewUrl = patch.imagePreviewUrl;
-          draft.errors.image = "";
-        });
-      } else {
-        store.addRow({ squareId, ...patch });
+    store.beginBatch();
+    try {
+      const total = tiles.length;
+      let index = 0;
+      while (index < total) {
+        const end = Math.min(index + PLACEMENT_CHUNK_SIZE, total);
+        for (let i = index; i < end; i += 1) {
+          const patch = tiles[i];
+          const squareId = patch.squareId;
+          const row = rowBySquare.get(squareId) || null;
+          if (row) {
+            store.updateRow(row.id, (draft) => {
+              draft.imagePixelsHex = patch.imagePixelsHex;
+              draft.imagePreviewUrl = patch.imagePreviewUrl;
+              draft.errors.image = "";
+            });
+          } else {
+            const newRow = store.addRow({
+              squareId,
+              imagePixelsHex: patch.imagePixelsHex,
+              imagePreviewUrl: patch.imagePreviewUrl,
+            });
+            rowBySquare.set(squareId, newRow);
+          }
+        }
+        index = end;
+        updatePlacementLoading(index, total);
+        if (index < total) {
+          await nextFrame();
+        }
       }
-    });
 
-    store.sortRows();
-    validateSquareErrors(false);
-    if (alphaWarning) {
-      alertFn("WARNING: Your image included transparency. We mixed it on white.");
+      store.sortRows();
+      validateSquareErrors(false);
+    } finally {
+      store.endBatch();
     }
-    exitPlacementMode();
+  }
+
+  async function applyPlacement() {
+    if (!placementState || placementInvalid || placementProcessing) return;
+    if (controller?.billboard?.panZoom?.reset) {
+      controller.billboard.panZoom.reset();
+    }
+    placementProcessing = true;
+    setPlacementLoading(true);
+    try {
+      const { tiles, alphaWarning } = await buildPlacementTiles(placementState);
+      await applyPlacementTiles(tiles);
+      exitPlacementMode();
+      if (alphaWarning) {
+        alertFn("WARNING: Your image included transparency. We mixed it on white.");
+      }
+    } catch (error) {
+      alertFn(error?.message || "Unable to apply image placement.");
+    } finally {
+      placementProcessing = false;
+      setPlacementLoading(false);
+    }
   }
 
   root.dataset.placement = "false";

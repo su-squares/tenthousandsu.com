@@ -52,6 +52,8 @@ export function getUriLength(row) {
 
 export function createPersonalizeStore({ initialRows = 1 } = {}) {
   const listeners = new Set();
+  let batchDepth = 0;
+  let pendingNotify = false;
   const state = {
     rows: Array.from({ length: Math.max(1, initialRows) }, () => createRow()),
     ownedSquares: null,
@@ -61,8 +63,16 @@ export function createPersonalizeStore({ initialRows = 1 } = {}) {
     locatorRowId: null,
   };
 
-  const notify = () => {
+  const emit = () => {
     listeners.forEach((listener) => listener(state));
+  };
+
+  const notify = () => {
+    if (batchDepth > 0) {
+      pendingNotify = true;
+      return;
+    }
+    emit();
   };
 
   const getRow = (rowId) => state.rows.find((row) => row.id === rowId) || null;
@@ -80,6 +90,25 @@ export function createPersonalizeStore({ initialRows = 1 } = {}) {
     subscribe(listener) {
       listeners.add(listener);
       return () => listeners.delete(listener);
+    },
+    beginBatch() {
+      batchDepth += 1;
+    },
+    endBatch() {
+      if (batchDepth === 0) return;
+      batchDepth = Math.max(0, batchDepth - 1);
+      if (batchDepth === 0 && pendingNotify) {
+        pendingNotify = false;
+        emit();
+      }
+    },
+    batch(callback) {
+      this.beginBatch();
+      try {
+        callback();
+      } finally {
+        this.endBatch();
+      }
     },
     addRow(overrides = {}) {
       const row = createRow(overrides);

@@ -2,8 +2,9 @@
  * Canvas glow overlay for personalize billboard.
  */
 
-const DEFAULT_MAX_RESOLUTION = 1400;
+const DEFAULT_MAX_RESOLUTION = 1000;
 const DEFAULT_DURATION_MS = 2600;
+const FRAME_INTERVAL_MS = 1000 / 10;
 
 function createCanvas(wrapper) {
   const canvas = document.createElement("canvas");
@@ -34,6 +35,15 @@ export function createPersonalizeGlowCanvas({
   let rafId = null;
   let start = null;
   let running = false;
+  let lastDraw = 0;
+  let glowLayer = null;
+  let occluderLayer = null;
+  let cacheDirty = true;
+
+  function ensureLayerCanvas(existing) {
+    if (existing) return existing;
+    return document.createElement("canvas");
+  }
 
   function updateCanvasSize() {
     const rect = wrapper.getBoundingClientRect();
@@ -48,6 +58,7 @@ export function createPersonalizeGlowCanvas({
     canvas.height = target;
     size = nextSize;
     scale = target / nextSize;
+    cacheDirty = true;
   }
 
   function clearCanvas() {
@@ -56,20 +67,19 @@ export function createPersonalizeGlowCanvas({
     ctx.clearRect(0, 0, size, size);
   }
 
-  function drawHighlights(pulse) {
+  function drawGlowLayer(pulse, targetCtx) {
     if (!size) return;
-    ctx.setTransform(scale, 0, 0, scale, 0, 0);
-    ctx.clearRect(0, 0, size, size);
+    targetCtx.setTransform(scale, 0, 0, scale, 0, 0);
+    targetCtx.clearRect(0, 0, size, size);
 
     const cell = size / 100;
     const border = Math.max(2, Math.round(cell * 0.25));
     const scaleFactor = Math.max(0.75, cell / 12);
     const blurPrimary = (2 + 14 * pulse) * scaleFactor;
     const blurSecondary = (4 + 20 * pulse) * scaleFactor;
-    const whiteBorder = Math.max(1, Math.round(cell * 0.12));
 
     // First pass: draw all glows
-    ctx.globalAlpha = 0.3 + 0.7 * pulse;
+    targetCtx.globalAlpha = 1;
     for (const highlight of highlights) {
       const squareNumber = highlight.squareNumber;
       if (!squareNumber || squareNumber < 1 || squareNumber > 10000) continue;
@@ -81,27 +91,33 @@ export function createPersonalizeGlowCanvas({
       const y = row * cell;
       const color = highlight.color || "#fff";
 
-      ctx.lineWidth = border;
-      ctx.strokeStyle = color;
-      ctx.shadowColor = color;
+      targetCtx.lineWidth = border;
+      targetCtx.strokeStyle = color;
+      targetCtx.shadowColor = color;
 
       const inset = border / 2;
       const width = cell - border;
       const height = cell - border;
 
-      ctx.shadowBlur = blurPrimary;
-      ctx.strokeRect(x + inset, y + inset, width, height);
+      targetCtx.shadowBlur = blurPrimary;
+      targetCtx.strokeRect(x + inset, y + inset, width, height);
 
-      ctx.shadowBlur = blurSecondary;
-      ctx.strokeRect(x + inset, y + inset, width, height);
+      targetCtx.shadowBlur = blurSecondary;
+      targetCtx.strokeRect(x + inset, y + inset, width, height);
     }
+    targetCtx.shadowColor = "transparent";
+    targetCtx.shadowBlur = 0;
+  }
 
-    // Reset for second pass
-    ctx.globalAlpha = 1;
-    ctx.shadowColor = "transparent";
-    ctx.shadowBlur = 0;
+  function drawOccluderLayer(targetCtx) {
+    if (!size) return;
+    targetCtx.setTransform(scale, 0, 0, scale, 0, 0);
+    targetCtx.clearRect(0, 0, size, size);
 
-    // Second pass: draw all white occluders on top
+    const cell = size / 100;
+    const border = Math.max(2, Math.round(cell * 0.25));
+    const whiteBorder = Math.max(1, Math.round(cell * 0.12));
+
     for (const highlight of highlights) {
       const squareNumber = highlight.squareNumber;
       if (!squareNumber || squareNumber < 1 || squareNumber > 10000) continue;
@@ -116,19 +132,52 @@ export function createPersonalizeGlowCanvas({
       const whiteInset = border + whiteBorder / 2;
       const whiteSize = cell - border * 2 - whiteBorder;
       if (whiteSize > 0) {
-        ctx.strokeStyle = "#fff";
-        ctx.lineWidth = whiteBorder;
-        ctx.strokeRect(x + whiteInset, y + whiteInset, whiteSize, whiteSize);
+        targetCtx.strokeStyle = "#fff";
+        targetCtx.lineWidth = whiteBorder;
+        targetCtx.strokeRect(x + whiteInset, y + whiteInset, whiteSize, whiteSize);
       }
 
       // White filled center to occlude glow bleed
       const centerInset = border + whiteBorder;
       const centerSize = cell - (border + whiteBorder) * 2;
       if (centerSize > 0) {
-        ctx.fillStyle = "#fff";
-        ctx.fillRect(x + centerInset, y + centerInset, centerSize, centerSize);
+        targetCtx.fillStyle = "#fff";
+        targetCtx.fillRect(x + centerInset, y + centerInset, centerSize, centerSize);
+      } else {
+        const fallbackSize = Math.min(cell, Math.max(1, cell * 0.4));
+        const fallbackInset = (cell - fallbackSize) / 2;
+        targetCtx.fillStyle = "#fff";
+        targetCtx.fillRect(x + fallbackInset, y + fallbackInset, fallbackSize, fallbackSize);
       }
     }
+  }
+
+  function rebuildCache() {
+    if (!size) return;
+    glowLayer = ensureLayerCanvas(glowLayer);
+    occluderLayer = ensureLayerCanvas(occluderLayer);
+    glowLayer.width = canvas.width;
+    glowLayer.height = canvas.height;
+    occluderLayer.width = canvas.width;
+    occluderLayer.height = canvas.height;
+    const glowCtx = glowLayer.getContext("2d");
+    const occluderCtx = occluderLayer.getContext("2d");
+    drawGlowLayer(1, glowCtx);
+    drawOccluderLayer(occluderCtx);
+    cacheDirty = false;
+  }
+
+  function drawHighlights(pulse) {
+    if (cacheDirty) {
+      rebuildCache();
+    }
+    if (!size || !glowLayer || !occluderLayer) return;
+    ctx.setTransform(scale, 0, 0, scale, 0, 0);
+    ctx.clearRect(0, 0, size, size);
+    ctx.globalAlpha = 0.3 + 0.7 * pulse;
+    ctx.drawImage(glowLayer, 0, 0, size, size);
+    ctx.globalAlpha = 1;
+    ctx.drawImage(occluderLayer, 0, 0, size, size);
   }
 
   function updatePulseTarget(pulse) {
@@ -139,6 +188,11 @@ export function createPersonalizeGlowCanvas({
   function tick(now) {
     if (!running) return;
     if (!start) start = now;
+    if (now - lastDraw < FRAME_INTERVAL_MS) {
+      rafId = requestAnimationFrame(tick);
+      return;
+    }
+    lastDraw = now;
     const phase = ((now - start) / durationMs) * Math.PI * 2;
     const pulse = 0.5 + 0.5 * Math.cos(phase); // 0 to 1, starts at full glow
     const clamped = clamp(pulse, 0.05, 1);
@@ -151,6 +205,7 @@ export function createPersonalizeGlowCanvas({
     if (running) return;
     running = true;
     start = null;
+    lastDraw = 0;
     rafId = requestAnimationFrame(tick);
   }
 
@@ -159,6 +214,7 @@ export function createPersonalizeGlowCanvas({
     if (rafId) cancelAnimationFrame(rafId);
     rafId = null;
     start = null;
+    cacheDirty = true;
     clearCanvas();
     updatePulseTarget(0.5);
   }
@@ -166,6 +222,7 @@ export function createPersonalizeGlowCanvas({
   const resizeObserver = new ResizeObserver(() => {
     updateCanvasSize();
     if (highlights.length) {
+      cacheDirty = true;
       drawHighlights(0.5);
     }
   });
@@ -175,6 +232,7 @@ export function createPersonalizeGlowCanvas({
 
   function setHighlights(nextHighlights) {
     highlights = Array.isArray(nextHighlights) ? nextHighlights : [];
+    cacheDirty = true;
     if (highlights.length) {
       startLoop();
     } else {
