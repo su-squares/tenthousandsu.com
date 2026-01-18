@@ -1,4 +1,6 @@
 import { initPersonalizeBillboard } from "../../billboard/wrappers/personalize-billboard.js";
+import { createPersonalizeImagePlacementOverlay } from "../../billboard/overlays/personalize-image-placement.js";
+import { coordsToSquare } from "../../billboard/billboard-utils.js";
 import { isValidSquareId } from "./store.js";
 
 function setsEqual(a, b) {
@@ -95,6 +97,89 @@ function getSelectedSquares(rows) {
   return selected;
 }
 
+function clamp(value, min, max) {
+  return Math.min(Math.max(value, min), max);
+}
+
+const PLACEMENT_MAX_DIMENSION = 1000;
+const PLACEMENT_RESAMPLE_SMOOTH = true;
+
+function revokePlacementUrl(url) {
+  if (!url || typeof url !== "string") return;
+  if (url.startsWith("blob:")) {
+    URL.revokeObjectURL(url);
+  }
+}
+
+function loadPlacementImage(file) {
+  return new Promise((resolve, reject) => {
+    const url = URL.createObjectURL(file);
+    const image = new Image();
+    image.addEventListener("load", () => {
+      if (
+        image.naturalWidth &&
+        image.naturalHeight &&
+        image.width &&
+        image.height &&
+        (image.naturalWidth !== image.width || image.naturalHeight !== image.height)
+      ) {
+        revokePlacementUrl(url);
+        reject(new Error("IMAGE ERROR: Image must not be animated. Please try again."));
+        return;
+      }
+
+      const naturalWidth = image.naturalWidth || image.width || 0;
+      const naturalHeight = image.naturalHeight || image.height || 0;
+      if (!naturalWidth || !naturalHeight) {
+        revokePlacementUrl(url);
+        reject(new Error("Unable to read file."));
+        return;
+      }
+
+      const scale = Math.min(
+        1,
+        PLACEMENT_MAX_DIMENSION / Math.max(naturalWidth, naturalHeight)
+      );
+
+      if (scale >= 1) {
+        resolve({ image, url });
+        return;
+      }
+
+      const targetWidth = Math.max(1, Math.round(naturalWidth * scale));
+      const targetHeight = Math.max(1, Math.round(naturalHeight * scale));
+      const canvas = document.createElement("canvas");
+      canvas.width = targetWidth;
+      canvas.height = targetHeight;
+      const context = canvas.getContext("2d");
+      context.imageSmoothingEnabled = PLACEMENT_RESAMPLE_SMOOTH;
+      if (PLACEMENT_RESAMPLE_SMOOTH && "imageSmoothingQuality" in context) {
+        context.imageSmoothingQuality = "high";
+      }
+      context.drawImage(image, 0, 0, targetWidth, targetHeight);
+      const dataUrl = canvas.toDataURL("image/png");
+      revokePlacementUrl(url);
+      resolve({ image: canvas, url: dataUrl });
+    });
+    image.addEventListener("error", () => {
+      revokePlacementUrl(url);
+      reject(new Error("Unable to read file"));
+    });
+    image.src = url;
+  });
+}
+
+function getCornerSquares({ row, col, widthSquares, heightSquares }) {
+  const topLeft = coordsToSquare(row, col);
+  const topRight = coordsToSquare(row, col + widthSquares - 1);
+  const bottomLeft = coordsToSquare(row + heightSquares - 1, col);
+  const bottomRight = coordsToSquare(
+    row + heightSquares - 1,
+    col + widthSquares - 1
+  );
+  return { topLeft, topRight, bottomLeft, bottomRight };
+}
+
 function getLocatorSquare(state) {
   if (!state.locatorRowId) return null;
   const row = state.rows.find((item) => item.id === state.locatorRowId);
@@ -122,6 +207,16 @@ export function initPersonalizeBillboardUi({
   const uploadButton = document.getElementById("billboard-upload");
   const resetButton = document.getElementById("personalize-billboard-reset");
   const locatorHideButton = document.getElementById("billboard-locator-hide");
+  const placementControls = document.getElementById("personalize-placement-controls");
+  const placementInput = document.getElementById("placement-image-input");
+  const placementAccept = document.getElementById("placement-accept");
+  const placementCancel = document.getElementById("placement-cancel");
+  const placementResizeMinus = document.getElementById("placement-resize-minus");
+  const placementResizePlus = document.getElementById("placement-resize-plus");
+  const placementTopLeft = document.getElementById("placement-top-left");
+  const placementTopRight = document.getElementById("placement-top-right");
+  const placementBottomLeft = document.getElementById("placement-bottom-left");
+  const placementBottomRight = document.getElementById("placement-bottom-right");
 
   let mode = "owned";
   let previewTooltips = previewToggle ? previewToggle.checked : false;
@@ -129,6 +224,12 @@ export function initPersonalizeBillboardUi({
   let stagedSelection = new Set();
   let lastOwnedSquares = null;
   let outsideListenerActive = false;
+  let placementActive = false;
+  let placementState = null;
+  let placementDragging = null;
+  let placementOverlay = null;
+  let placementInvalid = false;
+  const RESIZE_STEP_SQUARES = 1;
 
   root.dataset.editing = "false";
 
@@ -136,7 +237,7 @@ export function initPersonalizeBillboardUi({
     container: mount,
     baseurl: window.SITE_BASEURL || "",
     onSquareActivate: (squareNumber) => {
-      if (!isValidSquareId(squareNumber)) return;
+      if (!isValidSquareId(squareNumber) || placementActive) return;
       if (!isEditing) {
         startEditMode();
       }
@@ -145,6 +246,11 @@ export function initPersonalizeBillboardUi({
   });
 
   if (!controller) return null;
+
+  placementOverlay = createPersonalizeImagePlacementOverlay({
+    wrapper: controller.billboard.elements.wrapper,
+    panZoom: controller.billboard.panZoom,
+  });
 
   function startEditMode() {
     if (isEditing) return;
@@ -314,6 +420,247 @@ export function initPersonalizeBillboardUi({
     syncBillboardState();
   }
 
+  function setPlacementVisibility(active) {
+    root.dataset.placement = active ? "true" : "false";
+    if (placementControls) {
+      placementControls.hidden = !active;
+    }
+  }
+
+  function computeInitialPlacement(image) {
+    const aspect = image.width / image.height || 1;
+    let widthSquares = Math.max(1, Math.round(image.width / 10));
+    let heightSquares = Math.max(1, Math.round(image.height / 10));
+
+    if (widthSquares >= heightSquares) {
+      widthSquares = clamp(widthSquares, 1, 100);
+      heightSquares = clamp(Math.round(widthSquares / aspect), 1, 100);
+    } else {
+      heightSquares = clamp(heightSquares, 1, 100);
+      widthSquares = clamp(Math.round(heightSquares * aspect), 1, 100);
+    }
+
+    widthSquares = clamp(widthSquares, 1, 100);
+    heightSquares = clamp(heightSquares, 1, 100);
+
+    const maxCol = Math.max(0, 100 - widthSquares);
+    const maxRow = Math.max(0, 100 - heightSquares);
+    const col = Math.floor(maxCol / 2);
+    const row = Math.floor(maxRow / 2);
+
+    return {
+      image,
+      aspect,
+      widthSquares,
+      heightSquares,
+      row,
+      col,
+    };
+  }
+
+  function updatePlacementOverlay() {
+    if (!placementOverlay || !placementState) return;
+    placementOverlay.updateBounds(placementState);
+  }
+
+  function updatePlacementCoords() {
+    if (!placementState) return;
+    const corners = getCornerSquares(placementState);
+    if (placementTopLeft) placementTopLeft.textContent = `#${corners.topLeft}`;
+    if (placementTopRight) placementTopRight.textContent = `#${corners.topRight}`;
+    if (placementBottomLeft) placementBottomLeft.textContent = `#${corners.bottomLeft}`;
+    if (placementBottomRight) placementBottomRight.textContent = `#${corners.bottomRight}`;
+  }
+
+  function computePlacementValid(state) {
+    if (!placementState) return false;
+    if (state.ownershipStatus !== "ready" || !state.ownedSquares) {
+      return true;
+    }
+    for (let rowOffset = 0; rowOffset < placementState.heightSquares; rowOffset += 1) {
+      for (let colOffset = 0; colOffset < placementState.widthSquares; colOffset += 1) {
+        const squareId = coordsToSquare(
+          placementState.row + rowOffset,
+          placementState.col + colOffset
+        );
+        if (!state.ownedSquares.has(squareId)) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  function syncPlacementValidity() {
+    if (!placementActive || !placementState) return;
+    placementInvalid = !computePlacementValid(store.getState());
+    if (placementOverlay) {
+      placementOverlay.setInvalid(placementInvalid);
+    }
+    if (placementAccept) {
+      placementAccept.disabled = placementInvalid;
+      placementAccept.setAttribute(
+        "aria-disabled",
+        placementInvalid ? "true" : "false"
+      );
+    }
+  }
+
+  function syncPlacementUi() {
+    updatePlacementOverlay();
+    updatePlacementCoords();
+    syncPlacementValidity();
+  }
+
+  function setPlacementPosition(row, col) {
+    if (!placementState) return;
+    const maxCol = Math.max(0, 100 - placementState.widthSquares);
+    const maxRow = Math.max(0, 100 - placementState.heightSquares);
+    placementState.col = clamp(col, 0, maxCol);
+    placementState.row = clamp(row, 0, maxRow);
+    syncPlacementUi();
+  }
+
+  function resizePlacement(delta) {
+    if (!placementState) return;
+    const nextWidth = clamp(
+      Math.round(placementState.widthSquares + delta),
+      1,
+      100
+    );
+    const nextHeight = clamp(
+      Math.round(nextWidth / placementState.aspect),
+      1,
+      100
+    );
+
+    placementState.widthSquares = nextWidth;
+    placementState.heightSquares = nextHeight;
+    setPlacementPosition(placementState.row, placementState.col);
+  }
+
+  function enterPlacementMode(image, imageUrl) {
+    if (!placementOverlay || !image) return;
+    if (isEditing) {
+      cancelEditMode();
+    }
+    placementActive = true;
+    placementState = computeInitialPlacement(image);
+    placementState.imageUrl = imageUrl || "";
+    placementOverlay.setImageSource(imageUrl || image.src);
+    placementOverlay.setVisible(true);
+    setPlacementVisibility(true);
+    syncPlacementUi();
+    placementOverlay.element.focus();
+  }
+
+  function exitPlacementMode() {
+    const imageUrl = placementState?.imageUrl;
+    placementActive = false;
+    placementState = null;
+    placementDragging = null;
+    placementInvalid = false;
+    setPlacementVisibility(false);
+    if (placementOverlay) {
+      placementOverlay.setVisible(false);
+      placementOverlay.setInvalid(false);
+    }
+    revokePlacementUrl(imageUrl);
+  }
+
+  function buildPlacementBatch(state) {
+    const batchMap = new Map();
+    if (!state || !state.image) return { batchMap, alphaWarning: false };
+
+    const widthPx = state.widthSquares * 10;
+    const heightPx = state.heightSquares * 10;
+    const canvas = document.createElement("canvas");
+    canvas.width = widthPx;
+    canvas.height = heightPx;
+    const context = canvas.getContext("2d");
+    context.drawImage(state.image, 0, 0, widthPx, heightPx);
+    const { data } = context.getImageData(0, 0, widthPx, heightPx);
+
+    const previewCanvas = document.createElement("canvas");
+    previewCanvas.width = 10;
+    previewCanvas.height = 10;
+    const previewContext = previewCanvas.getContext("2d");
+    const previewImageData = previewContext.createImageData(10, 10);
+    let alphaWarning = false;
+
+    for (let y = 0; y < state.heightSquares; y += 1) {
+      for (let x = 0; x < state.widthSquares; x += 1) {
+        let hex = "0x";
+        for (let py = 0; py < 10; py += 1) {
+          for (let px = 0; px < 10; px += 1) {
+            const sourceIndex =
+              ((y * 10 + py) * widthPx + (x * 10 + px)) * 4;
+            const red = data[sourceIndex];
+            const green = data[sourceIndex + 1];
+            const blue = data[sourceIndex + 2];
+            const alpha = data[sourceIndex + 3];
+            const mixedRed = Math.floor((red * alpha + 255 * (255 - alpha)) / 255);
+            const mixedGreen = Math.floor(
+              (green * alpha + 255 * (255 - alpha)) / 255
+            );
+            const mixedBlue = Math.floor((blue * alpha + 255 * (255 - alpha)) / 255);
+            if (alpha !== 255) alphaWarning = true;
+            hex += mixedRed.toString(16).padStart(2, "0");
+            hex += mixedGreen.toString(16).padStart(2, "0");
+            hex += mixedBlue.toString(16).padStart(2, "0");
+
+            const targetIndex = (py * 10 + px) * 4;
+            previewImageData.data[targetIndex] = mixedRed;
+            previewImageData.data[targetIndex + 1] = mixedGreen;
+            previewImageData.data[targetIndex + 2] = mixedBlue;
+            previewImageData.data[targetIndex + 3] = 255;
+          }
+        }
+
+        previewContext.putImageData(previewImageData, 0, 0);
+        const previewUrl = previewCanvas.toDataURL("image/png");
+        const squareId = coordsToSquare(state.row + y, state.col + x);
+        batchMap.set(squareId, { imagePixelsHex: hex, imagePreviewUrl: previewUrl });
+      }
+    }
+
+    return { batchMap, alphaWarning };
+  }
+
+  function applyPlacement() {
+    if (!placementState || placementInvalid) return;
+    const { batchMap, alphaWarning } = buildPlacementBatch(placementState);
+    const rows = store.getState().rows;
+    const rowBySquare = new Map();
+    rows.forEach((row) => {
+      if (isValidSquareId(row.squareId) && !rowBySquare.has(row.squareId)) {
+        rowBySquare.set(row.squareId, row);
+      }
+    });
+
+    batchMap.forEach((patch, squareId) => {
+      const row = rowBySquare.get(squareId) || null;
+      if (row) {
+        store.updateRow(row.id, (draft) => {
+          draft.imagePixelsHex = patch.imagePixelsHex;
+          draft.imagePreviewUrl = patch.imagePreviewUrl;
+          draft.errors.image = "";
+        });
+      } else {
+        store.addRow({ squareId, ...patch });
+      }
+    });
+
+    store.sortRows();
+    validateSquareErrors(false);
+    if (alphaWarning) {
+      alertFn("WARNING: Your image included transparency. We mixed it on white.");
+    }
+    exitPlacementMode();
+  }
+
+  root.dataset.placement = "false";
+
   modeButtons.forEach((button) => {
     button.addEventListener("click", () => {
       const nextMode = button.dataset.mode;
@@ -342,6 +689,147 @@ export function initPersonalizeBillboardUi({
     resetButton.addEventListener("click", () => controller.billboard.reset());
   }
 
+  if (uploadButton && placementInput) {
+    uploadButton.addEventListener("click", () => {
+      placementInput.click();
+    });
+
+    placementInput.addEventListener("change", async (event) => {
+      const file = event.target.files?.[0];
+      if (!file) return;
+      try {
+        if (placementActive) {
+          exitPlacementMode();
+        }
+        const { image, url } = await loadPlacementImage(file);
+        enterPlacementMode(image, url);
+      } catch (error) {
+        alertFn(error?.message || "Unable to read file.");
+      } finally {
+        placementInput.value = "";
+      }
+    });
+  }
+
+  if (placementAccept) {
+    placementAccept.addEventListener("click", () => {
+      applyPlacement();
+    });
+  }
+
+  if (placementCancel) {
+    placementCancel.addEventListener("click", () => {
+      exitPlacementMode();
+    });
+  }
+
+  const attachResizeHold = (button, delta) => {
+    if (!button) return;
+    let holdTimer = null;
+    let repeatTimer = null;
+
+    const stop = () => {
+      if (holdTimer) clearTimeout(holdTimer);
+      if (repeatTimer) clearInterval(repeatTimer);
+      holdTimer = null;
+      repeatTimer = null;
+    };
+
+    const start = (event) => {
+      if (!placementActive) return;
+      event.preventDefault();
+      resizePlacement(delta);
+      holdTimer = window.setTimeout(() => {
+        repeatTimer = window.setInterval(() => resizePlacement(delta), 120);
+      }, 600);
+    };
+
+    button.addEventListener("pointerdown", start);
+    button.addEventListener("pointerup", stop);
+    button.addEventListener("pointerleave", stop);
+    button.addEventListener("pointercancel", stop);
+  };
+
+  attachResizeHold(placementResizeMinus, -RESIZE_STEP_SQUARES);
+  attachResizeHold(placementResizePlus, RESIZE_STEP_SQUARES);
+
+  if (placementOverlay) {
+    placementOverlay.element.addEventListener("pointerdown", (event) => {
+      if (!placementActive || !placementState) return;
+      event.preventDefault();
+      event.stopPropagation();
+      const point = placementOverlay.screenToCanvas(event.clientX, event.clientY);
+      const cellSize = placementOverlay.getCellSize();
+      placementDragging = {
+        pointerId: event.pointerId,
+        offsetX: point.x - placementState.col * cellSize,
+        offsetY: point.y - placementState.row * cellSize,
+      };
+      placementOverlay.element.setPointerCapture(event.pointerId);
+    });
+
+    placementOverlay.element.addEventListener("pointermove", (event) => {
+      if (!placementActive || !placementState || !placementDragging) return;
+      if (placementDragging.pointerId !== event.pointerId) return;
+      const point = placementOverlay.screenToCanvas(event.clientX, event.clientY);
+      const cellSize = placementOverlay.getCellSize();
+      const nextCol = Math.round((point.x - placementDragging.offsetX) / cellSize);
+      const nextRow = Math.round((point.y - placementDragging.offsetY) / cellSize);
+      setPlacementPosition(nextRow, nextCol);
+    });
+
+    const stopDrag = (event) => {
+      if (!placementDragging) return;
+      if (event.pointerId !== placementDragging.pointerId) return;
+      placementDragging = null;
+    };
+
+    placementOverlay.element.addEventListener("pointerup", stopDrag);
+    placementOverlay.element.addEventListener("pointercancel", stopDrag);
+
+    placementOverlay.element.addEventListener("keydown", (event) => {
+      if (!placementActive || !placementState) return;
+      switch (event.key) {
+        case "ArrowUp":
+          event.preventDefault();
+          setPlacementPosition(placementState.row - 1, placementState.col);
+          break;
+        case "ArrowDown":
+          event.preventDefault();
+          setPlacementPosition(placementState.row + 1, placementState.col);
+          break;
+        case "ArrowLeft":
+          event.preventDefault();
+          setPlacementPosition(placementState.row, placementState.col - 1);
+          break;
+        case "ArrowRight":
+          event.preventDefault();
+          setPlacementPosition(placementState.row, placementState.col + 1);
+          break;
+        case "+":
+        case "=":
+          event.preventDefault();
+          resizePlacement(RESIZE_STEP_SQUARES);
+          break;
+        case "-":
+        case "_":
+          event.preventDefault();
+          resizePlacement(-RESIZE_STEP_SQUARES);
+          break;
+        case "Enter":
+          event.preventDefault();
+          applyPlacement();
+          break;
+        case "Escape":
+          event.preventDefault();
+          exitPlacementMode();
+          break;
+        default:
+          break;
+      }
+    });
+  }
+
   if (locatorHideButton) {
     locatorHideButton.addEventListener("click", () => {
       store.setLocatorRow(null);
@@ -351,6 +839,15 @@ export function initPersonalizeBillboardUi({
   store.subscribe((state) => {
     syncOwnership(state);
     syncBillboardState();
+    if (placementActive) {
+      syncPlacementValidity();
+    }
+  });
+
+  window.addEventListener("resize", () => {
+    if (placementActive) {
+      syncPlacementUi();
+    }
   });
 
   syncUi();

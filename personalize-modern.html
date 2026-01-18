@@ -78,11 +78,33 @@ image: "{{ site.baseurl }}/assets/images/su-OG.png"
           <button type="button" class="btn personalize-billboard__cancel" id="billboard-cancel" hidden>
             Cancel
           </button>
-          <button type="button" class="btn personalize-billboard__upload" id="billboard-upload" disabled aria-disabled="true">
+          <button type="button" class="btn personalize-billboard__upload" id="billboard-upload">
             Upload Image
           </button>
         </div>
       </div>
+      <div class="personalize-billboard__placement-panel" id="personalize-placement-controls" hidden>
+        <div class="personalize-billboard__placement-coords">
+          <div>Top-left: <span id="placement-top-left">—</span></div>
+          <div>Top-right: <span id="placement-top-right">—</span></div>
+          <div>Bottom-left: <span id="placement-bottom-left">—</span></div>
+          <div>Bottom-right: <span id="placement-bottom-right">—</span></div>
+        </div>
+        <div class="personalize-billboard__placement-resize">
+          <span>Resize:</span>
+          <button type="button" class="personalize-billboard__resize-btn" id="placement-resize-minus" aria-label="Shrink image">
+            -
+          </button>
+          <button type="button" class="personalize-billboard__resize-btn" id="placement-resize-plus" aria-label="Enlarge image">
+            +
+          </button>
+        </div>
+        <div class="personalize-billboard__placement-actions">
+          <button type="button" class="btn" id="placement-accept" disabled>Accept</button>
+          <button type="button" class="btn" id="placement-cancel">Cancel</button>
+        </div>
+      </div>
+      <input type="file" id="placement-image-input" accept="image/*" hidden>
       <div class="personalize-billboard__view">
         <div id="personalize-billboard"></div>
         <button type="button" class="personalize-billboard__locator-btn" id="billboard-locator-hide" hidden>

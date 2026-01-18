@@ -94,6 +94,56 @@
   min-height: 2.8rem;
 }
 
+.personalize-modern-page .personalize-billboard[data-placement="true"] .personalize-billboard__controls {
+  display: none;
+}
+
+.personalize-modern-page .personalize-billboard__placement-panel {
+  display: none;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 2px solid var(--color-accent);
+}
+
+.personalize-modern-page .personalize-billboard[data-placement="true"] .personalize-billboard__placement-panel {
+  display: flex;
+}
+
+.personalize-modern-page .personalize-billboard__placement-coords {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.35rem 1rem;
+}
+
+.personalize-modern-page .personalize-billboard__placement-resize {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.personalize-modern-page .personalize-billboard__resize-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--color-accent);
+  background: transparent;
+  color: var(--color-accent);
+  font-size: 1.1rem;
+  cursor: pointer;
+}
+
+.personalize-modern-page .personalize-billboard__resize-btn:hover {
+  filter: brightness(1.1);
+}
+
+.personalize-modern-page .personalize-billboard__placement-actions {
+  display: inline-flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
 
 .personalize-modern-page .personalize-billboard__reset,
 .personalize-modern-page .personalize-billboard__hint {
@@ -118,6 +168,44 @@
   align-items: center;
   position: relative;
   z-index: 2;
+}
+
+.personalize-modern-page .personalize-billboard__placement-overlay {
+  position: absolute;
+  border-radius: 0;
+  border: 2px solid var(--billboard-glow-selected);
+  outline: none;
+  box-shadow:
+    0 0 12px var(--billboard-glow-selected),
+    0 0 24px var(--billboard-glow-selected);
+  z-index: 9;
+  cursor: grab;
+  pointer-events: auto;
+}
+
+.personalize-modern-page .personalize-billboard__placement-overlay:focus,
+.personalize-modern-page .personalize-billboard__placement-overlay:focus-visible {
+  outline: none;
+}
+
+.personalize-modern-page .personalize-billboard__placement-overlay:active {
+  cursor: grabbing;
+}
+
+.personalize-modern-page .personalize-billboard__placement-overlay.is-invalid {
+  border-color: var(--billboard-glow-error);
+  box-shadow:
+    0 0 12px var(--billboard-glow-error),
+    0 0 24px var(--billboard-glow-error);
+}
+
+.personalize-modern-page .personalize-billboard__placement-image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  image-rendering: pixelated;
+  pointer-events: none;
+  user-select: none;
 }
 
 .personalize-modern-page .personalize-billboard__locator-btn {
@@ -233,6 +321,10 @@
   touch-action: none;
 }
 
+.personalize-modern-page .personalize-billboard[data-placement="true"] .personalize-billboard__grid {
+  pointer-events: none;
+}
+
 .personalize-modern-page .personalize-billboard__cell {
   position: relative;
   width: 100%;
@@ -276,6 +368,9 @@
 @media (max-width: 700px) {
   .personalize-modern-page .personalize-billboard {
     gap: 0.6rem;
+  }
+  .personalize-modern-page .personalize-billboard__placement-panel {
+    order: 1;
   }
   .personalize-modern-page .personalize-billboard__controls {
     order: 1;
