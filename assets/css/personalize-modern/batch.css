@@ -77,3 +77,45 @@
 .personalize-modern-page .personalize-batch__file {
   display: block;
 }
+
+.personalize-modern-page .personalize-batch__overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.65);
+  z-index: 1200;
+  pointer-events: auto;
+}
+
+.personalize-modern-page .personalize-batch__overlay[hidden] {
+  display: none;
+}
+
+.personalize-modern-page .personalize-batch__overlay-card {
+  border: 2px solid var(--color-accent);
+  background: var(--color-primary);
+  color: var(--color-accent);
+  padding: 1rem 1.25rem;
+  border-radius: var(--radius-sm);
+  text-align: center;
+  min-width: 240px;
+  box-shadow: 0 0 18px rgba(0, 0, 0, 0.4);
+}
+
+.personalize-modern-page .personalize-batch__overlay-title {
+  font-weight: 700;
+  text-transform: uppercase;
+  font-size: 0.85rem;
+  letter-spacing: 0.08em;
+  margin-bottom: 0.5rem;
+}
+
+.personalize-modern-page .personalize-batch__overlay-message {
+  font-size: 0.95rem;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-variant-numeric: tabular-nums;
+}

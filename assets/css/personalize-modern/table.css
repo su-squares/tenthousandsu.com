@@ -153,6 +153,17 @@
   pointer-events: none;
 }
 
+.personalize-modern-page .personalize-table__spacer td {
+  padding: 0;
+  border: none;
+  background: transparent;
+}
+
+.personalize-modern-page .personalize-table__gutter-spacer {
+  width: 100%;
+  flex: 0 0 auto;
+}
+
 .personalize-modern-page .personalize-table__row--highlighted {
   --row-outline-color: #ffd700;
 }

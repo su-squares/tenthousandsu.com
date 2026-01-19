@@ -34,37 +34,31 @@ export function createValidationController(options) {
     const state = store.getState();
     const counts = collectDuplicateCounts(state.rows);
 
-    state.rows.forEach((row) => {
-      let message = "";
-      if (row.squareId === null || row.squareId === "") {
-        if (requireFilled && !isRowEmpty(row)) {
-          message = "Square # is required.";
+    store.batch(() => {
+      state.rows.forEach((row) => {
+        let message = "";
+        if (row.squareId === null || row.squareId === "") {
+          if (requireFilled && !isRowEmpty(row)) {
+            message = "Square # is required.";
+          }
+        } else if (!isValidSquareId(row.squareId)) {
+          message = "Square # must be between 1 and 10000.";
+        } else if (counts.get(row.squareId) > 1) {
+          message = "You already added this Square.";
+        } else if (
+          state.ownershipStatus === "ready" &&
+          state.ownedSquares &&
+          !state.ownedSquares.has(row.squareId)
+        ) {
+          message = "You don't own this Square.";
         }
-      } else if (!isValidSquareId(row.squareId)) {
-        message = "Square # must be between 1 and 10000.";
-      } else if (counts.get(row.squareId) > 1) {
-        message = "You already added this Square.";
-      } else if (
-        state.ownershipStatus === "ready" &&
-        state.ownedSquares &&
-        !state.ownedSquares.has(row.squareId)
-      ) {
-        message = "You don't own this Square.";
-      }
-      store.setRowError(row.id, "square", message);
+        store.setRowError(row.id, "square", message);
+      });
     });
   };
 
   const validateForSubmit = () => {
-    store.pruneEmptyRows();
-    const state = store.getState();
-    const rows = state.rows;
-
-    if (rows.length === 1 && isRowEmpty(rows[0])) {
-      alertFn("Please add at least one Square to personalize.");
-      return false;
-    }
-
+    let rows = null;
     const issueRows = {
       incomplete: new Set(),
       invalidSquare: new Set(),
@@ -72,62 +66,77 @@ export function createValidationController(options) {
       ownership: new Set(),
       overLimit: new Set(),
     };
+    let duplicateCounts = new Map();
 
-    const duplicateCounts = collectDuplicateCounts(rows);
+    store.batch(() => {
+      store.pruneEmptyRows();
+      const state = store.getState();
+      rows = state.rows;
+      duplicateCounts = collectDuplicateCounts(rows);
 
-    rows.forEach((row) => {
-      const errors = { square: "", title: "", uri: "", image: "" };
-      const hasData = !isRowEmpty(row);
-      const hasSquare =
-        row.squareId !== null &&
-        row.squareId !== undefined &&
-        row.squareId !== "";
-      const titleLength = getTitleLength(row);
-      const uriLength = getUriLength(row);
+      rows.forEach((row) => {
+        const errors = { square: "", title: "", uri: "", image: "" };
+        const hasData = !isRowEmpty(row);
+        const hasSquare =
+          row.squareId !== null &&
+          row.squareId !== undefined &&
+          row.squareId !== "";
+        const titleLength = getTitleLength(row);
+        const uriLength = getUriLength(row);
 
-      if (!hasSquare) {
-        if (hasData) {
-          errors.square = "Square # is required.";
+        if (!hasSquare) {
+          if (hasData) {
+            errors.square = "Square # is required.";
+            issueRows.incomplete.add(row.id);
+          }
+        } else if (!isValidSquareId(row.squareId)) {
+          errors.square = "Square # must be between 1 and 10000.";
+          issueRows.invalidSquare.add(row.id);
+        } else if (duplicateCounts.get(row.squareId) > 1) {
+          errors.square = "You already added this Square.";
+          issueRows.duplicate.add(row.id);
+        } else if (
+          state.ownershipStatus === "ready" &&
+          state.ownedSquares &&
+          !state.ownedSquares.has(row.squareId)
+        ) {
+          errors.square = "You don't own this Square.";
+          issueRows.ownership.add(row.id);
+        }
+
+        if (titleLength > titleMax) {
+          errors.title = "Title is too long.";
+          issueRows.overLimit.add(row.id);
+        } else if (titleLength < 1 && hasData) {
+          errors.title = "Title is required.";
           issueRows.incomplete.add(row.id);
         }
-      } else if (!isValidSquareId(row.squareId)) {
-        errors.square = "Square # must be between 1 and 10000.";
-        issueRows.invalidSquare.add(row.id);
-      } else if (duplicateCounts.get(row.squareId) > 1) {
-        errors.square = "You already added this Square.";
-        issueRows.duplicate.add(row.id);
-      } else if (
-        state.ownershipStatus === "ready" &&
-        state.ownedSquares &&
-        !state.ownedSquares.has(row.squareId)
-      ) {
-        errors.square = "You don't own this Square.";
-        issueRows.ownership.add(row.id);
-      }
 
-      if (titleLength > titleMax) {
-        errors.title = "Title is too long.";
-        issueRows.overLimit.add(row.id);
-      } else if (titleLength < 1 && hasData) {
-        errors.title = "Title is required.";
-        issueRows.incomplete.add(row.id);
-      }
+        if (uriLength > uriMax) {
+          errors.uri = "URI is too long.";
+          issueRows.overLimit.add(row.id);
+        } else if (uriLength < 1 && hasData) {
+          errors.uri = "URI is required.";
+          issueRows.incomplete.add(row.id);
+        }
 
-      if (uriLength > uriMax) {
-        errors.uri = "URI is too long.";
-        issueRows.overLimit.add(row.id);
-      } else if (uriLength < 1 && hasData) {
-        errors.uri = "URI is required.";
-        issueRows.incomplete.add(row.id);
-      }
+        if (!row.imagePixelsHex && hasData) {
+          errors.image = "Upload an image.";
+          issueRows.incomplete.add(row.id);
+        }
 
-      if (!row.imagePixelsHex && hasData) {
-        errors.image = "Upload an image.";
-        issueRows.incomplete.add(row.id);
-      }
-
-      store.setRowErrors(row.id, errors);
+        store.setRowErrors(row.id, errors);
+      });
     });
+
+    if (!rows || rows.length === 0) {
+      rows = store.getState().rows;
+    }
+
+    if (rows.length === 1 && isRowEmpty(rows[0])) {
+      alertFn("Please add at least one Square to personalize.");
+      return false;
+    }
 
     const counts = {
       incomplete: issueRows.incomplete.size,

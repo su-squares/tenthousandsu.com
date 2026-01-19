@@ -58,6 +58,16 @@ function initPage() {
   let ownershipButtonsLoading = false;
   let ownershipButtonTimer = null;
   let personalizeLoading = false;
+  const SQUARE_VALIDATE_DELAY_MS = 200;
+  const SQUARE_VALIDATE_IDLE_TIMEOUT_MS = 1200;
+  const DEFER_INPUT_THRESHOLD = 200;
+  let squareValidationTimer = null;
+  const pendingEdits = new Map();
+  const commitQueue = new Set();
+  let commitTimer = null;
+  let pendingSquareValidation = false;
+  let squareValidationHandle = null;
+  let squareValidationHandleType = null;
 
   const { validateSquareErrors, validateForSubmit, markOwnershipErrorsFromTx } =
     createValidationController({
@@ -93,50 +103,304 @@ function initPage() {
     },
   });
 
+  const scheduleSquareValidation = () => {
+    if (squareValidationTimer) {
+      window.clearTimeout(squareValidationTimer);
+    }
+    squareValidationTimer = window.setTimeout(() => {
+      squareValidationTimer = null;
+      validateSquareErrors(false);
+    }, SQUARE_VALIDATE_DELAY_MS);
+  };
+
+  const shouldDeferInput = () => store.getState().rows.length >= DEFER_INPUT_THRESHOLD;
+
+  const clearSquareValidationHandle = () => {
+    if (!squareValidationHandle) return;
+    if (
+      squareValidationHandleType === "idle" &&
+      typeof window.cancelIdleCallback === "function"
+    ) {
+      window.cancelIdleCallback(squareValidationHandle);
+    } else {
+      window.clearTimeout(squareValidationHandle);
+    }
+    squareValidationHandle = null;
+    squareValidationHandleType = null;
+  };
+
+  const scheduleSquareValidationDeferred = () => {
+    if (!pendingSquareValidation || squareValidationHandle) return;
+    const runValidation = () => {
+      squareValidationHandle = null;
+      squareValidationHandleType = null;
+      if (!pendingSquareValidation) return;
+      pendingSquareValidation = false;
+      validateSquareErrors(false);
+    };
+    if (typeof window.requestIdleCallback === "function") {
+      squareValidationHandleType = "idle";
+      squareValidationHandle = window.requestIdleCallback(runValidation, {
+        timeout: SQUARE_VALIDATE_IDLE_TIMEOUT_MS,
+      });
+    } else {
+      squareValidationHandleType = "timeout";
+      squareValidationHandle = window.setTimeout(
+        runValidation,
+        SQUARE_VALIDATE_IDLE_TIMEOUT_MS
+      );
+    }
+  };
+
+  const finalizeSquareValidation = ({ force = false, suppress = false } = {}) => {
+    if (force) {
+      clearSquareValidationHandle();
+      pendingSquareValidation = false;
+      validateSquareErrors(false);
+      return;
+    }
+    if (suppress) {
+      clearSquareValidationHandle();
+      pendingSquareValidation = false;
+      return;
+    }
+    if (!pendingSquareValidation) return;
+    if (!shouldDeferInput()) {
+      clearSquareValidationHandle();
+      pendingSquareValidation = false;
+      validateSquareErrors(false);
+      return;
+    }
+    scheduleSquareValidationDeferred();
+  };
+
+  const setPendingEdit = (rowId, field, value) => {
+    const pending = pendingEdits.get(rowId) || {};
+    if (field === "square") {
+      pending.squareId = value;
+    } else if (field === "title") {
+      pending.title = value;
+    } else if (field === "uri") {
+      pending.uri = value;
+    }
+    pendingEdits.set(rowId, pending);
+  };
+
+  const commitPendingEdits = (rowId) => {
+    const pending = pendingEdits.get(rowId);
+    if (!pending) return false;
+    pendingEdits.delete(rowId);
+
+    const existing = store.getState().rows.find((item) => item.id === rowId);
+    if (!existing) return false;
+
+    let squareChanged = false;
+    if (Object.prototype.hasOwnProperty.call(pending, "squareId")) {
+      squareChanged = existing.squareId !== pending.squareId;
+    }
+
+    store.batch(() => {
+      const patch = {};
+      if (Object.prototype.hasOwnProperty.call(pending, "squareId")) {
+        patch.squareId = pending.squareId;
+      }
+      if (Object.prototype.hasOwnProperty.call(pending, "title")) {
+        patch.title = pending.title;
+      }
+      if (Object.prototype.hasOwnProperty.call(pending, "uri")) {
+        patch.uri = pending.uri;
+      }
+      if (Object.keys(patch).length > 0) {
+        store.updateRow(rowId, patch);
+      }
+
+      const row = store.getState().rows.find((item) => item.id === rowId);
+      if (!row) return;
+
+      if (Object.prototype.hasOwnProperty.call(pending, "title")) {
+        const length = getTitleLength(row);
+        if (length > TITLE_MAX) {
+          store.setRowError(rowId, "title", "Title is too long.");
+          if (setOverLimitFlag(rowId, "title", true)) {
+            alert("Title is too long, please try again.");
+          }
+        } else {
+          store.setRowError(rowId, "title", "");
+          setOverLimitFlag(rowId, "title", false);
+        }
+      }
+
+      if (Object.prototype.hasOwnProperty.call(pending, "uri")) {
+        const length = getUriLength(row);
+        if (length > URI_MAX) {
+          store.setRowError(rowId, "uri", "URI is too long.");
+          if (setOverLimitFlag(rowId, "uri", true)) {
+            alert("URI is too long, please try again.");
+          }
+        } else {
+          store.setRowError(rowId, "uri", "");
+          setOverLimitFlag(rowId, "uri", false);
+        }
+      }
+    });
+
+    return squareChanged;
+  };
+
+  const flushCommitQueue = ({ forceValidate = false, suppressDeferred = false } = {}) => {
+    if (commitTimer) {
+      window.clearTimeout(commitTimer);
+      commitTimer = null;
+    }
+
+    if (commitQueue.size === 0) {
+      finalizeSquareValidation({ force: forceValidate, suppress: suppressDeferred });
+      return;
+    }
+
+    const rowIds = Array.from(commitQueue);
+    commitQueue.clear();
+    let needsSquareValidation = false;
+
+    rowIds.forEach((rowId) => {
+      if (commitPendingEdits(rowId)) {
+        needsSquareValidation = true;
+      }
+    });
+
+    if (needsSquareValidation) {
+      pendingSquareValidation = true;
+    }
+
+    finalizeSquareValidation({ force: forceValidate, suppress: suppressDeferred });
+  };
+
+  const queueCommit = (rowId) => {
+    if (!pendingEdits.has(rowId)) return;
+    commitQueue.add(rowId);
+    if (commitTimer) return;
+    commitTimer = window.setTimeout(() => {
+      commitTimer = null;
+      flushCommitQueue();
+    }, 0);
+  };
+
+  const flushAllPendingEdits = ({ forceValidate = false, suppressDeferred = false } = {}) => {
+    if (commitTimer) {
+      window.clearTimeout(commitTimer);
+      commitTimer = null;
+    }
+
+    if (pendingEdits.size === 0 && commitQueue.size === 0) {
+      finalizeSquareValidation({ force: forceValidate, suppress: suppressDeferred });
+      return;
+    }
+
+    const rowIds = new Set([...pendingEdits.keys(), ...commitQueue]);
+    commitQueue.clear();
+    let needsSquareValidation = false;
+
+    rowIds.forEach((rowId) => {
+      if (commitPendingEdits(rowId)) {
+        needsSquareValidation = true;
+      }
+    });
+
+    if (needsSquareValidation) {
+      pendingSquareValidation = true;
+    }
+
+    finalizeSquareValidation({ force: forceValidate, suppress: suppressDeferred });
+  };
+
   const handleFieldInput = (rowId, field, value) => {
+    if (shouldDeferInput()) {
+      if (field === "square") {
+        const squareId = parseSquareInput(value);
+        setPendingEdit(rowId, "square", squareId);
+        return;
+      }
+      if (field === "title") {
+        setPendingEdit(rowId, "title", value);
+        return;
+      }
+      if (field === "uri") {
+        setPendingEdit(rowId, "uri", value);
+      }
+      return;
+    }
+
     if (field === "square") {
       const squareId = parseSquareInput(value);
       store.updateRow(rowId, { squareId });
-      validateSquareErrors(false);
+      scheduleSquareValidation();
       return;
     }
 
     if (field === "title") {
-      store.updateRow(rowId, { title: value });
-      const row = store.getState().rows.find((item) => item.id === rowId);
-      const length = row ? getTitleLength(row) : 0;
-      if (length > TITLE_MAX) {
-        store.setRowError(rowId, "title", "Title is too long.");
-        if (setOverLimitFlag(rowId, "title", true)) {
-          alert("Title is too long, please try again.");
+      store.batch(() => {
+        store.updateRow(rowId, { title: value });
+        const row = store.getState().rows.find((item) => item.id === rowId);
+        const length = row ? getTitleLength(row) : 0;
+        if (length > TITLE_MAX) {
+          store.setRowError(rowId, "title", "Title is too long.");
+          if (setOverLimitFlag(rowId, "title", true)) {
+            alert("Title is too long, please try again.");
+          }
+        } else {
+          store.setRowError(rowId, "title", "");
+          setOverLimitFlag(rowId, "title", false);
         }
-      } else {
-        store.setRowError(rowId, "title", "");
-        setOverLimitFlag(rowId, "title", false);
-      }
+      });
       return;
     }
 
     if (field === "uri") {
-      store.updateRow(rowId, { uri: value });
-      const row = store.getState().rows.find((item) => item.id === rowId);
-      const length = row ? getUriLength(row) : 0;
-      if (length > URI_MAX) {
-        store.setRowError(rowId, "uri", "URI is too long.");
-        if (setOverLimitFlag(rowId, "uri", true)) {
-          alert("URI is too long, please try again.");
+      store.batch(() => {
+        store.updateRow(rowId, { uri: value });
+        const row = store.getState().rows.find((item) => item.id === rowId);
+        const length = row ? getUriLength(row) : 0;
+        if (length > URI_MAX) {
+          store.setRowError(rowId, "uri", "URI is too long.");
+          if (setOverLimitFlag(rowId, "uri", true)) {
+            alert("URI is too long, please try again.");
+          }
+        } else {
+          store.setRowError(rowId, "uri", "");
+          setOverLimitFlag(rowId, "uri", false);
         }
-      } else {
-        store.setRowError(rowId, "uri", "");
-        setOverLimitFlag(rowId, "uri", false);
+      });
+    }
+  };
+
+  const handleFieldBlur = (rowId, field, value, { event } = {}) => {
+    if (shouldDeferInput()) {
+      window.setTimeout(() => {
+        const rowElement = document.getElementById(`personalize-row-${rowId}`);
+        const active = document.activeElement;
+        if (rowElement && active && rowElement.contains(active)) {
+          return;
+        }
+        queueCommit(rowId);
+      }, 0);
+      return;
+    }
+    if (field === "square") {
+      if (squareValidationTimer) {
+        window.clearTimeout(squareValidationTimer);
+        squareValidationTimer = null;
       }
+      validateSquareErrors(false);
     }
   };
 
   const handleRowDelete = (rowId) => {
     store.removeRow(rowId);
+    pendingEdits.delete(rowId);
+    commitQueue.delete(rowId);
     clearOverLimitFlags(rowId);
-    validateSquareErrors(false);
+    pendingSquareValidation = true;
+    finalizeSquareValidation();
   };
 
   const handleRowLocate = (rowId) => {
@@ -159,6 +423,7 @@ function initPage() {
     gutterBody,
     wrapper,
     onFieldInput: handleFieldInput,
+    onFieldBlur: handleFieldBlur,
     onRowDelete: handleRowDelete,
     onRowLocate: handleRowLocate,
   });
@@ -181,6 +446,9 @@ function initPage() {
 
     state.rows.forEach((row) => {
       if (isValidSquareId(row.squareId) && !selected.has(row.squareId)) {
+        pendingEdits.delete(row.id);
+        commitQueue.delete(row.id);
+        clearOverLimitFlags(row.id);
         store.removeRow(row.id);
       }
     });
@@ -191,7 +459,8 @@ function initPage() {
       }
     });
 
-    validateSquareErrors(false);
+    pendingSquareValidation = true;
+    finalizeSquareValidation();
     return true;
   };
 
@@ -212,6 +481,31 @@ function initPage() {
     validateSquareErrors,
     clearOverLimitFlags,
   });
+
+  if (personalizeButton) {
+    personalizeButton.addEventListener(
+      "click",
+      () => {
+        flushAllPendingEdits({ suppressDeferred: true });
+      },
+      true
+    );
+  }
+
+  const billboardSection = document.getElementById("personalize-billboard-section");
+  if (billboardSection && "IntersectionObserver" in window) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            flushAllPendingEdits();
+          }
+        });
+      },
+      { threshold: 0.15 }
+    );
+    observer.observe(billboardSection);
+  }
 
   const formatCountLabel = (progressValue, totalValue) => {
     const total = Number.isFinite(totalValue) ? totalValue : null;
@@ -363,6 +657,18 @@ function initPage() {
   if (resetButton) {
     resetButton.addEventListener("click", () => {
       store.resetRowsKeepFirst();
+      pendingEdits.clear();
+      commitQueue.clear();
+      pendingSquareValidation = false;
+      clearSquareValidationHandle();
+      if (commitTimer) {
+        window.clearTimeout(commitTimer);
+        commitTimer = null;
+      }
+      if (squareValidationTimer) {
+        window.clearTimeout(squareValidationTimer);
+        squareValidationTimer = null;
+      }
       resetOverLimitFlags();
       validateSquareErrors(false);
     });
