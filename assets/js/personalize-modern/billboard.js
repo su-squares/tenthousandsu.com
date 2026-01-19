@@ -225,6 +225,8 @@ export function initPersonalizeBillboardUi({
   const placementLoading = document.getElementById("placement-loading");
   const placementLoadingText =
     placementLoading?.querySelector(".personalize-billboard__loading-text") || null;
+  const ownershipLoading = document.getElementById("ownership-loading");
+  const ownershipLoadingCount = document.getElementById("ownership-loading-count");
 
   let mode = "owned";
   let previewTooltips = previewToggle ? previewToggle.checked : false;
@@ -241,6 +243,10 @@ export function initPersonalizeBillboardUi({
   let placementWorker = null;
   let placementWorkerId = 0;
   const RESIZE_STEP_SQUARES = 1;
+  const OWNERSHIP_OVERLAY_DELAY_MS = 1000;
+  const OWNERSHIP_OVERLAY_COUNT_THRESHOLD = 50;
+  let ownershipOverlayTimer = null;
+  let ownershipOverlayVisible = false;
 
   root.dataset.editing = "false";
 
@@ -624,6 +630,65 @@ export function initPersonalizeBillboardUi({
       console.warn("[Personalize] Placement worker unavailable, using fallback.", error);
     }
     return buildPlacementTilesChunked(state);
+  }
+
+  function clearOwnershipOverlayTimer() {
+    if (ownershipOverlayTimer) {
+      window.clearTimeout(ownershipOverlayTimer);
+      ownershipOverlayTimer = null;
+    }
+  }
+
+  function setOwnershipOverlayVisible(visible) {
+    if (!ownershipLoading) return;
+    ownershipLoading.hidden = !visible;
+    ownershipOverlayVisible = visible;
+  }
+
+  function updateOwnershipLoading(state) {
+    if (!ownershipLoading) return;
+    const loading = state.ownershipStatus === "loading";
+    const total = Number.isFinite(state.ownershipTotal) ? state.ownershipTotal : null;
+    const progress = Number.isFinite(state.ownershipProgress) ? state.ownershipProgress : 0;
+
+    if (!loading) {
+      clearOwnershipOverlayTimer();
+      if (ownershipOverlayVisible) {
+        setOwnershipOverlayVisible(false);
+      }
+      if (ownershipLoadingCount) {
+        ownershipLoadingCount.textContent = "";
+      }
+      return;
+    }
+
+    const shouldShowInstantly =
+      total !== null && total > OWNERSHIP_OVERLAY_COUNT_THRESHOLD;
+
+    if (shouldShowInstantly) {
+      clearOwnershipOverlayTimer();
+      if (!ownershipOverlayVisible) {
+        setOwnershipOverlayVisible(true);
+      }
+    } else if (!ownershipOverlayVisible && !ownershipOverlayTimer) {
+      ownershipOverlayTimer = window.setTimeout(() => {
+        ownershipOverlayTimer = null;
+        if (store.getState().ownershipStatus === "loading") {
+          setOwnershipOverlayVisible(true);
+        }
+      }, OWNERSHIP_OVERLAY_DELAY_MS);
+    }
+
+    if (ownershipLoadingCount) {
+      if (total !== null && total > 0) {
+        const capped = Math.min(progress, total);
+        ownershipLoadingCount.textContent = `(${capped}/${total})`;
+      } else if (progress > 0) {
+        ownershipLoadingCount.textContent = `(${progress})`;
+      } else {
+        ownershipLoadingCount.textContent = "";
+      }
+    }
   }
 
   function computeInitialPlacement(image) {
@@ -1016,6 +1081,7 @@ export function initPersonalizeBillboardUi({
 
   store.subscribe((state) => {
     syncOwnership(state);
+    updateOwnershipLoading(state);
     syncBillboardState();
     if (placementActive) {
       syncPlacementValidity();
@@ -1028,6 +1094,7 @@ export function initPersonalizeBillboardUi({
     }
   });
 
+  updateOwnershipLoading(store.getState());
   syncUi();
 
   return {

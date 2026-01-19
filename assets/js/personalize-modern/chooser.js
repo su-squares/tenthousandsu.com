@@ -1,7 +1,6 @@
-import { ensureConnected } from "../../web3/foundation.js";
-import { fetchOwnedSquares } from "../../web3/services/ownership.js";
 import { isValidSquareId } from "./store.js";
 import { attachListChooserPersonalize } from "../../square-lookup/list-chooser-personalize.js";
+import { ensureOwnershipLoaded } from "./ownership.js";
 
 export function initPersonalizeChooser({
   store,
@@ -21,28 +20,20 @@ export function initPersonalizeChooser({
   };
 
   const getSquares = async () => {
-    store.setOwnershipStatus("loading");
     try {
-      const result = await ensureConnected(async (wagmi) => {
-        const account = wagmi.getAccount?.();
-        if (!account?.address) {
-          return null;
-        }
-        const owned = await fetchOwnedSquares(account.address, wagmi);
-        return owned;
+      const result = await ensureOwnershipLoaded({
+        store,
+        requireConnection: true,
+        source: "chooser",
       });
 
       if (!result) {
-        store.setOwnershipStatus("idle");
         throw new Error("Wallet connection required to open the chooser.");
       }
 
-      store.setOwnedSquares(result);
-      store.setOwnershipStatus("ready");
       onOwnershipReady();
       return Array.from(result);
     } catch (error) {
-      store.setOwnershipStatus("error", error?.message || "Unable to fetch owned Squares.");
       throw error;
     }
   };

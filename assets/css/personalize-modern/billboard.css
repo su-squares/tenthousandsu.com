@@ -181,6 +181,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 0.75rem;
   background: rgba(0, 0, 0, 0.6);
   z-index: 14;
   pointer-events: auto;
@@ -197,12 +198,21 @@
   text-transform: uppercase;
   font-size: 0.9rem;
   white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  text-align: center;
+}
+
+.personalize-modern-page .personalize-billboard__loading-count {
+  margin-left: 0.35rem;
+  font-variant-numeric: tabular-nums;
 }
 
 .personalize-modern-page .personalize-billboard__loading-dots {
   display: inline-block;
   overflow: hidden;
-  vertical-align: bottom;
+  vertical-align: baseline;
   width: 0;
   white-space: nowrap;
   line-height: 1;

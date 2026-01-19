@@ -70,6 +70,9 @@ image: "{{ site.baseurl }}/assets/images/su-OG.png"
     <section class="personalize-billboard" id="personalize-billboard-section">
       <div class="personalize-billboard__controls">
         <div class="personalize-billboard__controls-left">
+          <button type="button" class="btn personalize-billboard__show-owned" id="billboard-show-owned">
+            Show my Squares
+          </button>
           <button type="button" class="btn personalize-billboard__update is-invisible" id="billboard-update" hidden disabled>
             Update
           </button>
@@ -110,6 +113,12 @@ image: "{{ site.baseurl }}/assets/images/su-OG.png"
         <div class="personalize-billboard__loading" id="placement-loading" hidden>
           <div class="personalize-billboard__loading-text" aria-live="polite">
             Adding images to table<span class="personalize-billboard__loading-dots" aria-hidden="true">...</span>
+          </div>
+        </div>
+        <div class="personalize-billboard__loading" id="ownership-loading" hidden>
+          <div class="personalize-billboard__loading-text" aria-live="polite">
+            Fetching Squares<span class="personalize-billboard__loading-dots" aria-hidden="true">...</span>
+            <span class="personalize-billboard__loading-count" id="ownership-loading-count"></span>
           </div>
         </div>
         <button type="button" class="personalize-billboard__locator-btn" id="billboard-locator-hide" hidden>

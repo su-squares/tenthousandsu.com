@@ -10,6 +10,7 @@ import { createPersonalizeTable } from "./table.js";
 import { initPersonalizeChooser } from "./chooser.js";
 import { TITLE_MAX, URI_MAX } from "./constants.js";
 import { parseSquareInput } from "./utils.js";
+import { ensureOwnershipLoaded } from "./ownership.js";
 import {
   clearOverLimitFlags,
   createValidationController,
@@ -25,6 +26,7 @@ function initPage() {
   const gutterBody = document.getElementById("personalize-table-gutter");
   const wrapper = document.querySelector(".personalize-table__wrapper");
   const openChooserButton = document.getElementById("open-square-chooser");
+  const showOwnedButton = document.getElementById("billboard-show-owned");
   const resetButton = document.getElementById("reset-all");
   const addRowButton = document.getElementById("add-row");
   const csvBatchDropdown = document.getElementById("csv-batch-dropdown");
@@ -39,12 +41,23 @@ function initPage() {
   const openWalletButton = document.getElementById("open-wallet-app");
   const personalizeButton = document.getElementById("personalize");
   const txFixtureDiv = document.getElementById("tx-fixture");
+  const BUTTON_LOADING_DELAY_MS = 200;
+  const BUTTON_LOADING_COUNT_THRESHOLD = 50;
 
   if (!tableBody || !gutterBody || !wrapper || !personalizeButton || !txFixtureDiv) {
     return;
   }
 
   const store = createPersonalizeStore({ initialRows: 1 });
+  const defaultChooserText = openChooserButton?.textContent || "Choose Squares";
+  const defaultShowOwnedText = showOwnedButton?.textContent || "Show my Squares";
+  const defaultPersonalizeText = personalizeButton?.textContent || "Personalize";
+  const defaultChooserDisabled = openChooserButton?.disabled ?? false;
+  const defaultShowOwnedDisabled = showOwnedButton?.disabled ?? false;
+  const defaultPersonalizeDisabled = personalizeButton?.disabled ?? false;
+  let ownershipButtonsLoading = false;
+  let ownershipButtonTimer = null;
+  let personalizeLoading = false;
 
   const { validateSquareErrors, validateForSubmit, markOwnershipErrorsFromTx } =
     createValidationController({
@@ -200,6 +213,153 @@ function initPage() {
     clearOverLimitFlags,
   });
 
+  const formatCountLabel = (progressValue, totalValue) => {
+    const total = Number.isFinite(totalValue) ? totalValue : null;
+    const progress = Number.isFinite(progressValue) ? progressValue : 0;
+    if (total !== null && total > 0) {
+      const capped = Math.min(progress, total);
+      return `(${capped}/${total})`;
+    }
+    if (progress > 0) return `(${progress})`;
+    return "";
+  };
+
+  const formatOwnershipCount = (state) =>
+    formatCountLabel(state.ownershipProgress, state.ownershipTotal);
+  const formatTxCount = (state) =>
+    formatCountLabel(state.txOwnershipProgress, state.txOwnershipTotal);
+
+  const buildLoadingMarkup = (countLabel = "") => {
+    const countMarkup = countLabel
+      ? `<span class="personalize-billboard__loading-count">${countLabel}</span>`
+      : "";
+    return `Fetching Squares<span class="personalize-billboard__loading-dots" aria-hidden="true">...</span>${countMarkup}`;
+  };
+
+  const setOwnershipButtonsLoading = (loading, countLabel = "") => {
+    if (loading === ownershipButtonsLoading) {
+      if (loading) {
+        const markup = buildLoadingMarkup(countLabel);
+        if (openChooserButton) {
+          openChooserButton.innerHTML = markup;
+        }
+        if (showOwnedButton) {
+          showOwnedButton.innerHTML = markup;
+        }
+      }
+      return;
+    }
+    ownershipButtonsLoading = loading;
+
+    if (openChooserButton) {
+      openChooserButton.disabled = loading || defaultChooserDisabled;
+      if (loading) {
+        openChooserButton.innerHTML = buildLoadingMarkup(countLabel);
+      } else {
+        openChooserButton.textContent = defaultChooserText;
+      }
+    }
+
+    if (showOwnedButton) {
+      showOwnedButton.disabled = loading || defaultShowOwnedDisabled;
+      if (loading) {
+        showOwnedButton.innerHTML = buildLoadingMarkup(countLabel);
+      } else {
+        showOwnedButton.textContent = defaultShowOwnedText;
+      }
+    }
+  };
+
+  const setPersonalizeButtonLoading = (loading, countLabel = "") => {
+    if (loading === personalizeLoading) {
+      if (loading && personalizeButton) {
+        personalizeButton.innerHTML = buildLoadingMarkup(countLabel);
+      }
+      return;
+    }
+    personalizeLoading = loading;
+
+    if (personalizeButton) {
+      personalizeButton.disabled = loading || defaultPersonalizeDisabled;
+      if (loading) {
+        personalizeButton.innerHTML = buildLoadingMarkup(countLabel);
+      } else {
+        personalizeButton.textContent = defaultPersonalizeText;
+      }
+    }
+  };
+
+  const clearOwnershipButtonTimer = () => {
+    if (ownershipButtonTimer) {
+      window.clearTimeout(ownershipButtonTimer);
+      ownershipButtonTimer = null;
+    }
+  };
+
+  const updateOwnershipButtons = (state) => {
+    const loading = state.ownershipStatus === "loading";
+    const total = Number.isFinite(state.ownershipTotal) ? state.ownershipTotal : null;
+    const showImmediately = loading && total !== null && total > BUTTON_LOADING_COUNT_THRESHOLD;
+    const countLabel = formatOwnershipCount(state);
+
+    if (!loading) {
+      clearOwnershipButtonTimer();
+      setOwnershipButtonsLoading(false);
+      return;
+    }
+
+    if (showImmediately) {
+      clearOwnershipButtonTimer();
+      setOwnershipButtonsLoading(true, countLabel);
+      return;
+    }
+
+    if (ownershipButtonsLoading) {
+      setOwnershipButtonsLoading(true, countLabel);
+      return;
+    }
+    if (ownershipButtonTimer) return;
+    ownershipButtonTimer = window.setTimeout(() => {
+      ownershipButtonTimer = null;
+      if (store.getState().ownershipStatus === "loading") {
+        setOwnershipButtonsLoading(true, formatOwnershipCount(store.getState()));
+      }
+    }, BUTTON_LOADING_DELAY_MS);
+  };
+
+  const updatePersonalizeButton = (state) => {
+    const isTxLoading = state.txOwnershipStatus === "loading";
+    const isOwnershipLoading = state.ownershipStatus === "loading";
+    const loading = isTxLoading || isOwnershipLoading;
+    const txTotal = Number.isFinite(state.txOwnershipTotal) ? state.txOwnershipTotal : null;
+    const ownershipTotal = Number.isFinite(state.ownershipTotal) ? state.ownershipTotal : null;
+    const ownershipContext = state.ownershipRequestContext;
+    const showTxCount =
+      isTxLoading && txTotal !== null && txTotal > BUTTON_LOADING_COUNT_THRESHOLD;
+    const showOwnershipCount =
+      isOwnershipLoading &&
+      ownershipTotal !== null &&
+      ownershipTotal > BUTTON_LOADING_COUNT_THRESHOLD &&
+      ownershipContext &&
+      ownershipContext !== "personalize";
+    const countLabel = showTxCount
+      ? formatTxCount(state)
+      : showOwnershipCount
+        ? formatOwnershipCount(state)
+        : "";
+
+    if (!loading || (!showTxCount && !showOwnershipCount)) {
+      setPersonalizeButtonLoading(false);
+      return;
+    }
+
+    if (personalizeLoading) {
+      setPersonalizeButtonLoading(true, countLabel);
+      return;
+    }
+    setPersonalizeButtonLoading(true, countLabel);
+  };
+
   if (resetButton) {
     resetButton.addEventListener("click", () => {
       store.resetRowsKeepFirst();
@@ -215,6 +375,16 @@ function initPage() {
     });
   }
 
+  if (showOwnedButton) {
+    showOwnedButton.addEventListener("click", () => {
+      ensureOwnershipLoaded({
+        store,
+        requireConnection: true,
+        source: "show",
+      }).catch(() => {});
+    });
+  }
+
   initPersonalizeTx({
     store,
     personalizeButton,
@@ -226,6 +396,13 @@ function initPage() {
   });
 
   loadWeb3().catch(() => {});
+
+  store.subscribe((state) => {
+    updateOwnershipButtons(state);
+    updatePersonalizeButton(state);
+  });
+  updateOwnershipButtons(store.getState());
+  updatePersonalizeButton(store.getState());
 
   window.personalizeModern = {
     getRows: () =>

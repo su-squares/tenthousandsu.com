@@ -9,8 +9,9 @@ import { getWeb3Config } from "../../web3/config.js";
 import { personalizeUnderlay } from "../../web3/services/underlay.js";
 import { personalizeUnderlayBatch } from "../../web3/services/underlay-batch.js";
 import { buildTxUrl } from "../../web3/services/explorer-links.js";
-import { fetchOwnedSquares } from "../../web3/services/ownership.js";
 import { isValidSquareId } from "./store.js";
+import { ensureOwnershipLoaded } from "./ownership.js";
+import { clearOwnedSquaresCache, fetchOwnedSquaresForIds } from "../../web3/services/ownership.js";
 
 export function initPersonalizeTx(options) {
   const {
@@ -67,6 +68,27 @@ export function initPersonalizeTx(options) {
     });
   }
 
+  const isUserRejectedError = (error, message) => {
+    const code = error?.code || error?.cause?.code;
+    if (code === 4001 || code === "ACTION_REJECTED") return true;
+    const name = String(error?.name || error?.cause?.name || "").toLowerCase();
+    if (name.includes("userrejected")) return true;
+    const text = [
+      message,
+      error?.shortMessage,
+      error?.cause?.shortMessage,
+    ]
+      .filter(Boolean)
+      .join(" ")
+      .toLowerCase();
+    return (
+      text.includes("user rejected") ||
+      text.includes("user denied") ||
+      text.includes("request rejected") ||
+      text.includes("denied transaction")
+    );
+  };
+
   personalizeButton.addEventListener("click", async () => {
     if (!validateForSubmit()) return;
 
@@ -93,15 +115,44 @@ export function initPersonalizeTx(options) {
       try {
         const state = store.getState();
         const account = wagmi.getAccount?.();
-        if (account?.address && state.ownershipStatus !== "ready") {
+        if (account?.address) {
+          let txOwnershipActive = false;
           try {
-            const owned = await fetchOwnedSquares(account.address, wagmi);
-            store.setOwnedSquares(owned);
-            store.setOwnershipStatus("ready");
-            validateSquareErrors(true);
+            const ids = Array.from(
+              new Set(
+                state.rows
+                  .map((row) => row.squareId)
+                  .filter((squareId) => isValidSquareId(squareId))
+              )
+            );
+            if (ids.length > 0) {
+              txOwnershipActive = true;
+              store.setTxOwnershipStatus("loading");
+              store.setTxOwnershipProgress(0, ids.length);
+              const ownedSubset = await fetchOwnedSquaresForIds(account.address, ids, wagmi, {
+                onProgress: (payload) => {
+                  store.setTxOwnershipProgress(payload?.completed ?? 0, payload?.total ?? ids.length);
+                },
+              });
+              const notOwned = ids.filter((id) => !ownedSubset.has(id));
+              state.rows.forEach((row) => {
+                if (!isValidSquareId(row.squareId)) return;
+                const isOwnershipError =
+                  typeof row.errors?.square === "string" && /own/i.test(row.errors.square);
+                if (notOwned.includes(row.squareId)) {
+                  store.setRowError(row.id, "square", "You don't own this Square.");
+                } else if (isOwnershipError) {
+                  store.setRowError(row.id, "square", "");
+                }
+              });
+            }
           } catch (error) {
-            store.setOwnershipStatus("error", error?.message || "Unable to fetch ownership.");
             alertFn("Unable to verify ownership. Continuing without pre-validation.");
+          } finally {
+            if (txOwnershipActive) {
+              store.setTxOwnershipStatus("idle");
+              store.setTxOwnershipProgress(0, null);
+            }
           }
         }
 
@@ -113,6 +164,13 @@ export function initPersonalizeTx(options) {
           alertFn("One or more Squares are not owned.");
           return;
         }
+
+        ensureOwnershipLoaded({
+          store,
+          wagmi,
+          requireConnection: false,
+          source: "personalize",
+        }).catch(() => {});
 
         let result;
         if (isBatch) {
@@ -145,10 +203,15 @@ export function initPersonalizeTx(options) {
           txUrl,
           "Transaction confirmed. Your image will show on the Su Squares homepage, which refreshes hourly."
         );
+        clearOwnedSquaresCache();
+        store.setOwnershipStatus("idle");
+        store.setOwnershipProgress(0, null);
       } catch (error) {
         const message = error?.message || "Transaction failed";
         txUi.markError(message);
-        markOwnershipErrorsFromTx(message);
+        if (!isUserRejectedError(error, message)) {
+          markOwnershipErrorsFromTx(message);
+        }
         alertFn(message);
       }
     };

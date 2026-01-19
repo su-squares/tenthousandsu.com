@@ -59,6 +59,12 @@ export function createPersonalizeStore({ initialRows = 1 } = {}) {
     ownedSquares: null,
     ownershipStatus: "idle",
     ownershipError: "",
+    ownershipProgress: 0,
+    ownershipTotal: null,
+    ownershipRequestContext: null,
+    txOwnershipStatus: "idle",
+    txOwnershipProgress: 0,
+    txOwnershipTotal: null,
     highlightedRowId: null,
     locatorRowId: null,
   };
@@ -169,6 +175,38 @@ export function createPersonalizeStore({ initialRows = 1 } = {}) {
     setOwnershipStatus(status, errorMessage = "") {
       state.ownershipStatus = status;
       state.ownershipError = errorMessage;
+      notify();
+    },
+    setOwnershipProgress(progress, total = null) {
+      if (typeof progress === "number") {
+        state.ownershipProgress = progress;
+      }
+      if (typeof total === "number") {
+        state.ownershipTotal = total;
+      } else if (total === null) {
+        state.ownershipTotal = null;
+      }
+      notify();
+    },
+    setOwnershipRequestContext(context) {
+      const next = context || null;
+      if (state.ownershipRequestContext === next) return;
+      state.ownershipRequestContext = next;
+      notify();
+    },
+    setTxOwnershipStatus(status) {
+      state.txOwnershipStatus = status;
+      notify();
+    },
+    setTxOwnershipProgress(progress, total = null) {
+      if (typeof progress === "number") {
+        state.txOwnershipProgress = progress;
+      }
+      if (typeof total === "number") {
+        state.txOwnershipTotal = total;
+      } else if (total === null) {
+        state.txOwnershipTotal = null;
+      }
       notify();
     },
     sortRows() {
