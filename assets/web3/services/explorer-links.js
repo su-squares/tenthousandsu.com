@@ -43,7 +43,7 @@ export function buildTokenUrl(contractAddress, tokenId) {
   if (!base) return null;
   const trimmedBase = base.replace(/\/$/, "");
   return tokenId
-    ? `${trimmedBase}/token/${contractAddress}?a=${tokenId}`
+    ? `${trimmedBase}/token/${contractAddress}/instance/${tokenId}`
     : `${trimmedBase}/token/${contractAddress}`;
 }
 
