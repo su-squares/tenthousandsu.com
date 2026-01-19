@@ -3,6 +3,7 @@ export const URI_MAX = 96;
 
 export const CSV_INSTRUCTIONS = [
   "CSV Batch Instructions",
+  "- Download CSV exports your table data, or a template if the table is empty.",
   "- Format: CSV or TSV with columns square_id,title,uri (extra columns ignored).",
   "- Square IDs can be 1 or 00001 (leading zeros are treated the same).",
   "- Title max 64 bytes; URI max 96 bytes.",

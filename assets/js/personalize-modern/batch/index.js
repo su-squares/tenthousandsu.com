@@ -1,6 +1,6 @@
 import { CSV_INSTRUCTIONS, IMAGE_INSTRUCTIONS } from "../constants.js";
 import { buildBatchErrorMessage } from "./errors.js";
-import { downloadCsvTemplate, parseCsvBatchFile } from "./csv.js";
+import { downloadCsv, parseCsvBatchFile } from "./csv.js";
 import { parseImageBatchFiles } from "./images.js";
 
 export function createBatchApplier({ store, clearOverLimitFlags, validateSquareErrors, alertFn }) {
@@ -128,7 +128,8 @@ export function initBatchControls(options) {
 
   if (csvBatchDownload) {
     csvBatchDownload.addEventListener("click", () => {
-      downloadCsvTemplate();
+      const rows = store.getState().rows;
+      downloadCsv(rows);
       closeDropdown(csvBatchDropdown);
     });
   }

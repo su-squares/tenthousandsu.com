@@ -7,12 +7,33 @@ import {
   parseSeparatedValues,
 } from "../utils.js";
 
-export function downloadCsvTemplate() {
-  const blob = new Blob([CSV_TEMPLATE_LINES.join("\n")], { type: "text/csv;charset=utf-8" });
+export function downloadCsv(rows = []) {
+  const rowsWithSquareId = rows.filter((row) => row.squareId);
+  const hasData = rowsWithSquareId.length > 0;
+
+  let csvContent;
+  let filename;
+
+  if (hasData) {
+    const lines = ["square_id,title,uri"];
+    rowsWithSquareId.forEach((row) => {
+      const squareId = String(row.squareId);
+      const title = (row.title || "").replace(/"/g, '""');
+      const uri = (row.uri || "").replace(/"/g, '""');
+      lines.push(`${squareId},"${title}","${uri}"`);
+    });
+    csvContent = lines.join("\n");
+    filename = "personalize-batch.csv";
+  } else {
+    csvContent = CSV_TEMPLATE_LINES.join("\n");
+    filename = "personalize-template.csv";
+  }
+
+  const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8" });
   const url = URL.createObjectURL(blob);
   const link = document.createElement("a");
   link.href = url;
-  link.download = "personalize-template.csv";
+  link.download = filename;
   document.body.appendChild(link);
   link.click();
   link.remove();
