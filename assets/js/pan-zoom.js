@@ -129,8 +129,8 @@ export function createPanZoom(wrapper, options = {}) {
 
       constrainBounds();
       applyTransform();
-    } else if (e.touches.length === 1 && scale > 1) {
-      // Single finger pan (only when zoomed in)
+    } else if (e.touches.length === 1) {
+      // Single finger pan (at any zoom level)
       e.preventDefault();
       didPan = true;
 

@@ -247,6 +247,7 @@ export function initPersonalizeBillboardUi({
   const OWNERSHIP_OVERLAY_COUNT_THRESHOLD = 50;
   let ownershipOverlayTimer = null;
   let ownershipOverlayVisible = false;
+  let lastOwnershipStatus = null;
 
   root.dataset.editing = "false";
 
@@ -659,8 +660,17 @@ export function initPersonalizeBillboardUi({
       if (ownershipLoadingCount) {
         ownershipLoadingCount.textContent = "";
       }
+      lastOwnershipStatus = state.ownershipStatus;
       return;
     }
+
+    if (lastOwnershipStatus !== "loading") {
+      const panZoom = controller?.billboard?.panZoom;
+      if (panZoom?.isActive && typeof panZoom.reset === "function") {
+        panZoom.reset();
+      }
+    }
+    lastOwnershipStatus = state.ownershipStatus;
 
     const shouldShowInstantly =
       total !== null && total > OWNERSHIP_OVERLAY_COUNT_THRESHOLD;
