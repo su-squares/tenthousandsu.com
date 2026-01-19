@@ -6,7 +6,7 @@ import {
   isRowEmpty,
   isValidSquareId,
 } from "./store.js";
-import { createPersonalizeTable } from "./table.js";
+import { createPersonalizeTable } from "./table/index.js";
 import { initPersonalizeChooser } from "./chooser.js";
 import { TITLE_MAX, URI_MAX } from "./constants.js";
 import { parseSquareInput } from "./utils.js";
@@ -19,7 +19,7 @@ import {
 } from "./validation/index.js";
 import { createBatchApplier, initBatchControls } from "./batch/index.js";
 import { initPersonalizeTx } from "./tx.js";
-import { initPersonalizeBillboardUi } from "./billboard.js";
+import { initPersonalizeBillboardUi } from "./billboard/index.js";
 
 function initPage() {
   const tableBody = document.getElementById("personalize-table-body");
