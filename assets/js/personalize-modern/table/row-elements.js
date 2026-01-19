@@ -50,13 +50,13 @@ export function updateRowState(row, elements, state, options = {}) {
   }
   if (active !== elements.titleInput) {
     elements.titleInput.value = row.title || "";
-    if (autoResize) {
+    if (autoResize && elements.titleInput.isConnected) {
       autoResizeTextarea(elements.titleInput);
     }
   }
   if (active !== elements.uriInput) {
     elements.uriInput.value = row.uri || "";
-    if (autoResize) {
+    if (autoResize && elements.uriInput.isConnected) {
       autoResizeTextarea(elements.uriInput);
     }
   }

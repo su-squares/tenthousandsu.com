@@ -3,6 +3,7 @@ import {
   VIRTUALIZE_OVERSCAN,
   VIRTUALIZE_ROW_THRESHOLD,
 } from "./constants.js";
+import { autoResizeTextarea } from "./helpers.js";
 import { buildRowElements, updateRowState } from "./row-elements.js";
 
 export function createPersonalizeTable({
@@ -70,6 +71,8 @@ export function createPersonalizeTable({
     state.rows.forEach((row) => {
       const elements = rowElements.get(row.id);
       if (!elements) return;
+      autoResizeTextarea(elements.titleInput);
+      autoResizeTextarea(elements.uriInput);
       const height = elements.row.offsetHeight;
       elements.gutterRow.style.height = `${height}px`;
     });
@@ -294,7 +297,7 @@ export function createPersonalizeTable({
       tableBody.contains(selection.element) &&
       document.activeElement !== selection.element
     ) {
-      selection.element.focus();
+      selection.element.focus({ preventScroll: true });
       if (
         typeof selection.start === "number" &&
         typeof selection.end === "number" &&
