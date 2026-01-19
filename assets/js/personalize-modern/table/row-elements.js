@@ -1,5 +1,5 @@
 import { getTitleLength, getUriLength, isValidSquareId } from "../store.js";
-import { buildImagePixelsHex, loadImageFromFile } from "../utils.js";
+import { buildImagePixelsHex, byteLength, loadImageFromFile } from "../utils.js";
 import { TITLE_MAX_BYTES, URI_MAX_BYTES } from "./constants.js";
 import {
   autoResizeTextarea,
@@ -61,8 +61,8 @@ export function updateRowState(row, elements, state, options = {}) {
     }
   }
 
-  elements.titleCounter.textContent = `${getTitleLength(row)}/64`;
-  elements.uriCounter.textContent = `${getUriLength(row)}/96`;
+  elements.titleCounter.textContent = `${getTitleLength(row)}/${TITLE_MAX_BYTES}`;
+  elements.uriCounter.textContent = `${getUriLength(row)}/${URI_MAX_BYTES}`;
 
   elements.squareError.textContent = row.errors.square || "";
   elements.titleError.textContent = row.errors.title || "";
@@ -172,9 +172,8 @@ export function buildRowElements({
     if (trimmed !== event.target.value) {
       event.target.value = trimmed;
     }
-    if (!shouldDeferInput()) {
-      autoResizeTextarea(titleInput);
-    }
+    autoResizeTextarea(titleInput);
+    titleCounter.textContent = `${byteLength(event.target.value)}/${TITLE_MAX_BYTES}`;
     onFieldInput(row.id, "title", event.target.value, { event });
     scheduleLayoutSync();
   });
@@ -205,9 +204,8 @@ export function buildRowElements({
     if (trimmed !== event.target.value) {
       event.target.value = trimmed;
     }
-    if (!shouldDeferInput()) {
-      autoResizeTextarea(uriInput);
-    }
+    autoResizeTextarea(uriInput);
+    uriCounter.textContent = `${byteLength(event.target.value)}/${URI_MAX_BYTES}`;
     onFieldInput(row.id, "uri", event.target.value, { event });
     scheduleLayoutSync();
   });
