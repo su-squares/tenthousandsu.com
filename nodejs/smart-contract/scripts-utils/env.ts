@@ -2,6 +2,7 @@ import fs from "fs";
 import path from "path";
 import dotenv from "dotenv";
 import { getAddress, isAddress, parseEther } from "ethers";
+import { expandTokenRange } from "./token-input";
 
 export const CONTRACT_ENV_PATH = path.join(__dirname, "..", ".env.contract");
 export const CONTRACT_ENV_EXAMPLE_PATH = "nodejs/smart-contract/.env.contract.example";
@@ -32,7 +33,7 @@ export type SunetEnv = {
 };
 
 export type TransferEnv = {
-  tokenId: number;
+  tokenIds: number[];
   recipient: string;
   unsafeTransfer: boolean;
 };
@@ -69,12 +70,12 @@ const DEFAULT_UNDERLAY_PERSONALIZATION_PRICE_ETH = "0.001";
 
 export function loadTransferEnv(options: { required?: boolean } = {}): TransferEnv | null {
   const { required = true } = options;
-  const tokenIdRaw = (process.env.TRANSFER_TOKENID || "").trim();
+  const tokenInputRaw = (process.env.TRANSFER_TOKENID || "").trim();
   const recipientRaw = (process.env.RECIPIENT_ADDRESS || "").trim();
   const unsafeRaw = (process.env.UNSAFE_TRANSFER || "").trim().toLowerCase();
 
   const missing: string[] = [];
-  if (!tokenIdRaw) {
+  if (!tokenInputRaw) {
     missing.push("TRANSFER_TOKENID");
   }
   if (!recipientRaw) {
@@ -90,10 +91,19 @@ export function loadTransferEnv(options: { required?: boolean } = {}): TransferE
     return null;
   }
 
-  const tokenId = Number(tokenIdRaw);
-  if (!Number.isInteger(tokenId) || tokenId <= 0) {
+  let tokenIds: number[];
+  try {
+    tokenIds = expandTokenRange(tokenInputRaw, "TRANSFER_TOKENID");
+  } catch (error) {
     if (required) {
-      throw new Error("TRANSFER_TOKENID must be a positive integer.");
+      throw error;
+    }
+    return null;
+  }
+
+  if (tokenIds.length === 0) {
+    if (required) {
+      throw new Error("TRANSFER_TOKENID must include at least one token id.");
     }
     return null;
   }
@@ -106,7 +116,7 @@ export function loadTransferEnv(options: { required?: boolean } = {}): TransferE
   }
 
   return {
-    tokenId,
+    tokenIds,
     recipient: getAddress(recipientRaw),
     unsafeTransfer: ["true", "1", "yes", "y", "on"].includes(unsafeRaw),
   };

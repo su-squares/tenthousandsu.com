@@ -53,6 +53,20 @@ async function clean() {
     fs.removeSync(blockscoutDir);
   }
 
+
+  const contractsDeployedDir = path.join(sunetRoot, '..', 'contracts-deployed');
+  const underlaySunetPath = path.join(contractsDeployedDir, 'underlay-sunet.json');
+  if (fs.existsSync(underlaySunetPath)) {
+    console.log(chalk.gray('Removing underlay-sunet.json...'));
+    fs.removeSync(underlaySunetPath);
+  }
+
+  const primarySunetPath = path.join(contractsDeployedDir, 'primary-sunet.json');
+  if (fs.existsSync(primarySunetPath)) {
+    console.log(chalk.gray('Removing primary-sunet.json...'));
+    fs.removeSync(primarySunetPath);
+  }
+
   console.log(chalk.green('✓ Clean complete. Run pnpm run sunet:setup before starting again.'));
 }
 
