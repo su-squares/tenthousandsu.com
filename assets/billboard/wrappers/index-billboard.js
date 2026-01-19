@@ -8,6 +8,8 @@
 import { createBillboard, GRID_DIMENSION } from "../billboard-core.js";
 import { isMintInternalLink, shouldHideUriLabel } from "./link-label-utils.js";
 import { extractScheme, isBlockedScheme } from "../../js/link-utils.js";
+import { assetPath } from "../../js/asset-base.js";
+import { scheduleBillboardRuntimeFallback } from "../runtime-fallback.js";
 
 /**
  * Initialize the homepage billboard
@@ -324,6 +326,14 @@ export function initHomepageBillboard(options) {
         window.location.assign(ui.destinationHref);
       } else {
         window.open(ui.destinationHref, target, "noopener");
+      }
+    },
+  });
+
+  scheduleBillboardRuntimeFallback({
+    onChange: () => {
+      if (image) {
+        image.src = assetPath("wholeSquare.png");
       }
     },
   });

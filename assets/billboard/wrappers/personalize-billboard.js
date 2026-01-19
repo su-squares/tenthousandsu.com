@@ -16,6 +16,7 @@ import { assetPath } from "../../js/asset-base.js";
 import { extractScheme, isBlockedScheme } from "../../js/link-utils.js";
 import { shouldHideUriLabel } from "./link-label-utils.js";
 import { createPersonalizeGlowCanvas } from "../overlays/personalize-glow-canvas.js";
+import { scheduleBillboardRuntimeFallback } from "../runtime-fallback.js";
 
 const TEXT_SILENCED_TOOLTIP = (squareNumber) =>
   `Square #${squareNumber} Personalization text hidden for your safety.`;
@@ -404,17 +405,29 @@ export function initPersonalizeBillboard(options) {
     updateLocatorPosition();
   }
 
+  function applySquareData(data) {
+    personalizations = data.personalizations || [];
+    extra = data.extra || [];
+    dataReady = true;
+    syncOverlays();
+    refreshCurrentTooltip();
+  }
+
   loadSquareData()
     .then((data) => {
-      personalizations = data.personalizations || [];
-      extra = data.extra || [];
-      dataReady = true;
-      syncOverlays();
-      refreshCurrentTooltip();
+      applySquareData(data);
     })
     .catch((error) => {
       console.error("[PersonalizeBillboard] Failed to load square data:", error);
     });
+
+  const stopRuntimeFallback = scheduleBillboardRuntimeFallback({
+    onChange: () => {
+      if (billboard?.elements?.image) {
+        billboard.elements.image.src = assetPath("wholeSquare.png");
+      }
+    },
+  });
 
   SquareBlocklist.loadOnce()
     .then(() => {
@@ -436,6 +449,7 @@ export function initPersonalizeBillboard(options) {
       if (glowCanvas) {
         glowCanvas.destroy();
       }
+      stopRuntimeFallback();
       window.removeEventListener("resize", handleResize);
       billboard.destroy();
     },

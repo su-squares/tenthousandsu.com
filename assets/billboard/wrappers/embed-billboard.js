@@ -13,7 +13,9 @@ import { DomainBlocklist } from "../../blocklist/blocklist-domains.js";
 import { createContainedLeavingModal } from "../../modals/leaving-modal/leaving-modal-contained.js";
 import { createContainedBlockedModal } from "../../modals/blocked-modal/blocked-modal-contained.js";
 import { shouldHideUriLabel } from "./link-label-utils.js";
+import { assetPath } from "../../js/asset-base.js";
 import { extractScheme, isBlockedScheme } from "../../js/link-utils.js";
+import { scheduleBillboardRuntimeFallback } from "../runtime-fallback.js";
 import {
   DEFAULT_CONFIG,
   GRADIENT_BACKGROUND,
@@ -105,6 +107,14 @@ export function initEmbedBillboard(options) {
   const shouldUseFullBleed = !headerText && !panzoomEnabled;
   document.body.setAttribute("data-fullbleed", shouldUseFullBleed ? "true" : "false");
 
+  let readyNotified = false;
+  const notifyReady = () => {
+    if (onReady && !readyNotified) {
+      readyNotified = true;
+      onReady();
+    }
+  };
+
   // Apply URL-based blocklists after core lists finish loading so they don't get overwritten
   const wantsUrlBlocklists =
     Boolean(config.blockSquares) ||
@@ -136,7 +146,7 @@ export function initEmbedBillboard(options) {
 
   const image = document.createElement("img");
   image.className = "embed-billboard__image";
-  image.src = baseurl + "/build/wholeSquare.png";
+  image.src = assetPath("wholeSquare.png");
   image.alt = "Su Squares Billboard";
   image.draggable = false;
 
@@ -480,17 +490,24 @@ export function initEmbedBillboard(options) {
   // Load square data
   async function loadData() {
     try {
-      const response = await fetch(baseurl + "/build/squarePersonalizations.json");
+      const response = await fetch(assetPath("squarePersonalizations.json"));
       if (!response.ok) throw new Error(`HTTP ${response.status}`);
       const data = await response.json();
       squarePersonalizations = data || [];
-      if (onReady) onReady();
+      notifyReady();
     } catch (error) {
       console.error("[EmbedBillboard] Failed to load data:", error);
     }
   }
 
   loadData();
+
+  const stopRuntimeFallback = scheduleBillboardRuntimeFallback({
+    onChange: () => {
+      image.src = assetPath("wholeSquare.png");
+      loadData();
+    },
+  });
 
   // Return controller
   return {
@@ -516,6 +533,7 @@ export function initEmbedBillboard(options) {
 
     destroy() {
       document.removeEventListener("keydown", handleDocumentKeydown);
+      stopRuntimeFallback();
       billboard.destroy();
       if (modal) modal.destroy();
       if (blockedModal) blockedModal.destroy();

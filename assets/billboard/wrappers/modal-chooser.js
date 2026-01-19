@@ -8,6 +8,7 @@ import { assetPath } from "../../js/asset-base.js";
 import { createBillboard } from "../billboard-core.js";
 import { createResetButton, createMobileHint } from "../billboard-view.js";
 import { isTouchDevice } from "../billboard-utils.js";
+import { scheduleBillboardRuntimeFallback } from "../runtime-fallback.js";
 
 const TOOLTIP_PROFILES = {
   lookup: {
@@ -239,6 +240,14 @@ export function attachBillboardChooser({
         };
         if (filterAllowsSelection(squareNumber, ctx)) {
           handleSelect(squareNumber);
+        }
+      },
+    });
+
+    scheduleBillboardRuntimeFallback({
+      onChange: () => {
+        if (billboard?.elements?.image) {
+          billboard.elements.image.src = assetPath("wholeSquare.png");
         }
       },
     });

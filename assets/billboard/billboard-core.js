@@ -12,7 +12,6 @@ import {
   getCellSize,
   describeSquareStatus,
   isTouchDevice,
-  GRID_DIMENSION,
 } from "./billboard-utils.js";
 import {
   createGrid,
@@ -26,7 +25,6 @@ import {
 import { createSquareOverrideManager } from "./square-override.js";
 import { attachBillboardEvents } from "./billboard-core-events.js";
 import {
-  coreBlocklistsReady,
   loadCoreBlocklistsOnce,
   applyCoreSquareBlocklistOverrides,
   isCoreSquareBlocked,
