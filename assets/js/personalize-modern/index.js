@@ -477,10 +477,29 @@ function initPage() {
     onOwnershipReady: () => validateSquareErrors(false),
   });
 
+  const handleResetAll = () => {
+    store.resetRowsKeepFirst();
+    pendingEdits.clear();
+    commitQueue.clear();
+    pendingSquareValidation = false;
+    clearSquareValidationHandle();
+    if (commitTimer) {
+      window.clearTimeout(commitTimer);
+      commitTimer = null;
+    }
+    if (squareValidationTimer) {
+      window.clearTimeout(squareValidationTimer);
+      squareValidationTimer = null;
+    }
+    resetOverLimitFlags();
+    validateSquareErrors(false);
+  };
+
   initPersonalizeBillboardUi({
     store,
     validateSquareErrors,
     clearOverLimitFlags,
+    onResetAll: handleResetAll,
   });
 
   if (personalizeButton) {
@@ -656,23 +675,7 @@ function initPage() {
   };
 
   if (resetButton) {
-    resetButton.addEventListener("click", () => {
-      store.resetRowsKeepFirst();
-      pendingEdits.clear();
-      commitQueue.clear();
-      pendingSquareValidation = false;
-      clearSquareValidationHandle();
-      if (commitTimer) {
-        window.clearTimeout(commitTimer);
-        commitTimer = null;
-      }
-      if (squareValidationTimer) {
-        window.clearTimeout(squareValidationTimer);
-        squareValidationTimer = null;
-      }
-      resetOverLimitFlags();
-      validateSquareErrors(false);
-    });
+    resetButton.addEventListener("click", handleResetAll);
   }
 
   if (addRowButton) {

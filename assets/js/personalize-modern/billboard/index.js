@@ -50,6 +50,7 @@ export function initPersonalizeBillboardUi({
   store,
   validateSquareErrors,
   clearOverLimitFlags,
+  onResetAll,
   alertFn = window.alert.bind(window),
 }) {
   const root = document.querySelector(".personalize-billboard");
@@ -63,6 +64,7 @@ export function initPersonalizeBillboardUi({
   const previewToggleLabel = document.getElementById("preview-tooltips-toggle-label");
   const updateButton = document.getElementById("billboard-update");
   const cancelButton = document.getElementById("billboard-cancel");
+  const resetAllButton = document.getElementById("billboard-reset-all");
   const uploadButton = document.getElementById("billboard-upload");
   const resetButton = document.getElementById("personalize-billboard-reset");
   const locatorHideButton = document.getElementById("billboard-locator-hide");
@@ -707,6 +709,16 @@ export function initPersonalizeBillboardUi({
 
   if (resetButton) {
     resetButton.addEventListener("click", () => controller.billboard.reset());
+  }
+
+  if (resetAllButton) {
+    resetAllButton.addEventListener("click", () => {
+      stagedSelection = new Set();
+      if (typeof onResetAll === "function") {
+        onResetAll();
+      }
+      syncUi();
+    });
   }
 
   if (uploadButton && placementInput) {

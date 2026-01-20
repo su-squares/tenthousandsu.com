@@ -156,6 +156,7 @@
 }
 
 .personalize-modern-page .personalize-billboard__controls-left,
+.personalize-modern-page .personalize-billboard__controls-center,
 .personalize-modern-page .personalize-billboard__controls-right {
   display: flex;
   align-items: center;
