@@ -18,7 +18,8 @@ export default defineConfig({
         '../../assets/web3/**/*.js',
         '../../assets/billboard/**/*.js',
         '../../assets/js/asset-base.js',
-        '../../assets/js/link-utils.js'
+        '../../assets/js/link-utils.js',
+        '../../assets/modals/**/*.js'
       ],
       exclude: [
         '../../assets/web3/vendor/**',
@@ -55,7 +56,8 @@ export default defineConfig({
       '@test-helpers': path.resolve(__dirname, './src/helpers'),
       '@mocks': path.resolve(__dirname, './src/mocks'),
       '@fixtures': path.resolve(__dirname, './src/fixtures'),
-      '@billboard': path.resolve(__dirname, '../../assets/billboard')
+      '@billboard': path.resolve(__dirname, '../../assets/billboard'),
+      '@modals': path.resolve(__dirname, '../../assets/modals')
     }
   }
 });

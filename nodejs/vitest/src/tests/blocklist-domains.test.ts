@@ -1,17 +1,22 @@
-
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
 import { DomainBlocklist } from '../../../../assets/blocklist/blocklist-domains.js';
+
+const originalFetch = globalThis.fetch;
 
 describe('blocklist-domains', () => {
   beforeEach(() => {
     DomainBlocklist.clear();
-    global.fetch = vi.fn();
+    (globalThis as any).fetch = vi.fn();
     vi.spyOn(console, 'error').mockImplementation(() => {});
     vi.spyOn(console, 'warn').mockImplementation(() => {});
   });
   
   afterEach(() => {
     vi.restoreAllMocks();
+    if (originalFetch) {
+      globalThis.fetch = originalFetch;
+    } else {
+      delete (globalThis as any).fetch;
+    }
   });
 
   it('should start empty', () => {
@@ -53,7 +58,7 @@ describe('blocklist-domains', () => {
 
     it('should return false for invalid href', () => {
       expect(DomainBlocklist.isDomainBlockedByHref('')).toBe(false);
-      expect(DomainBlocklist.isDomainBlockedByHref(null)).toBe(false);
+      expect(DomainBlocklist.isDomainBlockedByHref(null as any)).toBe(false);
     });
   });
 
@@ -80,10 +85,11 @@ describe('blocklist-domains', () => {
 
   describe('load', () => {
     it('should load array of domains from JSON', async () => {
-      global.fetch.mockResolvedValue({
+      const fetchMock = vi.fn().mockResolvedValue({
         ok: true,
         json: () => Promise.resolve(['bad.com', 'evil.org'])
       });
+      (globalThis as any).fetch = fetchMock;
 
       await DomainBlocklist.load();
       
@@ -92,14 +98,57 @@ describe('blocklist-domains', () => {
       expect(DomainBlocklist.isDomainBlocked('evil.org')).toBe(true);
     });
 
+    it('should clear list on non-array JSON', async () => {
+      const fetchMock = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve({ blocked: ['evil.com'] })
+      });
+      (globalThis as any).fetch = fetchMock;
+
+      await DomainBlocklist.load();
+
+      expect(DomainBlocklist.count()).toBe(0);
+      expect(console.warn).toHaveBeenCalled();
+    });
+
+    it('should keep existing blocklist on fetch error', async () => {
+      DomainBlocklist.addDomain('evil.com');
+
+      const fetchMock = vi.fn().mockResolvedValue({
+        ok: false,
+        status: 500
+      });
+      (globalThis as any).fetch = fetchMock;
+
+      await DomainBlocklist.load();
+
+      expect(DomainBlocklist.isDomainBlocked('evil.com')).toBe(true);
+    });
+
     it('should handle fetch error gracefully', async () => {
-      global.fetch.mockResolvedValue({
+      const fetchMock = vi.fn().mockResolvedValue({
         ok: false,
         status: 404
       });
+      (globalThis as any).fetch = fetchMock;
 
       await DomainBlocklist.load();
       expect(DomainBlocklist.count()).toBe(0);
+    });
+  });
+
+  describe('loadOnce', () => {
+    it('should memoize loadOnce', async () => {
+      const fetchMock = vi.fn().mockResolvedValue({
+        ok: true,
+        json: () => Promise.resolve(['bad.com'])
+      });
+      (globalThis as any).fetch = fetchMock;
+
+      await Promise.all([DomainBlocklist.loadOnce(), DomainBlocklist.loadOnce()]);
+
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      expect(DomainBlocklist.isDomainBlocked('bad.com')).toBe(true);
     });
   });
 });

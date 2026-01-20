@@ -1,4 +1,3 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { createMockTxState } from '@fixtures/state';
 import { createMockBalance } from '@test-helpers/balance';
 import { TEST_ADDRESSES } from '@fixtures/addresses';
@@ -9,7 +8,7 @@ vi.mock('@web3/wallet/balance-store.js', () => ({
     return { balance, source: 'fresh' };
   }),
   getCachedBalance: vi.fn(() => null),
-  subscribeBalance: vi.fn((callback) => {
+  subscribeBalance: vi.fn(() => {
     return vi.fn();
   }),
   invalidateBalance: vi.fn(),

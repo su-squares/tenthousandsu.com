@@ -4,6 +4,22 @@ import { setupLocalStorageShim } from './localStorage-shim';
 // Setup localStorage
 setupLocalStorageShim();
 
+// Disable CSS file loading in happy-dom so tests don't try to fetch real assets (e.g. /assets/...css)
+(() => {
+  const w = globalThis as unknown as { window?: any };
+  const happyDOM = w.window?.happyDOM;
+
+  if (happyDOM?.settings) {
+    happyDOM.settings.disableCSSFileLoading = true;
+    happyDOM.settings.handleDisabledFileLoadingAsSuccess = true;
+  }
+})();
+
+// Mock window.alert (happy-dom doesn't have it)
+if (typeof window !== 'undefined' && !window.alert) {
+  (window as any).alert = vi.fn();
+}
+
 // Global beforeEach
 beforeEach(() => {
   // Clear localStorage before each test

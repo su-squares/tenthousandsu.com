@@ -1,4 +1,3 @@
-import { describe, it, expect, beforeEach } from 'vitest';
 import {
   extractScheme,
   isBlockedScheme,
@@ -9,7 +8,13 @@ import {
   URI_CLASSIFICATION
 } from '../../../../assets/js/link-utils.js';
 
+const originalWindow = globalThis.window;
+
 describe('link-utils', () => {
+  afterEach(() => {
+    (globalThis as any).window = originalWindow;
+  });
+
   describe('extractScheme', () => {
     it('should extract http scheme', () => {
       expect(extractScheme('http://example.com')).toBe('http');
@@ -57,8 +62,8 @@ describe('link-utils', () => {
 
     it('should return null for empty/null/invalid input', () => {
       expect(extractScheme('')).toBeNull();
-      expect(extractScheme(null)).toBeNull();
-      expect(extractScheme(undefined)).toBeNull();
+      expect(extractScheme(null as any)).toBeNull();
+      expect(extractScheme(undefined as any)).toBeNull();
       expect(extractScheme('   ')).toBeNull();
     });
 
@@ -68,7 +73,6 @@ describe('link-utils', () => {
     });
 
     it('should return null for invalid scheme characters', () => {
-      // Schemes must match [a-zA-Z][a-zA-Z0-9+.-]* - '%' is not valid
       expect(extractScheme('javascript%:alert(1)')).toBeNull();
     });
   });
@@ -149,14 +153,13 @@ describe('link-utils', () => {
     });
 
     it('should handle null URL', () => {
-      expect(isSafeInternalPath(null)).toBe(false);
+      expect(isSafeInternalPath(null as any)).toBe(false);
     });
   });
 
   describe('classifyUri', () => {
     beforeEach(() => {
-      // Mock window.location for tests
-      global.window = {
+      (globalThis as any).window = {
         location: {
           origin: 'https://example.com',
           href: 'https://example.com/'
@@ -208,7 +211,7 @@ describe('link-utils', () => {
         const result = classifyUri('/path/to/page');
         expect(result.classification).toBe(URI_CLASSIFICATION.INTERNAL);
         expect(result.displayUri).toBe('/path/to/page');
-        expect(result.url.pathname).toBe('/path/to/page');
+        expect(result.url?.pathname).toBe('/path/to/page');
       });
 
       it('should classify relative-path URLs as internal', () => {
@@ -234,24 +237,37 @@ describe('link-utils', () => {
         expect(result.classification).toBe(URI_CLASSIFICATION.INTERNAL);
         expect(result.displayUri).toBe('#section');
       });
+
+      it('should classify relative URLs with custom origin', () => {
+        const result = classifyUri('/path', 'https://example.com');
+        expect(result.classification).toBe(URI_CLASSIFICATION.INTERNAL);
+
+        const external = classifyUri('/path', 'https://other.com');
+        expect(external.classification).toBe(URI_CLASSIFICATION.EXTERNAL);
+      });
     });
 
     describe('protocol-relative URLs', () => {
       it('should classify same-origin protocol-relative URL as internal', () => {
         const result = classifyUri('//example.com/path');
         expect(result.classification).toBe(URI_CLASSIFICATION.INTERNAL);
-        expect(result.url.origin).toBe('https://example.com');
+        expect(result.url?.origin).toBe('https://example.com');
       });
 
       it('should classify different-origin protocol-relative URL as external', () => {
         const result = classifyUri('//other.com/path');
         expect(result.classification).toBe(URI_CLASSIFICATION.EXTERNAL);
-        expect(result.url.origin).toBe('https://other.com');
+        expect(result.url?.origin).toBe('https://other.com');
       });
 
       it('should handle malformed protocol-relative URLs', () => {
         const result = classifyUri('//');
         expect(result.classification).toBe(URI_CLASSIFICATION.BLOCKED);
+      });
+
+      it('should use custom origin for protocol-relative URLs', () => {
+        const result = classifyUri('//example.com/path', 'https://example.com');
+        expect(result.classification).toBe(URI_CLASSIFICATION.INTERNAL);
       });
     });
 
@@ -313,12 +329,12 @@ describe('link-utils', () => {
       });
 
       it('should handle null', () => {
-        const result = classifyUri(null);
+        const result = classifyUri(null as any);
         expect(result.classification).toBe(URI_CLASSIFICATION.BLOCKED);
       });
 
       it('should handle undefined', () => {
-        const result = classifyUri(undefined);
+        const result = classifyUri(undefined as any);
         expect(result.classification).toBe(URI_CLASSIFICATION.BLOCKED);
       });
 
@@ -328,7 +344,6 @@ describe('link-utils', () => {
       });
 
       it('should handle malformed URLs as blocked', () => {
-        // Use a truly malformed URL that URL constructor can't parse
         const result = classifyUri('http://[invalid');
         expect(result.classification).toBe(URI_CLASSIFICATION.BLOCKED);
       });
@@ -387,8 +402,8 @@ describe('link-utils', () => {
 
     it('should handle empty/null input', () => {
       expect(normalizeHref('')).toBe('');
-      expect(normalizeHref(null)).toBe('');
-      expect(normalizeHref(undefined)).toBe('');
+      expect(normalizeHref(null as any)).toBe('');
+      expect(normalizeHref(undefined as any)).toBe('');
       expect(normalizeHref('   ')).toBe('');
     });
 
