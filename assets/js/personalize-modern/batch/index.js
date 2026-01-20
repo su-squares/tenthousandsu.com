@@ -2,11 +2,16 @@ import { CSV_INSTRUCTIONS, IMAGE_INSTRUCTIONS, TITLE_MAX, URI_MAX } from "../con
 import { buildBatchErrorMessage } from "./errors.js";
 import { downloadCsv, parseCsvBatchFile } from "./csv.js";
 import { parseImageBatchFiles } from "./images.js";
+import { createBatchProgressController } from "./progress.js";
 
 const CSV_WORKER_URL = `${window.SITE_BASEURL || ""}/assets/js/personalize-modern/batch/csv-worker.js`;
 const CSV_PROGRESS_THRESHOLD = 50;
 const CSV_PROGRESS_DELAY_MS = 200;
 const CSV_APPLY_CHUNK_SIZE = 200;
+const IMAGE_PROGRESS_THRESHOLD = 500;
+const IMAGE_PROGRESS_DELAY_MS = 200;
+const IMAGE_PARSE_CHUNK_SIZE = 100;
+const IMAGE_PARALLEL_THRESHOLD = 300;
 const OWNERSHIP_MAX_SQUARE = 10000;
 
 let csvWorker = null;
@@ -40,120 +45,6 @@ function buildOwnershipFlags(ownedSquares) {
     }
   });
   return flags;
-}
-
-function createBatchProgressOverlay() {
-  let overlay = null;
-  let messageNode = null;
-  let countNode = null;
-
-  const ensureOverlay = () => {
-    if (overlay) return;
-    overlay = document.createElement("div");
-    overlay.className = "personalize-batch__overlay";
-    overlay.hidden = true;
-    overlay.setAttribute("aria-hidden", "true");
-    overlay.innerHTML = `
-      <div class="personalize-batch__overlay-card" role="status" aria-live="polite">
-        <div class="personalize-batch__overlay-title">Processing CSV</div>
-        <div class="personalize-batch__overlay-message">
-          <span class="personalize-batch__overlay-text"></span>
-          <span class="personalize-batch__overlay-count"></span>
-        </div>
-      </div>
-    `;
-    messageNode = overlay.querySelector(".personalize-batch__overlay-text");
-    countNode = overlay.querySelector(".personalize-batch__overlay-count");
-    document.body.appendChild(overlay);
-  };
-
-  const show = (message, processed, total) => {
-    ensureOverlay();
-    if (!overlay || !messageNode || !countNode) return;
-    overlay.hidden = false;
-    overlay.setAttribute("aria-hidden", "false");
-    messageNode.textContent = message || "Processing CSV";
-    if (Number.isFinite(total) && total > 0) {
-      const capped = Math.min(processed, total);
-      countNode.textContent = ` (${capped}/${total})`;
-    } else if (Number.isFinite(processed) && processed > 0) {
-      countNode.textContent = ` (${processed})`;
-    } else {
-      countNode.textContent = "";
-    }
-  };
-
-  const update = (message, processed, total) => {
-    if (!overlay || overlay.hidden) {
-      show(message, processed, total);
-      return;
-    }
-    if (messageNode) {
-      messageNode.textContent = message || "Processing CSV";
-    }
-    if (countNode) {
-      if (Number.isFinite(total) && total > 0) {
-        const capped = Math.min(processed, total);
-        countNode.textContent = ` (${capped}/${total})`;
-      } else if (Number.isFinite(processed) && processed > 0) {
-        countNode.textContent = ` (${processed})`;
-      } else {
-        countNode.textContent = "";
-      }
-    }
-  };
-
-  const hide = () => {
-    if (!overlay) return;
-    overlay.hidden = true;
-    overlay.setAttribute("aria-hidden", "true");
-  };
-
-  return { show, update, hide };
-}
-
-function createCsvProgressController() {
-  const overlay = createBatchProgressOverlay();
-  let visible = false;
-  let timer = null;
-
-  const clearTimer = () => {
-    if (!timer) return;
-    window.clearTimeout(timer);
-    timer = null;
-  };
-
-  const maybeShow = (message, processed, total) => {
-    if (visible) {
-      overlay.update(message, processed, total);
-      return;
-    }
-    if (!Number.isFinite(total) || total < CSV_PROGRESS_THRESHOLD) return;
-    if (timer) return;
-    timer = window.setTimeout(() => {
-      timer = null;
-      visible = true;
-      overlay.show(message, processed, total);
-    }, CSV_PROGRESS_DELAY_MS);
-  };
-
-  const update = (message, processed, total) => {
-    if (visible) {
-      overlay.update(message, processed, total);
-      return;
-    }
-    maybeShow(message, processed, total);
-  };
-
-  const hide = () => {
-    clearTimer();
-    if (visible) {
-      overlay.hide();
-    }
-    visible = false;
-  };
-
-  return { update, hide };
 }
 
 async function parseCsvBatchFileWithWorker(file, options = {}) {
@@ -332,6 +223,7 @@ export function initBatchControls(options) {
     elements,
     isValidSquareId,
     applyBatchRows,
+    overlayMount = null,
     alertFn = window.alert.bind(window),
   } = options;
 
@@ -348,7 +240,18 @@ export function initBatchControls(options) {
   } = elements;
 
   const dropdowns = [csvBatchDropdown, imageBatchDropdown].filter(Boolean);
-  const csvProgress = createCsvProgressController();
+  const csvProgress = createBatchProgressController({
+    title: "Processing CSV",
+    threshold: CSV_PROGRESS_THRESHOLD,
+    delayMs: CSV_PROGRESS_DELAY_MS,
+    mount: overlayMount,
+  });
+  const imageProgress = createBatchProgressController({
+    title: "Processing Images",
+    threshold: IMAGE_PROGRESS_THRESHOLD,
+    delayMs: IMAGE_PROGRESS_DELAY_MS,
+    mount: overlayMount,
+  });
 
   const closeDropdown = (dropdown) => {
     if (dropdown) {
@@ -483,19 +386,46 @@ export function initBatchControls(options) {
         return;
       }
       try {
+        const fileCount = files.length;
+        const shouldChunk = fileCount > IMAGE_PARALLEL_THRESHOLD;
+        const shouldShowProgress = fileCount >= IMAGE_PROGRESS_THRESHOLD;
         const state = store.getState();
-        const { batchMap, errors, hasErrors, alphaWarnings } = await parseImageBatchFiles(files, {
-          isValidSquareId,
-          ownershipReady: state.ownershipStatus === "ready" && state.ownedSquares,
-          ownedSquares: state.ownedSquares,
-        });
+        const progressHandler =
+          shouldChunk || shouldShowProgress
+            ? (processed, total) => {
+                imageProgress.update("Processing images", processed, total);
+              }
+            : null;
+
+        if (shouldShowProgress) {
+          imageProgress.update("Processing images", 0, fileCount);
+        }
+
+        const { batchMap, errors, hasErrors, alphaWarnings } =
+          await parseImageBatchFiles(files, {
+            isValidSquareId,
+            ownershipReady: state.ownershipStatus === "ready" && state.ownedSquares,
+            ownedSquares: state.ownedSquares,
+            onProgress: progressHandler,
+            chunkSize: shouldChunk ? IMAGE_PARSE_CHUNK_SIZE : null,
+          });
 
         if (hasErrors) {
           alertFn(buildBatchErrorMessage("Image upload failed.", errors));
           return;
         }
 
-        await applyBatchRows(batchMap);
+        if (shouldShowProgress) {
+          imageProgress.update("Applying rows", 0, batchMap.size);
+        }
+        await applyBatchRows(batchMap, {
+          chunkSize: CSV_APPLY_CHUNK_SIZE,
+          onProgress: shouldShowProgress
+            ? (processed, totalCount) => {
+                imageProgress.update("Applying rows", processed, totalCount);
+              }
+            : null,
+        });
 
         if (alphaWarnings.length > 0) {
           alertFn(
@@ -508,6 +438,7 @@ export function initBatchControls(options) {
       } catch (error) {
         alertFn(error?.message || "Unable to read images.");
       } finally {
+        imageProgress.hide();
         event.target.value = "";
       }
     });

@@ -13,6 +13,11 @@
   max-height: 60vh;
   overflow: auto;
   gap: 0;
+  position: relative;
+}
+
+.personalize-modern-page .personalize-table__wrapper.is-batch-overlay-active {
+  overflow: hidden;
 }
 
 

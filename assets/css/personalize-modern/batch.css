@@ -89,6 +89,11 @@
   pointer-events: auto;
 }
 
+.personalize-modern-page .personalize-table__wrapper .personalize-batch__overlay {
+  position: absolute;
+  inset: 0;
+}
+
 .personalize-modern-page .personalize-batch__overlay[hidden] {
   display: none;
 }

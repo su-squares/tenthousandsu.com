@@ -90,6 +90,7 @@ function initPage() {
     store,
     isValidSquareId,
     applyBatchRows,
+    overlayMount: wrapper,
     elements: {
       csvBatchDropdown,
       csvBatchTrigger,
