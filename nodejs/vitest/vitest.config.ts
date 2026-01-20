@@ -14,18 +14,25 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html', 'lcov'],
-      include: ['../../assets/web3/**/*.js'],
+      include: [
+        '../../assets/web3/**/*.js',
+        '../../assets/billboard/**/*.js'
+      ],
       exclude: [
         '../../assets/web3/vendor/**',
         '../../assets/web3/**/*.test.js',
         '../../assets/web3/**/*.spec.js',
-        '../../assets/web3/config/runtime.generated.js'
+        '../../assets/web3/config/runtime.generated.js',
+        '../../assets/billboard/**/*.test.js',
+        '../../assets/billboard/**/*.spec.js'
       ],
       all: true,
-      lines: 80,
-      functions: 80,
-      branches: 75,
-      statements: 80
+      thresholds: {
+        lines: 80,
+        functions: 80,
+        branches: 75,
+        statements: 80
+      }
     },
     reporters: ['verbose'],
     pool: 'threads',
@@ -45,7 +52,8 @@ export default defineConfig({
       '@web3': path.resolve(__dirname, '../../assets/web3'),
       '@test-helpers': path.resolve(__dirname, './src/helpers'),
       '@mocks': path.resolve(__dirname, './src/mocks'),
-      '@fixtures': path.resolve(__dirname, './src/fixtures')
+      '@fixtures': path.resolve(__dirname, './src/fixtures'),
+      '@billboard': path.resolve(__dirname, '../../assets/billboard')
     }
   }
 });
