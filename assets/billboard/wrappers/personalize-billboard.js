@@ -108,6 +108,13 @@ export function initPersonalizeBillboard(options) {
     "owned-personalized": "",
     error: "",
   };
+  const staticColors = {
+    selected: { bg: "", x: "" },
+    "owned-unpersonalized": { bg: "", x: "" },
+    "owned-personalized": { bg: "", x: "" },
+    error: { bg: "", x: "" },
+  };
+  let glowEnabled = true;
 
   function resolveGlowColors() {
     const styles = getComputedStyle(document.documentElement);
@@ -121,6 +128,12 @@ export function initPersonalizeBillboard(options) {
       "#4aa3ff";
     glowColors.error =
       styles.getPropertyValue("--billboard-glow-error").trim() || "#ff2d2d";
+
+    // Static colors: background is the glow color, X color based on contrast
+    staticColors.selected = { bg: glowColors.selected, x: "#000" };
+    staticColors["owned-unpersonalized"] = { bg: glowColors["owned-unpersonalized"], x: "#000" };
+    staticColors["owned-personalized"] = { bg: glowColors["owned-personalized"], x: "#fff" };
+    staticColors.error = { bg: glowColors.error, x: "#fff" };
   }
 
   resolveGlowColors();
@@ -339,6 +352,7 @@ export function initPersonalizeBillboard(options) {
   function syncOverlays() {
     const next = new Map();
     const highlights = [];
+    const staticHighlightsList = [];
     const selected = state.selectedSquares || new Set();
     const ownedReady = state.ownershipStatus === "ready" && state.ownedSquares;
 
@@ -384,25 +398,62 @@ export function initPersonalizeBillboard(options) {
       }
     });
 
+    // Count highlights to report back
+    let highlightCount = 0;
+    next.forEach((config) => {
+      if (config.glow) highlightCount++;
+    });
+
     next.forEach((config, squareNumber) => {
       applySquareVisual(squareNumber, config);
       applied.set(squareNumber, config);
       if (config.glow) {
-        const color = glowColors[config.glow] || "#fff";
-        highlights.push({ squareNumber, color });
+        if (glowEnabled) {
+          const color = glowColors[config.glow] || "#fff";
+          highlights.push({ squareNumber, color });
+        } else {
+          const colors = staticColors[config.glow];
+          if (colors) {
+            staticHighlightsList.push({
+              squareNumber,
+              bgColor: colors.bg,
+              xColor: colors.x,
+            });
+          }
+        }
       }
     });
+
     if (glowCanvas) {
-      glowCanvas.setHighlights(highlights);
+      if (glowEnabled) {
+        glowCanvas.setHighlights(highlights);
+      } else {
+        glowCanvas.setStaticHighlights(staticHighlightsList);
+      }
     }
+
+    return { highlightCount };
   }
 
   function setState(nextState) {
     if (!nextState || typeof nextState !== "object") return;
     Object.assign(state, nextState);
-    syncOverlays();
+    const result = syncOverlays();
     refreshCurrentTooltip();
     updateLocatorPosition();
+    return result;
+  }
+
+  function setGlowEnabled(enabled) {
+    const wasEnabled = glowEnabled;
+    glowEnabled = Boolean(enabled);
+    if (wasEnabled !== glowEnabled) {
+      syncOverlays();
+    }
+  }
+
+  function isGlowEnabled() {
+    return glowEnabled;
   }
 
   function applySquareData(data) {
@@ -445,6 +496,8 @@ export function initPersonalizeBillboard(options) {
   return {
     billboard,
     setState,
+    setGlowEnabled,
+    isGlowEnabled,
     destroy() {
       if (glowCanvas) {
         glowCanvas.destroy();

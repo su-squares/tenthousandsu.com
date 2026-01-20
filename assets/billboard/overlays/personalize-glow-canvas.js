@@ -1,5 +1,8 @@
 /**
  * Canvas glow overlay for personalize billboard.
+ * Supports two modes:
+ * - Glow mode: animated pulsing glow borders around highlighted squares
+ * - Static mode: solid colored squares with X marks (no animation, better perf)
  */
 
 const DEFAULT_MAX_RESOLUTION = 1000;
@@ -30,6 +33,8 @@ export function createPersonalizeGlowCanvas({
   if (!ctx) return null;
 
   let highlights = [];
+  let staticHighlights = []; // For static mode: [{squareNumber, bgColor, xColor}]
+  let mode = "glow"; // "glow" or "static"
   let size = 0;
   let scale = 1;
   let rafId = null;
@@ -37,6 +42,7 @@ export function createPersonalizeGlowCanvas({
   let running = false;
   let lastDraw = 0;
   let glowLayer = null;
+  let underlayLayer = null;
   let occluderLayer = null;
   let cacheDirty = true;
 
@@ -109,6 +115,34 @@ export function createPersonalizeGlowCanvas({
     targetCtx.shadowBlur = 0;
   }
 
+  function drawUnderlayLayer(targetCtx) {
+    if (!size) return;
+    targetCtx.setTransform(scale, 0, 0, scale, 0, 0);
+    targetCtx.clearRect(0, 0, size, size);
+
+    const cell = size / 100;
+    const border = Math.max(2, Math.round(cell * 0.25));
+    const inset = border / 2;
+    const width = cell - border;
+    const height = cell - border;
+
+    targetCtx.lineWidth = border;
+    targetCtx.strokeStyle = "#fff";
+
+    for (const highlight of highlights) {
+      const squareNumber = highlight.squareNumber;
+      if (!squareNumber || squareNumber < 1 || squareNumber > 10000) continue;
+
+      const index = squareNumber - 1;
+      const row = Math.floor(index / 100);
+      const col = index % 100;
+      const x = col * cell;
+      const y = row * cell;
+
+      targetCtx.strokeRect(x + inset, y + inset, width, height);
+    }
+  }
+
   function drawOccluderLayer(targetCtx) {
     if (!size) return;
     targetCtx.setTransform(scale, 0, 0, scale, 0, 0);
@@ -155,14 +189,19 @@ export function createPersonalizeGlowCanvas({
   function rebuildCache() {
     if (!size) return;
     glowLayer = ensureLayerCanvas(glowLayer);
+    underlayLayer = ensureLayerCanvas(underlayLayer);
     occluderLayer = ensureLayerCanvas(occluderLayer);
     glowLayer.width = canvas.width;
     glowLayer.height = canvas.height;
+    underlayLayer.width = canvas.width;
+    underlayLayer.height = canvas.height;
     occluderLayer.width = canvas.width;
     occluderLayer.height = canvas.height;
     const glowCtx = glowLayer.getContext("2d");
+    const underlayCtx = underlayLayer.getContext("2d");
     const occluderCtx = occluderLayer.getContext("2d");
     drawGlowLayer(1, glowCtx);
+    drawUnderlayLayer(underlayCtx);
     drawOccluderLayer(occluderCtx);
     cacheDirty = false;
   }
@@ -171,13 +210,62 @@ export function createPersonalizeGlowCanvas({
     if (cacheDirty) {
       rebuildCache();
     }
-    if (!size || !glowLayer || !occluderLayer) return;
+    if (!size || !glowLayer || !underlayLayer || !occluderLayer) return;
     ctx.setTransform(scale, 0, 0, scale, 0, 0);
     ctx.clearRect(0, 0, size, size);
+    ctx.globalAlpha = 1;
+    ctx.drawImage(underlayLayer, 0, 0, size, size);
     ctx.globalAlpha = 0.3 + 0.7 * pulse;
     ctx.drawImage(glowLayer, 0, 0, size, size);
     ctx.globalAlpha = 1;
     ctx.drawImage(occluderLayer, 0, 0, size, size);
+  }
+
+  function drawStaticMode() {
+    if (!size) return;
+    ctx.setTransform(scale, 0, 0, scale, 0, 0);
+    ctx.clearRect(0, 0, size, size);
+
+    const cell = size / 100;
+    const xInset = cell * 0.15;
+    const xThickness = Math.max(1, cell * 0.14);
+
+    for (const highlight of staticHighlights) {
+      const squareNumber = highlight.squareNumber;
+      if (!squareNumber || squareNumber < 1 || squareNumber > 10000) continue;
+
+      const index = squareNumber - 1;
+      const row = Math.floor(index / 100);
+      const col = index % 100;
+      const x = col * cell;
+      const y = row * cell;
+      const bgColor = highlight.bgColor || "#fff";
+      const xColor = highlight.xColor || "#000";
+
+      // Draw filled background square
+      ctx.fillStyle = bgColor;
+      ctx.fillRect(x, y, cell, cell);
+
+      // Draw X mark
+      ctx.strokeStyle = xColor;
+      ctx.lineWidth = xThickness;
+      ctx.lineCap = "round";
+
+      const x1 = x + xInset;
+      const y1 = y + xInset;
+      const x2 = x + cell - xInset;
+      const y2 = y + cell - xInset;
+
+      ctx.beginPath();
+      ctx.moveTo(x1, y1);
+      ctx.lineTo(x2, y2);
+      ctx.stroke();
+
+      ctx.beginPath();
+      ctx.moveTo(x2, y1);
+      ctx.lineTo(x1, y2);
+      ctx.stroke();
+    }
   }
 
   function updatePulseTarget(pulse) {
@@ -215,29 +303,68 @@ export function createPersonalizeGlowCanvas({
     rafId = null;
     start = null;
     cacheDirty = true;
-    clearCanvas();
     updatePulseTarget(0.5);
   }
 
   const resizeObserver = new ResizeObserver(() => {
     updateCanvasSize();
-    if (highlights.length) {
+    if (mode === "glow" && highlights.length) {
       cacheDirty = true;
       drawHighlights(0.5);
+    } else if (mode === "static" && staticHighlights.length) {
+      drawStaticMode();
     }
   });
 
   resizeObserver.observe(wrapper);
   updateCanvasSize();
 
+  let enabled = true;
+
   function setHighlights(nextHighlights) {
     highlights = Array.isArray(nextHighlights) ? nextHighlights : [];
+    mode = "glow";
+    staticHighlights = [];
     cacheDirty = true;
-    if (highlights.length) {
+    if (enabled && highlights.length) {
       startLoop();
     } else {
       stopLoop();
+      clearCanvas();
     }
+  }
+
+  function setStaticHighlights(nextHighlights) {
+    staticHighlights = Array.isArray(nextHighlights) ? nextHighlights : [];
+    mode = "static";
+    highlights = [];
+    stopLoop();
+    if (enabled && staticHighlights.length) {
+      canvas.style.display = "";
+      drawStaticMode();
+    } else {
+      clearCanvas();
+    }
+  }
+
+  function setEnabled(nextEnabled) {
+    enabled = Boolean(nextEnabled);
+    if (!enabled) {
+      stopLoop();
+      canvas.style.display = "none";
+    } else {
+      canvas.style.display = "";
+      if (mode === "glow" && highlights.length) {
+        cacheDirty = true;
+        startLoop();
+      } else if (mode === "static" && staticHighlights.length) {
+        drawStaticMode();
+      }
+    }
+  }
+
+  function isEnabled() {
+    return enabled;
   }
 
   function destroy() {
@@ -248,6 +375,9 @@ export function createPersonalizeGlowCanvas({
 
   return {
     setHighlights,
+    setStaticHighlights,
+    setEnabled,
+    isEnabled,
     destroy,
   };
 }

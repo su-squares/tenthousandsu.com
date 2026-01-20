@@ -82,6 +82,10 @@ export function initPersonalizeBillboardUi({
   const ownershipLoading = document.getElementById("ownership-loading");
   const ownershipLoadingCount = document.getElementById("ownership-loading-count");
 
+  const glowToggle = document.getElementById("glow-toggle");
+  const glowToggleLabel = document.getElementById("glow-toggle-label");
+  const billboardMap = document.querySelector(".personalize-billboard__map");
+
   let mode = "owned";
   let previewTooltips = previewToggle ? previewToggle.checked : false;
   let isEditing = false;
@@ -97,9 +101,12 @@ export function initPersonalizeBillboardUi({
   const RESIZE_STEP_SQUARES = 1;
   const OWNERSHIP_OVERLAY_DELAY_MS = 1000;
   const OWNERSHIP_OVERLAY_COUNT_THRESHOLD = 50;
+  const GLOW_THRESHOLD = 1500;
   let ownershipOverlayTimer = null;
   let ownershipOverlayVisible = false;
   let lastOwnershipStatus = null;
+  let glowOffPreference = false; // User manually toggled glow off
+  let glowForced = false; // Glow is forced off due to threshold
 
   root.dataset.editing = "false";
 
@@ -225,6 +232,42 @@ export function initPersonalizeBillboardUi({
     root.dataset.mode = mode;
   }
 
+  function updateGlowToggleUi() {
+    if (!glowToggle) return;
+    const shouldBeOff = glowOffPreference || glowForced;
+    glowToggle.checked = shouldBeOff;
+    glowToggle.disabled = glowForced;
+    if (glowToggleLabel) {
+      glowToggleLabel.classList.toggle("is-forced", glowForced);
+    }
+    if (billboardMap) {
+      billboardMap.dataset.glowOff = shouldBeOff ? "true" : "false";
+    }
+  }
+
+  function applyGlowState() {
+    const glowEnabled = !glowOffPreference && !glowForced;
+    controller.setGlowEnabled(glowEnabled);
+    updateGlowToggleUi();
+  }
+
+  function handleHighlightCount(count) {
+    const wasForced = glowForced;
+    if (count > GLOW_THRESHOLD) {
+      // Force glow off and enable the preference if not already
+      glowForced = true;
+      if (!glowOffPreference) {
+        glowOffPreference = true;
+      }
+    } else {
+      // Allow user to toggle again, but keep their preference
+      glowForced = false;
+    }
+    if (wasForced !== glowForced) {
+      applyGlowState();
+    }
+  }
+
   function syncBillboardState() {
     const state = store.getState();
     const rows = state.rows;
@@ -234,7 +277,7 @@ export function initPersonalizeBillboardUi({
     const errorMap = buildErrorMap(rows);
     const locatorSquare = getLocatorSquare(state);
 
-    controller.setState({
+    const result = controller.setState({
       mode,
       previewTooltips,
       ownershipStatus: state.ownershipStatus,
@@ -244,6 +287,11 @@ export function initPersonalizeBillboardUi({
       errorMap,
       locatorSquare,
     });
+
+    // Handle glow threshold check
+    if (result && typeof result.highlightCount === "number") {
+      handleHighlightCount(result.highlightCount);
+    }
 
     const hasChanges = isEditing && !setsEqual(tableSelection, stagedSelection);
     syncControls(hasChanges);
@@ -637,6 +685,18 @@ export function initPersonalizeBillboardUi({
     });
   }
 
+  if (glowToggle) {
+    glowToggle.addEventListener("change", () => {
+      if (glowForced) {
+        // Don't allow unchecking when forced
+        glowToggle.checked = true;
+        return;
+      }
+      glowOffPreference = glowToggle.checked;
+      applyGlowState();
+    });
+  }
+
   if (updateButton) {
     updateButton.addEventListener("click", applyEditMode);
   }
@@ -812,6 +872,7 @@ export function initPersonalizeBillboardUi({
   });
 
   updateOwnershipLoading(store.getState());
+  updateGlowToggleUi();
   syncUi();
 
   return {

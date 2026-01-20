@@ -322,6 +322,57 @@
   text-align: center;
 }
 
+.personalize-modern-page .personalize-billboard__glow-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  margin-bottom: 0.75rem;
+  position: relative;
+}
+
+.personalize-modern-page .personalize-billboard__glow-toggle input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.personalize-modern-page .personalize-billboard__glow-toggle .personalize-billboard__toggle-box {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--color-accent);
+  display: inline-block;
+  box-shadow: 0 0 6px rgba(255, 215, 0, 0.45);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.personalize-modern-page .personalize-billboard__glow-toggle input:checked + .personalize-billboard__toggle-box::after {
+  content: "\2713";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent);
+  font-size: 0.8rem;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.personalize-modern-page .personalize-billboard__glow-toggle.is-forced {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.personalize-modern-page .personalize-billboard__glow-toggle.is-forced input {
+  pointer-events: none;
+}
+
+.personalize-modern-page .personalize-billboard__glow-toggle .personalize-billboard__toggle-text {
+  font-size: 0.9rem;
+}
+
 .personalize-modern-page .personalize-billboard__map-list {
   display: flex;
   flex-direction: column;
@@ -360,6 +411,56 @@
 
 .personalize-modern-page .personalize-billboard__map-swatch[data-color="error"] {
   --glow-color: var(--billboard-glow-error);
+}
+
+/* Static mode map swatches (when glow is off) */
+.personalize-modern-page .personalize-billboard__map[data-glow-off="true"] .personalize-billboard__map-swatch {
+  box-shadow: none;
+  border-width: 0;
+  position: relative;
+}
+
+.personalize-modern-page .personalize-billboard__map[data-glow-off="true"] .personalize-billboard__map-swatch::before,
+.personalize-modern-page .personalize-billboard__map[data-glow-off="true"] .personalize-billboard__map-swatch::after {
+  content: "";
+  position: absolute;
+  background: var(--static-x-color, #000);
+}
+
+.personalize-modern-page .personalize-billboard__map[data-glow-off="true"] .personalize-billboard__map-swatch::before {
+  width: 2px;
+  height: 100%;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.personalize-modern-page .personalize-billboard__map[data-glow-off="true"] .personalize-billboard__map-swatch::after {
+  width: 2px;
+  height: 100%;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%) rotate(-45deg);
+}
+
+.personalize-modern-page .personalize-billboard__map[data-glow-off="true"] .personalize-billboard__map-swatch[data-color="owned-unpersonalized"] {
+  background: var(--billboard-glow-owned-unpersonalized);
+  --static-x-color: #000;
+}
+
+.personalize-modern-page .personalize-billboard__map[data-glow-off="true"] .personalize-billboard__map-swatch[data-color="owned-personalized"] {
+  background: var(--billboard-glow-owned-personalized);
+  --static-x-color: #fff;
+}
+
+.personalize-modern-page .personalize-billboard__map[data-glow-off="true"] .personalize-billboard__map-swatch[data-color="selected"] {
+  background: var(--billboard-glow-selected);
+  --static-x-color: #000;
+}
+
+.personalize-modern-page .personalize-billboard__map[data-glow-off="true"] .personalize-billboard__map-swatch[data-color="error"] {
+  background: var(--billboard-glow-error);
+  --static-x-color: #fff;
 }
 
 .personalize-modern-page .personalize-billboard__grid {
