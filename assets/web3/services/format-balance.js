@@ -10,7 +10,7 @@
  * @returns {string}
  */
 export function formatBalanceString(formatted) {
-  if (!formatted || typeof formatted !== "string") return "â€”";
+  if (!formatted || typeof formatted !== "string") return "—";
 
   const num = Number.parseFloat(formatted);
   if (!Number.isFinite(num)) return formatted;
@@ -53,7 +53,7 @@ export function formatBalanceForDisplay(balance) {
 
   const core = formatBalanceString(balance.formatted);
   if (!core) return "";
-  if (core === "â€”") return core;
+  if (core === "—") return core;
 
   const symbol = balance.symbol || "ETH";
   return `${core} ${symbol}`;
