@@ -42,6 +42,12 @@ image: "{{ site.baseurl }}/assets/images/su-OG.png"
       Use this page to personalize one or more Squares you own on TenThousandSu.com. This is an experimental workflow
       with a flexible table for editing multiple Squares at once. Select squares you own in the billboard to add them to the table to personalize them.
     </p>
+    <p>
+      Here are the links to use the legacy <a href="{{ site.baseurl }}/personalize">single</a> or <a href="{{ site.baseurl }}/personalize-batch">batch</a> personalization tools.
+    </p>
+    <p>
+      If your Square was previously personalized using the old, more expensive method you will need to <a href="#" id="open-unpersonalize-modal">unpersonalize</a> it first.
+    </p>
 
     <section class="personalize-billboard-map" id="personalize-billboard-map">
       <div class="personalize-billboard__map">
@@ -225,6 +231,30 @@ image: "{{ site.baseurl }}/assets/images/su-OG.png"
     </div>
 
     <div id="tx-fixture"></div>
+
+    <!-- Unpersonalize Modal (lazy loaded) -->
+    <div id="unpersonalize-modal" class="su-modal-overlay" aria-hidden="true">
+      <div class="su-modal">
+        <div class="su-modal__header">
+          <h3 class="su-modal__title">Unpersonalize Square</h3>
+          <button type="button" class="su-modal__close" aria-label="Close">&times;</button>
+        </div>
+        <div class="su-modal__body">
+          <p class="su-modal__desc">Remove personalization from the main contract so you can use the cheaper underlay
+            contract.</p>
+          <div class="su-modal__field">
+            <label for="unpersonalize-token-id" class="su-modal__label">Token ID</label>
+            <input id="unpersonalize-token-id" class="su-modal__input" type="number" min="1" max="10000" required
+              placeholder="e.g. 7421">
+          </div>
+          <div id="unpersonalize-status" class="su-modal__status"></div>
+          <div id="unpersonalize-tx-fixture"></div>
+          <div class="su-modal__actions">
+            <button id="unpersonalize-submit" class="btn btn-primary" disabled>Unpersonalize</button>
+          </div>
+        </div>
+      </div>
+    </div>
   </article>
 
   <footer>
@@ -235,6 +265,204 @@ image: "{{ site.baseurl }}/assets/images/su-OG.png"
   </footer>
 
   <script type="module" src="{{ site.baseurl }}/assets/js/personalize-modern/index.js"></script>
+  <script type="module">
+    // Unpersonalize Modal - Lazy Loaded /////////////////////////////////////////////////////////////////////////
+    import {
+      ensureConnected,
+      ensureCorrectNetwork,
+      isMobileDevice,
+      openWalletChooser,
+    } from "{{ site.baseurl }}/assets/web3/foundation.js";
+    import { createTxFixture } from "{{ site.baseurl }}/assets/web3/tx/index.js";
+    import { getWeb3Config } from "{{ site.baseurl }}/assets/web3/config.js";
+
+    const unpersonalizeModalTrigger = document.getElementById("open-unpersonalize-modal");
+    const unpersonalizeModal = document.getElementById("unpersonalize-modal");
+    const unpersonalizeTokenInput = document.getElementById("unpersonalize-token-id");
+    const unpersonalizeStatus = document.getElementById("unpersonalize-status");
+    const unpersonalizeSubmit = document.getElementById("unpersonalize-submit");
+    const unpersonalizeTxFixtureDiv = document.getElementById("unpersonalize-tx-fixture");
+    const unpersonalizeCloseBtn = unpersonalizeModal?.querySelector(".su-modal__close");
+
+    let unpersonalizeModuleLoaded = false;
+    let unpersonalizeService = null;
+    let unpersonalizeTxUi = null;
+
+    function showUnpersonalizeModal() {
+      if (!unpersonalizeModal) return;
+      unpersonalizeModal.classList.add("is-visible");
+      unpersonalizeModal.setAttribute("aria-hidden", "false");
+    }
+
+    function hideUnpersonalizeModal() {
+      if (!unpersonalizeModal) return;
+      unpersonalizeModal.classList.remove("is-visible");
+      unpersonalizeModal.setAttribute("aria-hidden", "true");
+      if (unpersonalizeTxUi) {
+        unpersonalizeTxUi.reset();
+      }
+      if (unpersonalizeStatus) {
+        unpersonalizeStatus.textContent = "";
+        unpersonalizeStatus.className = "su-modal__status";
+      }
+    }
+
+    async function loadUnpersonalizeModule() {
+      if (unpersonalizeModuleLoaded) return;
+      try {
+        const serviceModule = await import("{{ site.baseurl }}/assets/web3/services/unpersonalize.js");
+        unpersonalizeService = serviceModule;
+        const { pricing } = getWeb3Config();
+        unpersonalizeTxUi = createTxFixture({
+          target: unpersonalizeTxFixtureDiv,
+          pricing,
+          mode: "unpersonalize",
+          title: "Unpersonalization status",
+        });
+        unpersonalizeModuleLoaded = true;
+      } catch (error) {
+        console.error("Failed to load unpersonalize module:", error);
+        if (unpersonalizeStatus) {
+          unpersonalizeStatus.textContent = "Failed to load module. Please refresh and try again.";
+          unpersonalizeStatus.className = "su-modal__status su-modal__status--error";
+        }
+      }
+    }
+
+    async function validateUnpersonalizeInput() {
+      const tokenId = parseInt(unpersonalizeTokenInput?.value);
+      if (!tokenId || tokenId < 1 || tokenId > 10000) {
+        if (unpersonalizeSubmit) unpersonalizeSubmit.disabled = true;
+        if (unpersonalizeStatus) {
+          unpersonalizeStatus.textContent = "";
+          unpersonalizeStatus.className = "su-modal__status";
+        }
+        return false;
+      }
+
+      // Check personalization status on main contract
+      if (unpersonalizeService?.checkMainContractStatus) {
+        try {
+          const status = await unpersonalizeService.checkMainContractStatus(tokenId);
+          if (unpersonalizeStatus) {
+            if (status.message) {
+              unpersonalizeStatus.textContent = status.message;
+              if (status.isOnMain && status.hasPersonalization) {
+                unpersonalizeStatus.className = "su-modal__status su-modal__status--success";
+              } else {
+                unpersonalizeStatus.className = "su-modal__status su-modal__status--warning";
+              }
+            } else {
+              unpersonalizeStatus.textContent = "";
+              unpersonalizeStatus.className = "su-modal__status";
+            }
+          }
+        } catch (error) {
+          console.warn("Could not check personalization status:", error);
+        }
+      }
+
+      if (unpersonalizeSubmit) unpersonalizeSubmit.disabled = false;
+      return true;
+    }
+
+    if (unpersonalizeModalTrigger) {
+      unpersonalizeModalTrigger.addEventListener("click", async (event) => {
+        event.preventDefault();
+        showUnpersonalizeModal();
+        await loadUnpersonalizeModule();
+      });
+    }
+
+    if (unpersonalizeCloseBtn) {
+      unpersonalizeCloseBtn.addEventListener("click", hideUnpersonalizeModal);
+    }
+
+    if (unpersonalizeModal) {
+      unpersonalizeModal.addEventListener("click", (event) => {
+        if (event.target === unpersonalizeModal) {
+          hideUnpersonalizeModal();
+        }
+      });
+    }
+
+    if (unpersonalizeTokenInput) {
+      unpersonalizeTokenInput.addEventListener("input", validateUnpersonalizeInput);
+    }
+
+    if (unpersonalizeSubmit) {
+      unpersonalizeSubmit.addEventListener("click", async () => {
+        const tokenId = parseInt(unpersonalizeTokenInput?.value);
+        if (!tokenId || tokenId < 1 || tokenId > 10000) {
+          return alert("Please enter a valid Token ID (1-10000).");
+        }
+
+        if (!unpersonalizeService || !unpersonalizeTxUi) {
+          return alert("Module not loaded. Please close and reopen the modal.");
+        }
+
+        unpersonalizeTxUi.startProcessing(`Unpersonalizing Square #${tokenId}. Confirm in your wallet to continue.`);
+
+        await ensureConnected(async (clients) => {
+          await ensureCorrectNetwork(clients);
+
+          const isWalletConnect = clients?.getAccount?.()?.connector?.id === "walletConnect";
+          unpersonalizeTxUi.setWalletContext({
+            isWalletConnect,
+          });
+          // Trigger wallet app open on mobile for WalletConnect
+          if (isMobileDevice() && isWalletConnect) {
+            openWalletChooser();
+          }
+
+          // Set balance context
+          const { activeNetwork } = getWeb3Config();
+          const account = clients.getAccount?.();
+          if (account?.address) {
+            unpersonalizeTxUi.setBalanceContext({
+              address: account.address,
+              chainId: activeNetwork.chainId,
+              fetcher: (addr, chain) => clients.fetchBalance({ address: addr, chainId: chain }),
+            });
+          }
+
+          // Check ownership before proceeding
+          try {
+            const owner = await unpersonalizeService.checkSquareOwner(tokenId, clients);
+            const signerAddress = account?.address;
+            if (owner?.toLowerCase() !== signerAddress?.toLowerCase()) {
+              unpersonalizeTxUi.markError("You do not own this Square.");
+              return alert("You do not own this Square. Transaction cancelled.");
+            }
+          } catch (error) {
+            console.error("Ownership check failed:", error);
+            unpersonalizeTxUi.markError("Could not verify ownership. Please try again.");
+            return;
+          }
+
+          // Proceed with unpersonalization
+          try {
+            const result = await unpersonalizeService.unpersonalizePrimary({ squareId: tokenId }, clients);
+            const { buildTxUrl } = await import("{{ site.baseurl }}/assets/web3/services/explorer-links.js");
+            const pendingUrl = buildTxUrl(result.hash);
+            unpersonalizeTxUi.addPending(result.hash, pendingUrl);
+
+            const transaction = await clients.waitForTransaction({ hash: result.hash });
+            const txUrl = buildTxUrl(transaction.transactionHash);
+            unpersonalizeTxUi.markSuccess(
+              transaction.transactionHash,
+              txUrl,
+              "Square unpersonalized! You can now personalize using the cheaper underlay contract."
+            );
+          } catch (error) {
+            console.error("Unpersonalize transaction failed:", error);
+            unpersonalizeTxUi.markError(error?.message || "Transaction failed");
+            return alert(error?.message || "Transaction failed");
+          }
+        });
+      });
+    }
+  </script>
   <script src="{{ site.baseurl }}/assets/js/pwa-init.js"></script>
 </body>
 
