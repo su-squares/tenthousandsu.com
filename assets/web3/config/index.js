@@ -46,10 +46,11 @@ function buildNetworks(flags) {
  *   chain: string,
  *   debug: boolean,
  *   walletConnectProjectId: string,
- *   networks: Record<string, { chainId: number, label: string, explorerBaseUrl?: string, explorerTxPath?: string, rpcUrls: string[] }>,
- *   activeNetwork: { chainId: number, label: string, explorerBaseUrl?: string, explorerTxPath?: string, rpcUrls: string[] },
+ *   networks: Record<string, { key: string, chainId: number, label: string, explorerBaseUrl?: string, explorerTxPath?: string, rpcUrls: string[] }>,
+ *   activeNetwork: { key: string, chainId: number, label: string, explorerBaseUrl?: string, explorerTxPath?: string, rpcUrls: string[] },
  *   contracts: { primary: string, underlay: string },
- *   pricing: { mintPriceEth: number, personalizePriceEth: number }
+ *   pricing: { mintPriceEth: number, personalizePriceEth: number },
+ *   assetBases: Record<string, string>
  * }}
  */
 export function getWeb3Config() {

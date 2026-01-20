@@ -14,6 +14,39 @@
 import { TOTAL_SQUARES } from "./billboard-utils.js";
 
 /**
+ * @typedef {Object} SquareOverrideConfig
+ * @property {string} [cssClass]
+ * @property {Object} [style]
+ * @property {string} [backgroundImage]
+ * @property {string} [backgroundSize]
+ * @property {string} [backgroundPosition]
+ * @property {string} [innerHTML]
+ * @property {(cell: HTMLElement, squareNumber: number, ctx: { config: SquareOverrideConfig }) => void} [render]
+ * @property {(cell: HTMLElement, squareNumber: number) => void} [cleanup]
+ * @property {Object} [tooltip]
+ * @property {string} [tooltip.text]
+ * @property {string} [tooltip.cssClass]
+ * @property {boolean} [clickable]
+ * @property {(squareNumber: number) => void} [onActivate]
+ * @property {boolean} [locked]
+ */
+
+/**
+ * @typedef {Object} SquareOverrideManager
+ * @property {(squareNumber: number, config: SquareOverrideConfig) => void} register
+ * @property {(squareNumber: number) => void} unregister
+ * @property {(squareNumber: number) => boolean} has
+ * @property {(squareNumber: number) => SquareOverrideConfig | undefined} get
+ * @property {() => Map<number, SquareOverrideConfig>} getAll
+ * @property {(squareNumbers: number[], config: SquareOverrideConfig) => void} registerBatch
+ * @property {(rangeString: string, config: SquareOverrideConfig) => void} registerRange
+ * @property {(squareNumbers: number[]) => void} unregisterBatch
+ * @property {() => void} clear
+ * @property {() => number} count
+ * @property {(rangeString: string) => Set<number>} parseRangeString
+ */
+
+/**
  * Parse a range string into a Set of square numbers
  * Supports: "100-200,500,600-650" → Set([100,101,...,200,500,600,...,650])
  * @param {string} rangeString
@@ -54,7 +87,7 @@ export function parseRangeString(rangeString) {
 /**
  * Create a Square Override manager for a billboard instance
  * @param {HTMLElement[]} cells - Array of cell elements from the billboard
- * @returns {Object} Override manager API
+ * @returns {SquareOverrideManager} Override manager API
  */
 export function createSquareOverrideManager(cells) {
   // Registry: squareNumber -> config

@@ -57,12 +57,30 @@ var TEMPLATE_HTML = '\
 var VISIBLE_CLASS = "is-visible";
 
 /**
+ * @typedef {"domain" | "uri" | "square"} BlockedModalVariant
+ */
+
+/**
+ * @typedef {Object} BlockedModalOptions
+ * @property {BlockedModalVariant} [variant]
+ */
+
+/**
+ * @typedef {Object} BlockedModalController
+ * @property {(url: string | URL, options?: BlockedModalOptions) => void} show
+ * @property {() => void} hide
+ * @property {() => void} destroy
+ * @property {boolean | null} isVisible
+ * @property {boolean} isDestroyed
+ */
+
+/**
  * Create a contained blocked modal instance
- * @param {HTMLElement} container - The parent element to contain the modal
+ * @param {HTMLElement | null} container - The parent element to contain the modal
  * @param {Object} [options] - Configuration options
  * @param {string} [options.baseStylesheetHref] - Path to base blocked-modal.css (if not already loaded)
  * @param {string} [options.containedStylesheetHref] - Path to blocked-modal-contained.css (if not already loaded)
- * @returns {Object} Modal controller
+ * @returns {BlockedModalController | null} Modal controller
  */
 export function createContainedBlockedModal(container, options) {
   var opts = options || {};

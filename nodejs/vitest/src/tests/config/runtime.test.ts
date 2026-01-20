@@ -3,7 +3,6 @@ import { mockWeb3Config, clearWeb3Config, mockSiteBaseUrl, clearSiteBaseUrl, res
 
 describe('config/runtime.js - getRuntimeFlags()', () => {
   let getRuntimeFlags: any;
-  let ChainKey: any;
   let DEFAULT_CHAIN: any;
 
   beforeEach(async () => {
@@ -15,7 +14,6 @@ describe('config/runtime.js - getRuntimeFlags()', () => {
     const networksModule = await import('@web3/config/networks.js');
 
     getRuntimeFlags = module.getRuntimeFlags;
-    ChainKey = networksModule.ChainKey;
     DEFAULT_CHAIN = networksModule.DEFAULT_CHAIN;
   });
 

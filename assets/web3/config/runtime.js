@@ -37,13 +37,17 @@ function readWindowConfig() {
 
 function normalizeAssetBases(raw) {
   const bases = raw && typeof raw === "object" ? raw : {};
-  const baseurl = window.SITE_BASEURL || '';
+  const baseurl = (window.SITE_BASEURL || "").trim().replace(/\/+$/, "");
+  const joinBaseUrl = (prefix, path) => {
+    const normalizedPath = path.startsWith("/") ? path : `/${path}`;
+    return `${prefix}${normalizedPath}`;
+  };
   const pick = (key, fallback) => {
     const val = bases[key];
     const path = (val && typeof val === "string") ? val : fallback;
     // Prepend baseurl if path doesn't already include it
     if (baseurl && !path.startsWith(baseurl)) {
-      return baseurl + path;
+      return joinBaseUrl(baseurl, path);
     }
     return path;
   };

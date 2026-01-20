@@ -37,6 +37,8 @@ erc721-sepolia/
 /nodejs/smart-contract/personalizing/images/*.webp
 /nodejs/smart-contract/personalizing/metadata/personalizations.csv
 
+### Vitest workspace related ###
+nodejs/vitest/coverage/
 
 # Windows reserved device names
 nul

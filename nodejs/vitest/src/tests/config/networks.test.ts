@@ -2,13 +2,11 @@ import { describe, it, expect, beforeEach } from 'vitest';
 
 describe('config/networks.js - normalizeChainKey()', () => {
   let normalizeChainKey: any;
-  let ChainKey: any;
   let DEFAULT_CHAIN: any;
 
   beforeEach(async () => {
     const module = await import('@web3/config/networks.js');
     normalizeChainKey = module.normalizeChainKey;
-    ChainKey = module.ChainKey;
     DEFAULT_CHAIN = module.DEFAULT_CHAIN;
   });
 

@@ -1,5 +1,3 @@
-import { vi } from 'vitest';
-
 export function waitForEvent(
   eventName: string,
   timeout: number = 1000

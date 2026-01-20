@@ -57,7 +57,9 @@ export default defineConfig({
       '@mocks': path.resolve(__dirname, './src/mocks'),
       '@fixtures': path.resolve(__dirname, './src/fixtures'),
       '@billboard': path.resolve(__dirname, '../../assets/billboard'),
-      '@modals': path.resolve(__dirname, '../../assets/modals')
+      '@modals': path.resolve(__dirname, '../../assets/modals'),
+      '@square-lookup': path.resolve(__dirname, '../../assets/square-lookup'),
+      '@assets-js': path.resolve(__dirname, '../../assets/js')
     }
   }
 });

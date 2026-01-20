@@ -4,6 +4,7 @@
     "module": "ESNext",
     "lib": ["ES2022", "DOM", "DOM.Iterable"],
     "moduleResolution": "bundler",
+    "baseUrl": ".",
     "resolveJsonModule": true,
     "allowJs": true,
     "checkJs": false,
@@ -20,6 +21,10 @@
     "types": ["vitest/globals", "node"],
     "paths": {
       "@web3/*": ["../../assets/web3/*"],
+      "@billboard/*": ["../../assets/billboard/*"],
+      "@modals/*": ["../../assets/modals/*"],
+      "@square-lookup/*": ["../../assets/square-lookup/*"],
+      "@assets-js/*": ["../../assets/js/*"],
       "@test-helpers/*": ["./src/helpers/*"],
       "@mocks/*": ["./src/mocks/*"],
       "@fixtures/*": ["./src/fixtures/*"]

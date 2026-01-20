@@ -2,10 +2,12 @@ import { describe, it, expect, beforeEach } from 'vitest';
 
 describe('services/format-balance.js', () => {
   let formatBalanceString: any;
+  let formatBalanceForDisplay: any;
 
   beforeEach(async () => {
     const module = await import('@web3/services/format-balance.js');
     formatBalanceString = module.formatBalanceString;
+    formatBalanceForDisplay = module.formatBalanceForDisplay;
   });
 
   it('should return em dash for null or undefined', () => {
@@ -23,6 +25,10 @@ describe('services/format-balance.js', () => {
   it('should show <0.00001 for tiny values', () => {
     expect(formatBalanceString('0.000001')).toBe('<0.00001');
     expect(formatBalanceString('0.0000099')).toBe('<0.00001');
+  });
+
+  it('should format zero as 0', () => {
+    expect(formatBalanceString('0')).toBe('0');
   });
 
   it('should format medium values (1-1000) with 4 decimals', () => {
@@ -44,5 +50,16 @@ describe('services/format-balance.js', () => {
   it('should add thousands separators', () => {
     expect(formatBalanceString('1234.5678')).toBe('1,234.56');
     expect(formatBalanceString('1234567.89')).toBe('1,234,567.88');
+  });
+
+  describe('formatBalanceForDisplay', () => {
+    it('should include symbol and fallback to ETH', () => {
+      expect(formatBalanceForDisplay({ formatted: '1.2', symbol: 'DAI' })).toBe('1.2 DAI');
+      expect(formatBalanceForDisplay({ formatted: '1.2' })).toBe('1.2 ETH');
+    });
+
+    it('should return empty string for null balance', () => {
+      expect(formatBalanceForDisplay(null)).toBe('');
+    });
   });
 });

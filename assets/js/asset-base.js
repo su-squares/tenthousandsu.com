@@ -6,7 +6,7 @@ function readRuntimeConfig() {
 }
 
 function normalizeBase(base) {
-  const baseurl = window.SITE_BASEURL || '';
+  const baseurl = (window.SITE_BASEURL || "").trim().replace(/\/+$/, "");
   if (!base) return baseurl + "/build";
   // Ensure leading slash and no trailing slash
   let normalized = base.trim();
@@ -18,7 +18,7 @@ function normalizeBase(base) {
 
 export function getAssetBase() {
   const { chain, assetBases } = getRuntimeFlags();
-  const baseurl = window.SITE_BASEURL || '';
+  const baseurl = (window.SITE_BASEURL || "").trim().replace(/\/+$/, "");
   const base = assetBases?.[chain] || (baseurl + "/build");
   return normalizeBase(base);
 }

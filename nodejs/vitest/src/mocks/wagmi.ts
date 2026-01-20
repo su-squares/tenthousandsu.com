@@ -1,22 +1,23 @@
 import { vi } from 'vitest';
+import type { Mock } from 'vitest';
 
 export interface MockWagmiClient {
   config: any;
   chains: any[];
   connectors: any[];
-  watchAccount: ReturnType<typeof vi.fn>;
-  watchNetwork: ReturnType<typeof vi.fn>;
-  connect: ReturnType<typeof vi.fn>;
-  disconnect: ReturnType<typeof vi.fn>;
-  fetchBalance: ReturnType<typeof vi.fn>;
-  fetchEnsName: ReturnType<typeof vi.fn>;
-  fetchEnsAvatar: ReturnType<typeof vi.fn>;
-  switchNetwork: ReturnType<typeof vi.fn>;
-  writeContract: ReturnType<typeof vi.fn>;
-  waitForTransaction: ReturnType<typeof vi.fn>;
-  getNetwork: ReturnType<typeof vi.fn>;
-  getAccount: ReturnType<typeof vi.fn>;
-  WalletConnectConnector: any;
+  watchAccount: Mock<any[], any>;
+  watchNetwork: Mock<any[], any>;
+  connect: Mock<any[], any>;
+  disconnect: Mock<any[], any>;
+  fetchBalance: Mock<any[], any>;
+  fetchEnsName: Mock<any[], any>;
+  fetchEnsAvatar: Mock<any[], any>;
+  switchNetwork: Mock<any[], any>;
+  writeContract: Mock<any[], any>;
+  waitForTransaction: Mock<any[], any>;
+  getNetwork: Mock<any[], any>;
+  getAccount: Mock<any[], any>;
+  WalletConnectConnector: Mock<any[], any>;
 }
 
 let mockWagmiClient: MockWagmiClient | null = null;
@@ -26,15 +27,15 @@ export function createMockWagmiClient(): MockWagmiClient {
     config: { chains: [] },
     chains: [],
     connectors: [],
-    watchAccount: vi.fn((callback) => {
+    watchAccount: vi.fn((_callback) => {
       return vi.fn();
     }),
-    watchNetwork: vi.fn((callback) => {
+    watchNetwork: vi.fn((_callback) => {
       return vi.fn();
     }),
     connect: vi.fn(),
     disconnect: vi.fn(),
-    fetchBalance: vi.fn(async ({ address, chainId }) => ({
+    fetchBalance: vi.fn(async ({ address: _address, chainId: _chainId }) => ({
       decimals: 18,
       formatted: '1.234567',
       symbol: 'ETH',
@@ -106,7 +107,7 @@ export class MockWalletConnectConnector {
 export function mockWagmiBundle() {
   return {
     // Chain configuration
-    configureChains: vi.fn((chains, providers) => ({
+    configureChains: vi.fn((chains, _providers) => ({
       chains,
       publicClient: {},
       webSocketPublicClient: {}

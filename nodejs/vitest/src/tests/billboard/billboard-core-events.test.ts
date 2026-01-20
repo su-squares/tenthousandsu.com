@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, afterEach } from 'vitest';
 
 vi.mock('@billboard/billboard-utils.js', async (importOriginal) => {
-  const actual = await importOriginal();
+  const actual = await importOriginal<typeof import('@billboard/billboard-utils.js')>();
   return {
     ...actual,
     getSquareFromPosition: vi.fn()
