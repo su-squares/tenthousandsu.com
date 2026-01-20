@@ -16,7 +16,9 @@ export default defineConfig({
       reporter: ['text', 'json', 'html', 'lcov'],
       include: [
         '../../assets/web3/**/*.js',
-        '../../assets/billboard/**/*.js'
+        '../../assets/billboard/**/*.js',
+        '../../assets/js/asset-base.js',
+        '../../assets/js/link-utils.js'
       ],
       exclude: [
         '../../assets/web3/vendor/**',
