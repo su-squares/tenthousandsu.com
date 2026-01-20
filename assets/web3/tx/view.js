@@ -212,7 +212,7 @@ function renderBalance(state) {
     ? "Loading..."
     : state.balance
       ? `${formatBalance(state.balance.formatted)} ${state.balance.symbol || "ETH"}`
-      : "â€”"
+      : "—"
   }</span>
         ${getRefreshButtonHTML({ loading: state.balanceLoading })}
       </div>
