@@ -37,6 +37,7 @@ export function createPanZoom(wrapper, options = {}) {
   let initialTranslateX = 0;
   let initialTranslateY = 0;
   let didPan = false;
+  let hasEverPinched = false; // Track if user has pinched at least once
 
   // Get dimensions dynamically - wrapper may not be visible at creation time (e.g., in modals)
   function getOriginalWidth() {
@@ -101,6 +102,7 @@ export function createPanZoom(wrapper, options = {}) {
       // Pinch-zoom
       e.preventDefault();
       didPan = true;
+      hasEverPinched = true; // User has performed a pinch, unlock panning
 
       const currentDistance = getDistance(e.touches[0], e.touches[1]);
       const initialDistance = getDistance(initialTouches[0], initialTouches[1]);
@@ -129,8 +131,8 @@ export function createPanZoom(wrapper, options = {}) {
 
       constrainBounds();
       applyTransform();
-    } else if (e.touches.length === 1) {
-      // Single finger pan (at any zoom level)
+    } else if (e.touches.length === 1 && hasEverPinched) {
+      // Single finger pan (only allowed after user has pinched at least once)
       e.preventDefault();
       didPan = true;
 
@@ -191,6 +193,7 @@ export function createPanZoom(wrapper, options = {}) {
     translateY = 0;
     initialTouches = null;
     didPan = false;
+    hasEverPinched = false; // Re-lock panning until next pinch
     wrapper.style.transform = "";
   }
 
