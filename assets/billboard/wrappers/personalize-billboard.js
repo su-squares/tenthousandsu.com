@@ -138,6 +138,11 @@ export function initPersonalizeBillboard(options) {
 
   resolveGlowColors();
 
+  function refreshGlowColors() {
+    resolveGlowColors();
+    syncOverlays();
+  }
+
   function refreshCurrentTooltip() {
     if (billboard.currentSquare) {
       billboard.setSquare(billboard.currentSquare);
@@ -498,6 +503,7 @@ export function initPersonalizeBillboard(options) {
     setState,
     setGlowEnabled,
     isGlowEnabled,
+    refreshGlowColors,
     destroy() {
       if (glowCanvas) {
         glowCanvas.destroy();
