@@ -11,7 +11,7 @@ image: "{{ site.baseurl }}/assets/images/su-OG.png"
   <meta name="viewport" content="width=device-width, initial-scale=1">
   {% include pwa-meta-tags.html %}
   {% seo %}
-  <title>Personalize your Squares (Experimental)</title>
+  <title>Personalize your Squares</title>
   <link rel="canonical" href="https://tenthousandsu.com/personalize-modern" />
   <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/main.css">
   <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/personalize.css">
@@ -22,6 +22,7 @@ image: "{{ site.baseurl }}/assets/images/su-OG.png"
   <link rel="stylesheet" href="{{ site.baseurl }}/assets/billboard/billboard.css">
   <link rel="stylesheet" href="{{ site.baseurl }}/assets/square-lookup/styles.css">
   <link rel="stylesheet" href="{{ site.baseurl }}/assets/web3/tx/styles.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/accordions/bigaccordion/bigaccordion.css">
   {% include nav-menu-head.html %}
   {% include alert-modal-head.html %}
   {% include offline-modal-head.html %}
@@ -32,19 +33,98 @@ image: "{{ site.baseurl }}/assets/images/su-OG.png"
   {% include nav-header.html desktop_button_one_label="Mint" desktop_button_one_href="/buy" %}
 
   <article class="lead">
-    <h1>Personalize (Experimental)</h1>
+    <h1>Personalize</h1>
     <p>
       <em>If you have any questions, please mail <a
           href="mailto:Su@TenThousandSu.com?subject=Personalize+underlay+modern">Su@TenThousandSu.com</a>. The price to
-        personalize is 0.001 Ether per Square.</em>
+        personalize is <span id="personalize-price-display">0.001 ETH</span> per Square.</em>
     </p>
     <p>
-      Use this page to personalize one or more Squares you own on TenThousandSu.com. This is an experimental workflow
-      with a flexible table for editing multiple Squares at once. Select squares you own in the billboard to add them to the table to personalize them.
+      Use this page to personalize one or more Squares you own on TenThousandSu.com. Select squares you own in the billboard to add them to the table to personalize them.
+      Don't own any squares? <a href="{{ site.baseurl }}/buy">Buy some</a>
     </p>
+
+    <!-- Instructions Accordion -->
+    <div class="bigaccordion" data-bigaccordion id="instructions-accordion">
+      <button
+        type="button"
+        class="bigaccordion__trigger"
+        id="instructions-trigger"
+        aria-expanded="false"
+        aria-controls="instructions-panel"
+      >
+        <span class="bigaccordion__title">Instructions</span>
+        <span class="bigaccordion__icon" aria-hidden="true">+</span>
+      </button>
+      <div
+        class="bigaccordion__panel"
+        id="instructions-panel"
+        role="region"
+        aria-labelledby="instructions-trigger"
+        hidden
+      >
+        <div class="bigaccordion__content">
+          <div class="bigaccordion__inner">
+            <h4>Getting Started</h4>
+            <p>Use the <strong>Billboard Visualizer</strong> and <strong>Table</strong> together to personalize your Squares. The billboard shows you visually where your Squares are located, while the table lets you edit their content.</p>
+
+            <h4>Show My Squares</h4>
+            <p>Click <strong>"Show my Squares"</strong> to fetch all Squares you own from the blockchain. This will highlight your Squares on the billboard and populate the table with your holdings.</p>
+
+            <h4>Billboard Visualizer</h4>
+            <p>The billboard helps you visualize your Squares and preview changes:</p>
+            <ul>
+              <li><strong>Owned Mode:</strong> Highlights Squares you own with color-coded glows (yellow = not personalized, green = already personalized)</li>
+              <li><strong>Preview Mode:</strong> Shows how your changes will appear on the live billboard once processed</li>
+              <li><strong>Selected:</strong> Blue glow indicates Squares currently in your table</li>
+              <li><strong>Errors:</strong> Red glow indicates rows with validation errors that need fixing</li>
+            </ul>
+            <p>Click any Square you own to add it to the table. Click again to deselect.</p>
+
+            <h4>Using the Table</h4>
+            <p>Each row in the table represents one Square to personalize:</p>
+            <ul>
+              <li><strong>Square #:</strong> The token ID (1-10000)</li>
+              <li><strong>Title:</strong> Display text shown when hovering over the Square</li>
+              <li><strong>URI:</strong> Link destination when clicked (URL, <code>mailto:</code>, <code>sms:</code>, <code>eth:</code>, etc.)</li>
+              <li><strong>Image:</strong> A 10x10 pixel image for the Square</li>
+            </ul>
+
+            <h4>Choose Squares Button</h4>
+            <p>Click <strong>"Choose Squares"</strong> to open a selection panel showing all your owned Squares. Check the ones you want to add to the table, or uncheck to remove them.</p>
+
+            <h4>CSV Batch Tool</h4>
+            <p>For bulk editing, use the CSV dropdown above the table:</p>
+            <ol>
+              <li><strong>Download Template:</strong> Get a CSV file with your current table data (or an example template)</li>
+              <li>Edit the CSV in any spreadsheet app (Excel, Google Sheets, etc.)</li>
+              <li><strong>Upload CSV:</strong> Import your edited data to populate the table</li>
+            </ol>
+            <p>CSV columns: <code>square</code>, <code>title</code>, <code>uri</code>. Images are not included in CSV and must be added separately.</p>
+
+            <h4>Image Batch Tool</h4>
+            <p>To upload multiple images at once:</p>
+            <ol>
+              <li>Create a folder with 10x10 pixel images</li>
+              <li>Name each image with its Square number (e.g., <code>1.png</code>, <code>42.png</code>, <code>7421.png</code>)</li>
+              <li>Use the Image Batch dropdown and click <strong>"Upload Folder"</strong></li>
+            </ol>
+            <p>The batch tools will create new rows or update existing ones automatically.</p>
+
+            <h4>Upload Image for Placement</h4>
+            <p>Click <strong>"Upload Image"</strong> to place a larger image on the billboard. Drag and resize it to cover multiple Squares, then the image will be automatically chopped into 10x10 pieces for each Square it covers.</p>
+
+            <h4>Processing Your Personalization</h4>
+            <p>Once satisfied with your table and preview, click <strong>"Personalize"</strong> to submit the transaction. The fee is <strong><span id="personalize-price-display-2">0.001 ETH</span> per Square</strong>, multiplied by the number of Squares you're personalizing.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <p>
-      Here are the links to use the legacy <a href="{{ site.baseurl }}/personalize">single</a> or <a href="{{ site.baseurl }}/personalize-batch">batch</a> personalization tools.
+      If you would like to use the legacy methods of personalizing, here are links to use the original-styled <a href="{{ site.baseurl }}/personalize">single</a> or <a href="{{ site.baseurl }}/personalize-batch">batch</a> personalization tools.
     </p>
+
     <p>
       If your Square was previously personalized using the old, more expensive method you will need to <a href="#" id="open-unpersonalize-modal">unpersonalize</a> it first.
     </p>
@@ -264,7 +344,24 @@ image: "{{ site.baseurl }}/assets/images/su-OG.png"
     </small>
   </footer>
 
+  <script>
+    (function() {
+      var cfg = window.suWeb3 || window.SU_WEB3 || {};
+      var pricing = cfg.pricing;
+      if (pricing && typeof pricing.personalizePriceEth === "number" && pricing.personalizePriceEth !== 0.001) {
+        var el1 = document.getElementById("personalize-price-display");
+        var el2 = document.getElementById("personalize-price-display-2");
+        if (el1) el1.textContent = pricing.personalizePriceEth + " ETH";
+        if (el2) el2.textContent = pricing.personalizePriceEth + " ETH";
+      }
+    })();
+  </script>
+
   <script type="module" src="{{ site.baseurl }}/assets/js/personalize-modern/index.js"></script>
+  <script type="module">
+    import { initBigAccordions } from "{{ site.baseurl }}/assets/accordions/bigaccordion/index.js";
+    initBigAccordions();
+  </script>
   <script type="module">
     // Unpersonalize Modal - Lazy Loaded /////////////////////////////////////////////////////////////////////////
     import {
