@@ -1,4 +1,3 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { mockWeb3Config, clearWeb3Config, resetConfigModule } from '@test-helpers/config';
 import { MOCK_CONTRACT_ADDRESSES } from '@fixtures/contracts';
 

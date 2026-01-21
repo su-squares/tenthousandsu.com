@@ -451,7 +451,7 @@
 
 .personalize-modern-page .personalize-billboard__map[data-glow-off="true"] .personalize-billboard__map-swatch[data-color="owned-personalized"] {
   background: var(--billboard-glow-owned-personalized);
-  --static-x-color: #fff;
+  --static-x-color: #000;
 }
 
 .personalize-modern-page .personalize-billboard__map[data-glow-off="true"] .personalize-billboard__map-swatch[data-color="selected"] {

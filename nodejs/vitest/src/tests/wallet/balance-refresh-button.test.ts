@@ -1,4 +1,3 @@
-import { describe, it, expect, afterEach } from 'vitest';
 import {
   getRefreshButtonHTML,
   ensureRefreshButtonStyles,

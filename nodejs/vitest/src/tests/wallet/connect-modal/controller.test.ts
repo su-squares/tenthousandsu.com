@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi, type Mock } from 'vitest';
+import { vi, type Mock } from 'vitest';
 import { createTestContainer, cleanupTestContainer } from '@test-helpers/dom';
 
 // Use vi.hoisted to create mock functions that can be used in vi.mock factories

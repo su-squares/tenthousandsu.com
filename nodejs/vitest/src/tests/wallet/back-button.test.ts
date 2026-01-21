@@ -1,4 +1,3 @@
-import { describe, it, expect, vi } from 'vitest';
 import { ensureBackButton } from '@web3/wallet/back-button.js';
 import { createTestContainer, cleanupTestContainer } from '@test-helpers/dom';
 

@@ -1,4 +1,3 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { foundationMocks, resetFoundationMocks } from '@mocks/foundation';
 import { spyOnEvent } from '@mocks/events';
 

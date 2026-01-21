@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { vi } from 'vitest';
 import { createMockEIP6963Provider } from '@fixtures/eip6963';
 import {
   startEIP6963Discovery,

@@ -3,8 +3,24 @@ import { createMockBalance } from '@test-helpers/balance';
 import { TEST_ADDRESSES } from '@fixtures/addresses';
 import { waitFor } from '@testing-library/dom';
 
+type BalanceFetcher = (address: string, chainId: number) => Promise<any>;
+type BalanceSubscriber = (payload: {
+  address: string;
+  chainId: number;
+  balance: any;
+  source: string;
+}) => void;
+
 vi.mock('@web3/wallet/balance-store.js', () => ({
-  getBalance: vi.fn(async ({ address, chainId, fetcher }) => {
+  getBalance: vi.fn(async ({
+    address,
+    chainId,
+    fetcher
+  }: {
+    address: string;
+    chainId: number;
+    fetcher: BalanceFetcher;
+  }) => {
     const balance = await fetcher(address, chainId);
     return { balance, source: 'fresh' };
   }),
@@ -13,7 +29,7 @@ vi.mock('@web3/wallet/balance-store.js', () => ({
     return vi.fn();
   }),
   invalidateBalance: vi.fn(),
-  refreshBalance: vi.fn(async (address, chainId, fetcher) => {
+  refreshBalance: vi.fn(async (address: string, chainId: number, fetcher: BalanceFetcher) => {
     return fetcher(address, chainId);
   })
 }));
@@ -31,12 +47,6 @@ const getCachedBalanceMock = vi.mocked(getCachedBalance);
 const subscribeBalanceMock = vi.mocked(subscribeBalance);
 const invalidateBalanceMock = vi.mocked(invalidateBalance);
 const refreshBalanceMock = vi.mocked(refreshBalance);
-type BalanceSubscriber = (payload: {
-  address: string;
-  chainId: number;
-  balance: any;
-  source: string;
-}) => void;
 
 const createDeferred = <T>() => {
   let resolve!: (value: T) => void;
@@ -60,13 +70,21 @@ describe('tx/balance-manager.js', () => {
     const module = await import('@web3/tx/balance-manager.js');
     createBalanceManager = module.createBalanceManager;
 
-    getBalanceMock.mockImplementation(async ({ address, chainId, fetcher }) => {
+    getBalanceMock.mockImplementation(async ({
+      address,
+      chainId,
+      fetcher
+    }: {
+      address: string;
+      chainId: number;
+      fetcher: BalanceFetcher;
+    }) => {
       const balance = await fetcher(address, chainId);
       return { balance, source: 'fresh' };
     });
     getCachedBalanceMock.mockReturnValue(null);
     subscribeBalanceMock.mockImplementation(() => vi.fn());
-    refreshBalanceMock.mockImplementation(async (address, chainId, fetcher) => {
+    refreshBalanceMock.mockImplementation(async (address: string, chainId: number, fetcher: BalanceFetcher) => {
       return fetcher(address, chainId);
     });
   });
@@ -167,7 +185,7 @@ describe('tx/balance-manager.js', () => {
     const subscriptionBalance = createMockBalance('9.9', 'ETH');
     let subscriber: BalanceSubscriber | null = null;
 
-    subscribeBalanceMock.mockImplementation((handler) => {
+    subscribeBalanceMock.mockImplementation((handler: BalanceSubscriber) => {
       subscriber = handler;
       return vi.fn();
     });
@@ -191,7 +209,7 @@ describe('tx/balance-manager.js', () => {
     const manager = createManager();
     let subscriber: BalanceSubscriber | null = null;
 
-    subscribeBalanceMock.mockImplementation((handler) => {
+    subscribeBalanceMock.mockImplementation((handler: BalanceSubscriber) => {
       subscriber = handler;
       return vi.fn();
     });

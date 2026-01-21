@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { vi } from 'vitest';
 
 describe('wallet/info-modal/index.js', () => {
   let openInfoModal: (onBack?: (() => void) | null) => Promise<void>;

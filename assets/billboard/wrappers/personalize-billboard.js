@@ -119,20 +119,20 @@ export function initPersonalizeBillboard(options) {
   function resolveGlowColors() {
     const styles = getComputedStyle(document.documentElement);
     glowColors.selected =
-      styles.getPropertyValue("--billboard-glow-selected").trim() || "#39ff14";
+      styles.getPropertyValue("--billboard-glow-selected").trim() || "#4aa3ff";
     glowColors["owned-unpersonalized"] =
       styles.getPropertyValue("--billboard-glow-owned-unpersonalized").trim() ||
       "#ffd700";
     glowColors["owned-personalized"] =
       styles.getPropertyValue("--billboard-glow-owned-personalized").trim() ||
-      "#4aa3ff";
+      "#39ff14";
     glowColors.error =
       styles.getPropertyValue("--billboard-glow-error").trim() || "#ff2d2d";
 
     // Static colors: background is the glow color, X color based on contrast
     staticColors.selected = { bg: glowColors.selected, x: "#000" };
     staticColors["owned-unpersonalized"] = { bg: glowColors["owned-unpersonalized"], x: "#000" };
-    staticColors["owned-personalized"] = { bg: glowColors["owned-personalized"], x: "#fff" };
+    staticColors["owned-personalized"] = { bg: glowColors["owned-personalized"], x: "#000" };
     staticColors.error = { bg: glowColors.error, x: "#fff" };
   }
 

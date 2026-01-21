@@ -1,4 +1,3 @@
-import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { createTestContainer, cleanupTestContainer } from '@test-helpers/dom';
 import { renderListView } from '@web3/wallet/connect-modal/views/list.js';
 import { renderQrView } from '@web3/wallet/connect-modal/views/qr.js';

@@ -3,7 +3,6 @@
  *
  * Tests the renderAccountView function and chain icon selection logic.
  */
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { clearWeb3Config, resetConfigModule, mockSiteBaseUrl, clearSiteBaseUrl } from '@test-helpers/config';
 
 describe('account-modal/account-view.js', () => {

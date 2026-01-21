@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
+import { vi } from 'vitest';
 import { createModalShell } from '@web3/wallet/base/modal-shell.js';
 
 describe('wallet/base/modal-shell.js', () => {

@@ -1,7 +1,7 @@
 .personalize-modern-page {
-  --billboard-glow-selected: #39ff14;
-  --billboard-glow-owned-unpersonalized: var(--color-accent);
-  --billboard-glow-owned-personalized: #4aa3ff;
+  --billboard-glow-selected: #4aa3ff;
+  --billboard-glow-owned-unpersonalized: #ffd700;
+  --billboard-glow-owned-personalized: #39ff14;
   --billboard-glow-error: #ff2d2d;
   --glow-pulse: 0.5;
 }

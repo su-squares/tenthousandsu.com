@@ -13,6 +13,27 @@ import { isValidSquareId } from "./store.js";
 import { ensureOwnershipLoaded } from "./ownership.js";
 import { clearOwnedSquaresCache, fetchOwnedSquaresForIds } from "../../web3/services/ownership.js";
 
+export function isUserRejectedError(error, message) {
+  const code = error?.code || error?.cause?.code;
+  if (code === 4001 || code === "ACTION_REJECTED") return true;
+  const name = String(error?.name || error?.cause?.name || "").toLowerCase();
+  if (name.includes("userrejected")) return true;
+  const text = [
+    message,
+    error?.shortMessage,
+    error?.cause?.shortMessage,
+  ]
+    .filter(Boolean)
+    .join(" ")
+    .toLowerCase();
+  return (
+    text.includes("user rejected") ||
+    text.includes("user denied") ||
+    text.includes("request rejected") ||
+    text.includes("denied transaction")
+  );
+}
+
 export function initPersonalizeTx(options) {
   const {
     store,
@@ -67,27 +88,6 @@ export function initPersonalizeTx(options) {
       openWalletChooser();
     });
   }
-
-  const isUserRejectedError = (error, message) => {
-    const code = error?.code || error?.cause?.code;
-    if (code === 4001 || code === "ACTION_REJECTED") return true;
-    const name = String(error?.name || error?.cause?.name || "").toLowerCase();
-    if (name.includes("userrejected")) return true;
-    const text = [
-      message,
-      error?.shortMessage,
-      error?.cause?.shortMessage,
-    ]
-      .filter(Boolean)
-      .join(" ")
-      .toLowerCase();
-    return (
-      text.includes("user rejected") ||
-      text.includes("user denied") ||
-      text.includes("request rejected") ||
-      text.includes("denied transaction")
-    );
-  };
 
   personalizeButton.addEventListener("click", async () => {
     if (!validateForSubmit()) return;

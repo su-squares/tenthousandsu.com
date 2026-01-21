@@ -1,4 +1,4 @@
-import { describe, it, expect, afterEach, vi } from 'vitest';
+import { vi } from 'vitest';
 import {
   getEnsName,
   getCachedEnsName,

@@ -1,4 +1,4 @@
-import { describe, it, expect, beforeEach, vi, afterEach } from 'vitest';
+import { vi } from 'vitest';
 
 const mockGetWeb3Config = vi.fn();
 

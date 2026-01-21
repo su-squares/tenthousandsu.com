@@ -5,7 +5,6 @@
  * 1. The ENS and Balance store functions it depends on (getEnsName, getBalance)
  * 2. Integration behavior through openAccountModal with mocked dependencies
  */
-import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { clearWeb3Config, resetConfigModule } from '@test-helpers/config';
 
 describe('account-modal data fetching', () => {

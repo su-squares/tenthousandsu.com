@@ -1,4 +1,3 @@
-import { describe, it, expect, beforeEach } from 'vitest';
 
 describe('services/format-balance.js', () => {
   let formatBalanceString: any;
