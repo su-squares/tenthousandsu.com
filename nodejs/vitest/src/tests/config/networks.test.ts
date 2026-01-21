@@ -1,4 +1,3 @@
-import { describe, it, expect, beforeEach } from 'vitest';
 
 describe('config/networks.js - normalizeChainKey()', () => {
   let normalizeChainKey: any;

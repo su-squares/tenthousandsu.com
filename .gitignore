@@ -39,6 +39,7 @@ erc721-sepolia/
 
 ### Vitest workspace related ###
 nodejs/vitest/coverage/
+/coverage/
 
 # Windows reserved device names
 nul
