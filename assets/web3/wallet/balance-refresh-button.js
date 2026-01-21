@@ -166,7 +166,7 @@ export function renderBalanceDisplay(options = {}) {
     `.trim();
     }
 
-    const formatted = balance?.formatted ?? "—";
+    const formatted = balance?.formatted ?? "-";
     const displaySymbol = balance?.symbol ?? symbol;
 
     return `
