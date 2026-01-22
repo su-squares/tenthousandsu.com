@@ -1,0 +1,98 @@
+# AGENTS.md — AGR Mode Router
+
+This repository supports **AGR Mode** (Agent-Guided Repository Mode) for IDE AI assistants.
+
+Your job is to **route** the user into one of two operating modes:
+
+* **Tour Guide Mode**: guided exploration + getting the project running (contract + website) and completing the end-to-end mint/personalize flow.
+* **Builder Mode**: making changes safely within the repo’s rules, constraints, and structure.
+
+> IMPORTANT: If the user’s intent is unclear, you MUST ask them to choose a mode before proceeding.
+
+---
+
+## Always-true foundations (read/assume these before you act)
+
+These are the minimal, stable constraints of this repo. Use them to avoid wrong assumptions:
+
+* **Site framework:** GitHub Pages stack via the `github-pages` gem (**version:** `232`) → `jekyll` (**version:** `3.10.0`).
+
+  * **Ruby version:** `3.1.2` (local; confirm desired repo pin via `.ruby-version`/CI/GitHub Pages runtime)
+  * **Bundler:** `2.6.9` (lockfile “BUNDLED WITH”)
+* **Hosting constraint:** GitHub Pages — do **not** rely on environment variables.
+* **Runtime selection (site):** The site reads runtime flags from `assets/web3/config/runtime.generated.js` (gitignored).
+
+  * This file is **generated** from `nodejs/smart-contract/.env.site` (see the corresponding `.example` template).
+  * Generate/update it via the `gen:site-config` script: `node site-scripts/gen-site-config.js`.
+  * Default behavior: if runtime flags are missing, the site will behave as **mainnet**.
+* **Runtime selection (contracts):** Hardhat / contract wiring (including Sepolia) is controlled via `nodejs/smart-contract/.env.contract` (see the corresponding `.example` template).
+* **Runtime selection (local Besu):** The Besu local node wiring is controlled via `nodejs/smart-contract/sunet/.env.sunet` (see the corresponding `.example` template).
+* **Supported networks:**
+
+  * Local: Besu full node (see `docs/modes/TOUR.md` → Local Setup)
+  * Testnet: Sepolia (see `docs/modes/TOUR.md` → Sepolia Setup)
+
+If any of the above needs details, open: `docs/FOUNDATIONS.md` (if present) or the linked mode docs below.
+
+---
+
+## Mode Gate: decide how to operate
+
+### 1) Infer mode when obvious
+
+Select **Builder Mode** if the user asks for any of the following:
+
+* “change / add / refactor / implement”
+* “fix tests / CI / lint”
+* “update contracts / scripts / tooling”
+* “configure a fork / deploy their own version”
+
+Select **Tour Guide Mode** if the user asks for any of the following:
+
+* “what is this / how does this work / history”
+* “show me around / give me a tour”
+* “help me run it / try it / play with it”
+
+### 2) Ask when not obvious
+
+If you cannot confidently infer intent, ask:
+
+**“Do you want AGR Mode: Tour Guide, or AGR Mode: Builder?”**
+
+If the user asks what each mode entails, open the relevant mode doc(s) below and summarize briefly.
+
+---
+
+## Routing: what to read next
+
+### If TOUR GUIDE MODE
+
+1. Open and follow:
+
+* `docs/modes/TOUR.md`
+
+2. Tour mode safety rule:
+
+* Do **not** modify code by default.
+* If code changes are required to proceed, propose the minimal change and ask the user whether to switch to **Builder Mode**.
+
+### If BUILDER MODE
+
+1. Open and follow:
+
+* `docs/modes/BUILDER.md`
+
+2. Builder mode safety rule:
+
+* Follow repo constraints and invariants.
+* Do not add dependencies unless justified under the dependency policy.
+* Respect GitHub Pages constraints (no env vars; use runtime flag file).
+
+---
+
+## Quick response conventions (for both modes)
+
+* Prefer short, numbered steps.
+* Provide copy/paste-ready commands when relevant.
+* Confirm success at each phase before advancing.
+* If an error occurs, request the exact output and unblock with the smallest fix.
