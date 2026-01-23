@@ -56,19 +56,15 @@ All Phase 1 commands assume you're in `nodejs/smart-contract` unless noted.
 
 ### Phase 2: Deploy & Interact
 
-*(Available after Phase 1 completion)*
+Phase 2 guides you through deployment and then gives you a choice:
+- Explore smart contract features via scripts
+- Or skip straight to the website (Phase 3)
 
-Phase 2 will guide you through:
-- Deploying smart contracts to your chosen network
-- Understanding wallet/key management
-  - For Sepolia: using your wallet keys
-  - For SuNet: validator keys vs imported wallet keys
-- Configuring role assignments (CEO/CFO/COO)
-- Minting tokens
-- Personalizing tokens
-- Testing the complete end-to-end flow
-
-**Status**: Coming soon - will be added after Phase 1 is validated
+**Guides**:
+- Open the main guide first: [AGENTS/modes/tour/PHASE-2-MAIN.md](tour/PHASE-2-MAIN.md)
+- Also open the network-specific guide:
+  - SuNet: [AGENTS/modes/tour/PHASE-2-SUNET.md](tour/PHASE-2-SUNET.md)
+  - Sepolia: [AGENTS/modes/tour/PHASE-2-SEPOLIA.md](tour/PHASE-2-SEPOLIA.md)
 
 ## Agent Instructions
 
@@ -134,8 +130,19 @@ For SuNet setup:
 
 **After Phase 1**:
 - Celebrate successful setup
-- Offer to proceed to Phase 2 (when available)
+- Offer to proceed to Phase 2
 - Summarize what they can do now
+
+### Phase 2 Path Choice
+
+Ask explicitly:
+- "Do you want to explore the smart contract features via scripts, or skip to the website setup (Phase 3)?"
+
+If they explore:
+- Guide them through the Phase 2 checklist and state snapshots before moving on
+
+If they skip:
+- Move to Phase 3 without running optional scripts
 
 ### Phase 1 Completion Checklist
 

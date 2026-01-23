@@ -74,7 +74,8 @@ If the user asks what each mode entails, open the relevant mode doc(s) below and
 The tour guide will route you into phases:
 * Phase 1 Sepolia: `AGENTS/modes/tour/PHASE-1-SEPOLIA.md`
 * Phase 1 SuNet: `AGENTS/modes/tour/PHASE-1-SUNET.md`
-* Phase 2: *(Coming soon - deploy & interact)*
+* Phase 2 Sepolia: `AGENTS/modes/tour/PHASE-2-SEPOLIA.md`
+* Phase 2 SuNet: `AGENTS/modes/tour/PHASE-2-SUNET.md`
 
 2. Tour mode safety rule:
 

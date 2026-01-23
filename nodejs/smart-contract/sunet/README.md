@@ -80,14 +80,34 @@ Notes:
 - If it won't load, check firewall prompts.
 
 ## Scripts
-- `sunet:setup` — create `.env.sunet` (if missing), generate validator key, write genesis, init Besu data, clone Blockscout repo.
-- `sunet:start` — bring up Besu + Blockscout stack (`compose/docker-compose.yml`).
-- `sunet:start:node` — Besu only (`compose/docker-compose.besu.yml`).
-- `sunet:stop` / `sunet:stop:node` — stop stacks.
-- `sunet:clean` — prompt + remove data and docker volumes.
-- `sunet:logs`, `sunet:logs:node`, `sunet:logs:blockscout`, `sunet:status` — observability helpers.
-- `sunet:generate:genesis` — regenerate genesis from `.env.sunet`.
-- `sunet:reveal:address` / `sunet:reveal:key` — print validator info (dev-use only).
+- `sunet:setup` - create `.env.sunet` (if missing), generate validator key, write genesis, init Besu data, clone Blockscout repo.
+- `sunet:start` - bring up Besu + Blockscout stack (`compose/docker-compose.yml`).
+- `sunet:start:node` - Besu only (`compose/docker-compose.besu.yml`).
+- `sunet:stop` / `sunet:stop:node` - stop stacks.
+- `sunet:clean` - prompt + remove data and docker volumes.
+- `sunet:logs`, `sunet:logs:node`, `sunet:logs:blockscout`, `sunet:status` - observability helpers.
+- `sunet:generate:genesis` - regenerate genesis from `.env.sunet`.
+
+## Contract Control (Scripts + Env)
+
+- Contract commands live in `nodejs/smart-contract/package.json` and are grouped by network suffix (`:sunet`, `:sepolia`).
+- Control the behavior via `nodejs/smart-contract/.env.contract` (token ranges, recipients, role addresses, personalization ids).
+- SuNet keys and ports live in `nodejs/smart-contract/sunet/.env.sunet`.
+
+## Observability
+
+- Blockscout: http://localhost:4001
+- Live node logs: `pnpm run sunet:logs` or `pnpm run sunet:logs:node`
+- Use logs to see tx submissions and errors in real time.
+
+## Batch Range Syntax
+
+Many commands accept token ranges in `.env.contract`:
+- Single: `1`
+- Range: `1-10`
+- Mixed: `1-10,15,200-300`
+
+This applies to `BUY_TOKENS`, `TRANSFER_TOKENID`, and `PERSONALIZE_BATCH_TOKENS`.
 
 ## Config
 - `.env.sunet.example` holds defaults (Chain ID 99999991, 5s blocks, SuNet naming). `sunet:setup` will create `.env.sunet` if missing and fill in validator keys.
@@ -104,6 +124,18 @@ Notes:
 - cmd.exe: `set BUY_TOKENS=1-10,50 && pnpm run buy:sunet`
 - If `BUY_TOKENS` is omitted, the script attempts token `1` only (no brute force). Use range syntax like `5-10,42,100-120` to queue multiple purchases.
 - Control burst size with `BUY_CONCURRENCY` (default 5) to avoid overwhelming the RPC (e.g. `BUY_CONCURRENCY=10 BUY_TOKENS="1-50" pnpm run buy:sunet`).
+- Large buys can take a few minutes but will let you personalize immediately once complete.
+
+## Personalization Workflow
+
+Personalization scripts require both metadata and images:
+
+- CSV: `nodejs/smart-contract/personalizing/metadata/personalizations.csv`
+- Images: `nodejs/smart-contract/personalizing/images/<tokenId>.(svg|webp|png|jpg)`
+
+Commands:
+- Primary: `pnpm run personalize:sunet:primary` (single token, uses `PERSONALIZE_TOKEN_ID`)
+- Underlay: `pnpm run personalize:sunet:underlay` (single) or `pnpm run personalize:sunet:underlay-batch` (uses `PERSONALIZE_BATCH_TOKENS`)
 
 ## Blockscout
 - `sunet:setup` clones the Blockscout repo into `sunet/blockscout` at `BLOCKSCOUT_TAG` (default `v9.2.2`).

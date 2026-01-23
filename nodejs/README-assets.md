@@ -17,15 +17,18 @@ From `nodejs/smart-contract/` (or from `nodejs/` via workspace delegation):
 pnpm run gen:site-config
 ```
 
-### 3) Start the chain (for sunet)
+### 3) Start the chain and Blockscout (for sunet)
 From `nodejs/smart-contract/`:
 ```sh
-pnpm run sunet:start:node
+pnpm run sunet:start
 ```
 
 ### 4) Build assets
 From `nodejs/` (uses the smart-contract workspace script):
 ```sh
+
+pnpm:
+
 pnpm run assets:update:sunet      # or assets:update:sepolia
 ```
 
