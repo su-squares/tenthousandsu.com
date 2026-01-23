@@ -12,6 +12,9 @@ exclude:
   - Gemfile
   - Gemfile.lock
   - README.md
+  - AGENTS.md
+  - AGENTS/
+  - LICENSE
   - nodejs/
 
 # Speed up builds in developement

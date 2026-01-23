@@ -15,11 +15,11 @@ Your job is to **route** the user into one of two operating modes:
 
 These are the minimal, stable constraints of this repo. Use them to avoid wrong assumptions:
 
-* **Site framework:** GitHub Pages stack via the `github-pages` gem (**version:** `232`) → `jekyll` (**version:** `3.10.0`).
+* **Site framework:** GitHub Pages stack via the `github-pages` gem (**version:** `232`) -> `jekyll` (**version:** `3.10.0`).
 
   * **Ruby version:** `3.1.2` (local; confirm desired repo pin via `.ruby-version`/CI/GitHub Pages runtime)
   * **Bundler:** `2.6.9` (lockfile “BUNDLED WITH”)
-* **Hosting constraint:** GitHub Pages — do **not** rely on environment variables.
+* **Hosting constraint:** GitHub Pages - do **not** rely on environment variables.
 * **Runtime selection (site):** The site reads runtime flags from `assets/web3/config/runtime.generated.js` (gitignored).
 
   * This file is **generated** from `nodejs/smart-contract/.env.site` (see the corresponding `.example` template).
@@ -29,10 +29,10 @@ These are the minimal, stable constraints of this repo. Use them to avoid wrong 
 * **Runtime selection (local Besu):** The Besu local node wiring is controlled via `nodejs/smart-contract/sunet/.env.sunet` (see the corresponding `.example` template).
 * **Supported networks:**
 
-  * Local: Besu full node (see `docs/modes/TOUR.md` → Local Setup)
-  * Testnet: Sepolia (see `docs/modes/TOUR.md` → Sepolia Setup)
+  * Local: SuNet (see `AGENTS/modes/TOUR.md` -> Phase 1: Blockchain Setup)
+  * Testnet: Sepolia (see `AGENTS/modes/TOUR.md` -> Phase 1: Blockchain Setup)
 
-If any of the above needs details, open: `docs/FOUNDATIONS.md` (if present) or the linked mode docs below.
+  *Note*: It's recommended to comment out / exclude the erc721 folders during development to speed up site building via _config.yml
 
 ---
 
@@ -69,7 +69,12 @@ If the user asks what each mode entails, open the relevant mode doc(s) below and
 
 1. Open and follow:
 
-* `docs/modes/TOUR.md`
+* `AGENTS/modes/TOUR.md`
+
+The tour guide will route you into phases:
+* Phase 1 Sepolia: `AGENTS/modes/tour/PHASE-1-SEPOLIA.md`
+* Phase 1 SuNet: `AGENTS/modes/tour/PHASE-1-SUNET.md`
+* Phase 2: *(Coming soon - deploy & interact)*
 
 2. Tour mode safety rule:
 
@@ -80,7 +85,7 @@ If the user asks what each mode entails, open the relevant mode doc(s) below and
 
 1. Open and follow:
 
-* `docs/modes/BUILDER.md`
+* `AGENTS/modes/BUILDER.md`
 
 2. Builder mode safety rule:
 
