@@ -75,7 +75,7 @@ If they want specific parts, present the activities list below and ask which one
 
 ## 6) Square lookup (`/square`)
 
-- Use the "Square look up" block on the homepage or the narrow version on `/square`.
+- Use the "Square look up" section on the homepage or the narrow version on `/square`.
 - Enter an ID or use "Choose from list" / "Choose from billboard", then click "Look up".
 - The square details page shows:
   - Minted and personalized block numbers
@@ -108,3 +108,16 @@ If they want specific parts, present the activities list below and ask which one
 
 - Use `bundle exec jekyll serve --host 0.0.0.0` and open `http://LAN_IP:4000`.
 - If it still fails, restart without `--livereload`.
+
+## Next: Developer Workspaces (Optional)
+
+Ask:
+- "Do you want a development workspaces tour? If so, pick one or more: Builder, Vitest, Storybook, Playwright."
+
+If yes, open the matching phase doc:
+- Phase 5: Builder `AGENTS/modes/tour/PHASE-5-BUILDER.md`
+- Phase 6: Vitest `AGENTS/modes/tour/PHASE-6-VITEST.md`
+- Phase 7: Storybook `AGENTS/modes/tour/PHASE-7-STORYBOOK.md`
+- Phase 8: Playwright `AGENTS/modes/tour/PHASE-8-PLAYWRIGHT.md`
+
+These phases are independent and can be done in any order. They do not require the blockchain to be running.

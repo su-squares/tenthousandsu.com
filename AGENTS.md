@@ -79,6 +79,11 @@ The tour guide will route you into phases:
 * Phase 3 Main: `AGENTS/modes/tour/PHASE-3-MAIN.md`
 * Phase 3 Sepolia: `AGENTS/modes/tour/PHASE-3-SEPOLIA.md`
 * Phase 3 SuNet: `AGENTS/modes/tour/PHASE-3-SUNET.md`
+* Phase 4 Main: `AGENTS/modes/tour/PHASE-4-MAIN.md`
+* Phase 5 Builder: `AGENTS/modes/tour/PHASE-5-BUILDER.md`
+* Phase 6 Vitest: `AGENTS/modes/tour/PHASE-6-VITEST.md`
+* Phase 7 Storybook: `AGENTS/modes/tour/PHASE-7-STORYBOOK.md`
+* Phase 8 Playwright: `AGENTS/modes/tour/PHASE-8-PLAYWRIGHT.md`
 
 2. Tour mode safety rule:
 

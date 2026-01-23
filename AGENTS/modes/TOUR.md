@@ -4,8 +4,17 @@ Welcome to Tour Guide Mode! This mode walks you through:
 1. Setting up your blockchain environment (Sepolia or SuNet)
 2. Deploying and interacting with the smart contract
 3. Running the complete end-to-end flow (mint + personalize)
+4. Walking through the live dapp locally
+5. (Optional) Exploring the developer workspaces
 
 ## Phases
+
+### Jump to a Phase (Agent Prompt)
+
+Ask explicitly:
+- "Do you want the full tour, or do you want to jump to a specific phase?"
+
+If they want to jump, list the phases and only open the requested guide(s). Keep prerequisites in mind.
 
 ### Phase 1: Blockchain Setup
 
@@ -76,7 +85,31 @@ Phase 3 configures and runs the dapp against your chosen network.
   - SuNet: [AGENTS/modes/tour/PHASE-3-SUNET.md](tour/PHASE-3-SUNET.md)
   - Sepolia: [AGENTS/modes/tour/PHASE-3-SEPOLIA.md](tour/PHASE-3-SEPOLIA.md)
 
+### Phase 4: Dapp Walkthrough (Local)
+
+Phase 4 guides live usage inside the dapp (billboard, buy, personalize, lookup).
+
+**Guide**:
+- [AGENTS/modes/tour/PHASE-4-MAIN.md](tour/PHASE-4-MAIN.md)
+
+### Phases 5–8: Developer Workspaces (Optional)
+
+These are independent and can be done in any order. They do not require the blockchain to be running.
+
+**Guides**:
+- Phase 5 (Builder): [AGENTS/modes/tour/PHASE-5-BUILDER.md](tour/PHASE-5-BUILDER.md)
+- Phase 6 (Vitest): [AGENTS/modes/tour/PHASE-6-VITEST.md](tour/PHASE-6-VITEST.md)
+- Phase 7 (Storybook): [AGENTS/modes/tour/PHASE-7-STORYBOOK.md](tour/PHASE-7-STORYBOOK.md)
+- Phase 8 (Playwright): [AGENTS/modes/tour/PHASE-8-PLAYWRIGHT.md](tour/PHASE-8-PLAYWRIGHT.md)
+
 ## Agent Instructions
+
+### Interaction Mode (Phases with commands)
+
+Ask explicitly:
+- "Do you want me to run the commands for you, or just tell you what to run?"
+
+Default to giving commands. Only execute when the user explicitly asks.
 
 ### Network Selection
 
