@@ -10,6 +10,13 @@ Open this file alongside the network-specific Phase 3 file and keep both open.
 - Node.js 18+ and pnpm installed
 - Ruby + Bundler installed (see `Gemfile`)
 
+## Interaction Mode (Agent Prompt)
+
+Ask explicitly:
+- "Do you want me to run the commands for you, or just tell you what to run?"
+
+Default to giving commands. Only execute when the user explicitly asks.
+
 ## 1) Configure the Dapp Runtime
 
 Copy the example and edit values:

@@ -32,7 +32,7 @@ These are the minimal, stable constraints of this repo. Use them to avoid wrong 
   * Local: SuNet (see `AGENTS/modes/TOUR.md` -> Phase 1: Blockchain Setup)
   * Testnet: Sepolia (see `AGENTS/modes/TOUR.md` -> Phase 1: Blockchain Setup)
 
-  *Note*: It's recommended to comment out / exclude the erc721 folders during development to speed up site building via _config.yml
+*Note*: For local dev, you must comment out / exclude `erc721/` in `_config.yml` or Jekyll builds are extremely slow. This is not needed for SuNet or Sepolia development.
 
 ---
 

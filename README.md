@@ -75,7 +75,7 @@ A GitHub Actions workflow in this repo (`load-from-blockchain.yml`) runs **hourl
 - checks whether anything has changed on-chain (`have-there-been-updates`)
 - if changes exist, pulls the latest contract state (`load-blockchain`)
 - regenerates the site build artifacts + ERC-721 metadata/images
-- commits updated outputs back into this repo (`build/` and `erc721/`), which GitHub Pages serves live
+- commits updated outputs back into this repo (`build/` and `erc721/`), which GitHub Pages serves live (for local dev, exclude `erc721/` in `_config.yml` or Jekyll builds are extremely slow)
 
 Syncing can be manually triggered via **Actions → “Load from blockchain” → Run workflow**.
 
