@@ -66,6 +66,16 @@ Phase 2 guides you through deployment and then gives you a choice:
   - SuNet: [AGENTS/modes/tour/PHASE-2-SUNET.md](tour/PHASE-2-SUNET.md)
   - Sepolia: [AGENTS/modes/tour/PHASE-2-SEPOLIA.md](tour/PHASE-2-SEPOLIA.md)
 
+### Phase 3: Dapp Setup & Run
+
+Phase 3 configures and runs the dapp against your chosen network.
+
+**Guides**:
+- Open the main guide first: [AGENTS/modes/tour/PHASE-3-MAIN.md](tour/PHASE-3-MAIN.md)
+- Also open the network-specific guide:
+  - SuNet: [AGENTS/modes/tour/PHASE-3-SUNET.md](tour/PHASE-3-SUNET.md)
+  - Sepolia: [AGENTS/modes/tour/PHASE-3-SEPOLIA.md](tour/PHASE-3-SEPOLIA.md)
+
 ## Agent Instructions
 
 ### Network Selection

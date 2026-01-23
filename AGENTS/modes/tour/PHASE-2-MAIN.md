@@ -17,7 +17,7 @@ If a command is destructive (for example, `sunet:clean`), warn and confirm first
 ## Choose Your Path
 
 - **Explore contracts via scripts**: follow the checklist and flows below.
-- **Skip to Phase 3**: go to the website setup steps (Phase 3).
+- **Skip to Phase 3**: open Phase 3 guides (main + network) and continue there.
 
 ## Pricing (Optional, Before Deploy)
 

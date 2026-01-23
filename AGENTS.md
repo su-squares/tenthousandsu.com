@@ -76,6 +76,9 @@ The tour guide will route you into phases:
 * Phase 1 SuNet: `AGENTS/modes/tour/PHASE-1-SUNET.md`
 * Phase 2 Sepolia: `AGENTS/modes/tour/PHASE-2-SEPOLIA.md`
 * Phase 2 SuNet: `AGENTS/modes/tour/PHASE-2-SUNET.md`
+* Phase 3 Main: `AGENTS/modes/tour/PHASE-3-MAIN.md`
+* Phase 3 Sepolia: `AGENTS/modes/tour/PHASE-3-SEPOLIA.md`
+* Phase 3 SuNet: `AGENTS/modes/tour/PHASE-3-SUNET.md`
 
 2. Tour mode safety rule:
 
