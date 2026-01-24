@@ -28,7 +28,7 @@
     {
       "name": "Personalize your square",
       "short_name": "Personalize",
-      "url": "/personalize",
+      "url": "/personalize-modern",
       "icons": [
         {
           "src": "/assets/images/blue-icon-96.png",
