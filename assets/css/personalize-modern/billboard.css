@@ -176,6 +176,24 @@
   z-index: 2;
 }
 
+.personalize-modern-page .personalize-billboard__view .map-container {
+  width: 100%;
+  max-width: 1000px;
+  display: block;
+  margin: 0 auto;
+  overflow: hidden; /* Clip zoomed content */
+}
+
+.personalize-modern-page .personalize-billboard__view .map-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  touch-action: none;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
 .personalize-modern-page .personalize-billboard__loading {
   position: absolute;
   inset: 0;

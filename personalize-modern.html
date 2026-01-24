@@ -205,22 +205,26 @@ image: "{{ site.baseurl }}/assets/images/su-OG.png"
       </div>
       <input type="file" id="placement-image-input" accept="image/*" hidden>
       <div class="personalize-billboard__view">
-        <div id="personalize-billboard"></div>
-        <div class="personalize-billboard__loading" id="placement-loading" hidden>
-          <div class="personalize-billboard__loading-text" aria-live="polite">
-            Adding images to table<span class="personalize-billboard__loading-dots" aria-hidden="true">...</span>
+        <div class="map-container">
+          <div class="map-wrapper">
+            <div id="personalize-billboard"></div>
+            <div class="personalize-billboard__loading" id="placement-loading" hidden>
+              <div class="personalize-billboard__loading-text" aria-live="polite">
+                Adding images to table<span class="personalize-billboard__loading-dots" aria-hidden="true">...</span>
+              </div>
+            </div>
+            <div class="personalize-billboard__loading" id="ownership-loading" hidden>
+              <div class="personalize-billboard__loading-text" aria-live="polite">
+                Fetching Squares<span class="personalize-billboard__loading-dots" aria-hidden="true">...</span>
+                <span class="personalize-billboard__loading-count" id="ownership-loading-count"></span>
+              </div>
+            </div>
+            <button type="button" class="personalize-billboard__locator-btn" id="billboard-locator-hide" hidden>
+              <img src="{{ site.baseurl }}/assets/images/dr.png" alt="" aria-hidden="true">
+              Hide
+            </button>
           </div>
         </div>
-        <div class="personalize-billboard__loading" id="ownership-loading" hidden>
-          <div class="personalize-billboard__loading-text" aria-live="polite">
-            Fetching Squares<span class="personalize-billboard__loading-dots" aria-hidden="true">...</span>
-            <span class="personalize-billboard__loading-count" id="ownership-loading-count"></span>
-          </div>
-        </div>
-        <button type="button" class="personalize-billboard__locator-btn" id="billboard-locator-hide" hidden>
-          <img src="{{ site.baseurl }}/assets/images/dr.png" alt="" aria-hidden="true">
-          Hide
-        </button>
       </div>
       <button type="button" class="billboard__reset-btn personalize-billboard__reset" id="personalize-billboard-reset">
         Reset zoom
