@@ -20,6 +20,7 @@ describe('services/explorer-links.js', () => {
         explorerBaseUrl: 'https://etherscan.io',
         explorerTxPath: '/tx/',
         explorerName: 'Etherscan',
+        explorerType: 'etherscan',
       },
     });
 
@@ -113,9 +114,22 @@ describe('services/explorer-links.js', () => {
       expect(buildTokenUrl('0xcontract')).toBe('https://etherscan.io/token/0xcontract');
     });
 
-    it('should build token URL with tokenId', () => {
+    it('should build NFT URL with tokenId for Etherscan', () => {
       expect(buildTokenUrl('0xcontract', 42)).toBe(
-        'https://etherscan.io/token/0xcontract/instance/42'
+        'https://etherscan.io/nft/0xcontract/42'
+      );
+    });
+
+    it('should build instance URL with tokenId for Blockscout', () => {
+      mockGetWeb3Config.mockReturnValue({
+        activeNetwork: {
+          explorerBaseUrl: 'http://localhost:4001',
+          explorerName: 'Blockscout',
+          explorerType: 'blockscout',
+        },
+      });
+      expect(buildTokenUrl('0xcontract', 42)).toBe(
+        'http://localhost:4001/token/0xcontract/instance/42'
       );
     });
 

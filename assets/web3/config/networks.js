@@ -4,6 +4,11 @@ export const ChainKey = {
   SUNET: "sunet",
 };
 
+export const ExplorerType = {
+  ETHERSCAN: "etherscan",
+  BLOCKSCOUT: "blockscout",
+};
+
 export const DEFAULT_CHAIN = ChainKey.MAINNET;
 
 export const NETWORK_PRESETS = {
@@ -12,6 +17,7 @@ export const NETWORK_PRESETS = {
     chainId: 1,
     label: "Ethereum Mainnet",
     explorerName: "Etherscan",
+    explorerType: ExplorerType.ETHERSCAN,
     explorerBaseUrl: "https://etherscan.io",
     explorerTxPath: "/tx/",
     defaultRpcUrls: [
@@ -26,6 +32,7 @@ export const NETWORK_PRESETS = {
     chainId: 11155111,
     label: "Sepolia",
     explorerName: "Sepolia Etherscan",
+    explorerType: ExplorerType.ETHERSCAN,
     explorerBaseUrl: "https://sepolia.etherscan.io",
     explorerTxPath: "/tx/",
     defaultRpcUrls: [
@@ -39,6 +46,7 @@ export const NETWORK_PRESETS = {
     chainId: 99999991,
     label: "Sunet",
     explorerName: "Blockscout",
+    explorerType: ExplorerType.BLOCKSCOUT,
     explorerBaseUrl: "http://localhost:4001",
     explorerTxPath: "/tx/",
     defaultRpcUrls: ["http://localhost:8545"],

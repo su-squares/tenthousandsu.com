@@ -41,10 +41,19 @@ export function buildTokenUrl(contractAddress, tokenId) {
   const { activeNetwork } = getWeb3Config();
   const base = activeNetwork?.explorerBaseUrl;
   if (!base) return null;
+
   const trimmedBase = base.replace(/\/$/, "");
-  return tokenId
+  const isBlockscout = activeNetwork.explorerType === "blockscout";
+
+  if (!tokenId) {
+    return `${trimmedBase}/token/${contractAddress}`;
+  }
+
+  // Blockscout: /token/{address}/instance/{tokenId}
+  // Etherscan:  /nft/{address}/{tokenId}
+  return isBlockscout
     ? `${trimmedBase}/token/${contractAddress}/instance/${tokenId}`
-    : `${trimmedBase}/token/${contractAddress}`;
+    : `${trimmedBase}/nft/${contractAddress}/${tokenId}`;
 }
 
 /**
