@@ -100,8 +100,8 @@ export function isHttpScheme(scheme) {
 export function isSafeInternalPath(url) {
   if (!url) return false;
 
-  // /mint page should navigate directly
-  if (url.pathname === "/mint" || url.pathname.startsWith("/mint/")) {
+  // /buy page should navigate directly
+  if (url.pathname === "/buy" || url.pathname.startsWith("/buy/")) {
     return true;
   }
 

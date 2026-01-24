@@ -131,25 +131,25 @@ describe('link-utils', () => {
   });
 
   describe('isSafeInternalPath', () => {
-    it('should recognize /mint as safe internal path', () => {
-      const url = new URL('https://example.com/mint');
+    it('should recognize /buy as safe internal path', () => {
+      const url = new URL('https://example.com/buy');
       expect(isSafeInternalPath(url)).toBe(true);
     });
 
-    it('should recognize /mint/ as safe internal path', () => {
-      const url = new URL('https://example.com/mint/');
+    it('should recognize /buy/ as safe internal path', () => {
+      const url = new URL('https://example.com/buy/');
       expect(isSafeInternalPath(url)).toBe(true);
     });
 
-    it('should recognize /mint/123 as safe internal path', () => {
-      const url = new URL('https://example.com/mint/123');
+    it('should recognize /buy/123 as safe internal path', () => {
+      const url = new URL('https://example.com/buy/123');
       expect(isSafeInternalPath(url)).toBe(true);
     });
 
     it('should not recognize other paths as safe', () => {
       expect(isSafeInternalPath(new URL('https://example.com/'))).toBe(false);
       expect(isSafeInternalPath(new URL('https://example.com/other'))).toBe(false);
-      expect(isSafeInternalPath(new URL('https://example.com/mintable'))).toBe(false);
+      expect(isSafeInternalPath(new URL('https://example.com/buyable'))).toBe(false);
     });
 
     it('should handle null URL', () => {

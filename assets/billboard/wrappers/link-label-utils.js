@@ -39,7 +39,7 @@ export function isMintInternalLink(href, baseurl) {
 
   try {
     const resolved = new URL(href, origin);
-    return resolved.origin === origin && (resolved.pathname === "/mint" || resolved.pathname.startsWith("/mint/"));
+    return resolved.origin === origin && (resolved.pathname === "/buy" || resolved.pathname.startsWith("/buy/"));
   } catch {
     return false;
   }
