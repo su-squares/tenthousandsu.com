@@ -15,6 +15,32 @@ export const SEPOLIA_CHAIN_ID = NETWORK_PRESETS[ChainKey.SEPOLIA].chainId;
 
 let wagmiCache = { chainKey: null, promise: null };
 
+function hasPersistedWagmiConnection() {
+  try {
+    const raw = localStorage.getItem("wagmi.store");
+    if (raw) {
+      const parsed = JSON.parse(raw);
+      const account = parsed?.state?.data?.account;
+      const connections = parsed?.state?.connections;
+      if (account) return true;
+      if (Array.isArray(connections) && connections.length > 0) return true;
+      if (connections && typeof connections === "object" && Object.keys(connections).length > 0) return true;
+    }
+    if (localStorage.getItem("wagmi.connected") === "true") return true;
+
+    const wcKeyPrefixes = ["wc@2:client:", "wc@2:", "walletconnect"];
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key || !wcKeyPrefixes.some((prefix) => key.startsWith(prefix))) continue;
+      const value = localStorage.getItem(key);
+      if (value && value !== "{}") return true;
+    }
+  } catch (_error) {
+    /* ignore storage errors */
+  }
+  return false;
+}
+
 function ensureProcessEnv() {
   if (!window.process) {
     window.process = { env: { NODE_ENV: "production" } };
@@ -153,7 +179,7 @@ export async function loadWagmiClient() {
           options: {
             getProvider: () => provider,
             name: info.name,
-            shimDisconnect: true,
+            shimDisconnect: false,  // Disabled to prevent race condition in Chrome
           },
         });
 
@@ -174,7 +200,7 @@ export async function loadWagmiClient() {
           chains,
           options: {
             name: (detected) => detected?.name || "Browser Wallet",
-            shimDisconnect: true,
+            shimDisconnect: false,  // Disabled to prevent race condition in Chrome
           },
         });
         connectors.push(legacyConnector);
@@ -199,8 +225,10 @@ export async function loadWagmiClient() {
       });
       connectors.push(wcConnector);
 
+      const shouldAutoConnect = hasPersistedWagmiConnection();
       const config = createConfig({
-        autoConnect: true,
+        // Avoid autoConnect racing a fresh connect; only enable when we have persisted state.
+        autoConnect: shouldAutoConnect,
         connectors,
         publicClient,
         webSocketPublicClient,

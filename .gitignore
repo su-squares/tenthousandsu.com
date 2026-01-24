@@ -41,6 +41,12 @@ erc721-sepolia/
 nodejs/vitest/coverage/
 /coverage/
 
+### Playwright workspace related ###
+nodejs/playwright/playwright-report/
+nodejs/playwright/test-results/
+nodejs/playwright/wallet/injected/provider.js
+nodejs/playwright/wallet/injected/provider.js.map
+
 # Windows reserved device names
 nul
 NUL
