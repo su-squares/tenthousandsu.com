@@ -182,6 +182,7 @@ export async function ensureConnected(action) {
 
     try {
       await openConnectModal();
+      if (finished) return;
       const account = wagmi.getAccount();
       if (account?.isConnected) {
         cleanup();

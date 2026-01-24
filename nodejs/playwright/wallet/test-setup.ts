@@ -32,7 +32,10 @@ const PUBLIC_SEPOLIA_RPCS = [
   'https://rpc.sepolia.org',
 ];
 
-function pickPublicRpcUrl(_chainId?: number): string {
+function pickPublicRpcUrl(chainId?: number): string {
+  if (chainId && chainId !== sepolia.id) {
+    return PUBLIC_SEPOLIA_RPCS[0];
+  }
   return PUBLIC_SEPOLIA_RPCS[0];
 }
 
@@ -107,7 +110,7 @@ export async function setupTest(page: Page, options: TestSetupOptions = {}) {
 
     console.log(`[Test Wallet BRIDGE] Using private key (masked): ${privateKey.slice(0, 8)}...${privateKey.slice(-4)}`);
 
-    const rpcUrl = pickPublicRpcUrl(chainId);
+    const rpcUrl = finalWalletConfig.rpcUrl || pickPublicRpcUrl(chainId);
     const transport = http(rpcUrl);
 
     const chain = sepolia.id === chainId ? sepolia : {

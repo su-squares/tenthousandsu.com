@@ -55,7 +55,7 @@ export function renderTxView(target, state, handlers, options = {}) {
 
       ${showBar
       ? `
-        <div class="su-tx-card__section su-tx-card__section--status">
+        <div class="su-tx-card__section su-tx-card__section--status" data-testid="tx-status" data-status="${state.status}">
           <div class="su-tx-bar su-tx-bar--${barState}">
             <span>${barLabel}</span>
           </div>

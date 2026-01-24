@@ -39,7 +39,16 @@ if (!loadedPath) {
 }
 
 // ---- Zod Schemas ----
-const NetworkEnum = z.enum(['Ethereum', 'Sepolia', 'Sunet']).transform((v) => v as NetworkInput);
+const NetworkEnum = z
+  .string()
+  .optional()
+  .transform((value) => {
+    const normalized = String(value ?? 'Sepolia').trim().toLowerCase();
+    if (normalized === 'ethereum' || normalized === 'mainnet') return 'Ethereum' as NetworkInput;
+    if (normalized === 'sepolia') return 'Sepolia' as NetworkInput;
+    if (normalized === 'sunet') return 'Sunet' as NetworkInput;
+    return 'Sepolia' as NetworkInput;
+  });
 
 const PrivateKeySchema = z
   .string()
@@ -106,13 +115,27 @@ const ChainIdSchema = z
 
 const UrlSchema = z.string().url().optional();
 
-// Empty or missing -> default to "/api/mcp"
-const McpEndpointSchema = z
-  .string()
+const BoolSchema = z
+  .union([z.string(), z.boolean(), z.number()])
   .optional()
   .transform((v) => {
-    const s = (v ?? '').trim();
-    return s || '/api/mcp';
+    if (typeof v === 'boolean') return v;
+    if (typeof v === 'number') return v === 1;
+    const s = String(v ?? '').trim().toLowerCase();
+    return ['1', 'true', 'yes', 'on'].includes(s);
+  });
+
+const SquareNumberSchema = z
+  .union([z.string(), z.number()])
+  .optional()
+  .transform((v) => {
+    if (v === undefined || v === null || v === '') return 1;
+    const n = typeof v === 'number' ? v : Number(String(v).trim());
+    if (!Number.isFinite(n)) return 1;
+    return Math.trunc(n);
+  })
+  .refine((v) => v >= 1 && v <= 10000, {
+    message: 'BUY_SQUARE_NUMBER must be between 1 and 10000',
   });
 
 const RawSchema = z.object({
@@ -131,7 +154,8 @@ const RawSchema = z.object({
       if (!Number.isFinite(n) || n < 0) return 2000;
       return Math.min(n, 60_000);
     }),
-  MCP_ENDPOINT: McpEndpointSchema, // <--- NEW
+  BUY_SQUARE_NUMBER: SquareNumberSchema,
+  E2E_MOCK_RPC: BoolSchema.default(false),
 });
 
 // ---- Parse & Normalize ----
@@ -143,7 +167,8 @@ const raw = RawSchema.parse({
   BASE_URL: process.env.TEST_BASE_URL,
   WALLET_NAME: process.env.WALLET_NAME,
   TX_DELAY_MS: process.env.TX_DELAY_MS,
-  MCP_ENDPOINT: process.env.MCP_ENDPOINT, // <--- NEW
+  BUY_SQUARE_NUMBER: process.env.BUY_SQUARE_NUMBER,
+  E2E_MOCK_RPC: process.env.E2E_MOCK_RPC,
 });
 
 const networkMap: Record<NetworkInput, Network> = {
@@ -189,7 +214,8 @@ export const e2eEnv = {
   baseUrl: raw.BASE_URL,
   walletName: raw.WALLET_NAME,
   txDelayMs: raw.TX_DELAY_MS,
-  mcpEndpoint: raw.MCP_ENDPOINT, // <--- NEW
+  buySquareNumber: raw.BUY_SQUARE_NUMBER,
+  mockRpc: raw.E2E_MOCK_RPC,
   loadedFrom: loadedPath,
 } as const;
 
@@ -200,13 +226,14 @@ export const walletConfigFromEnv = {
   walletName: e2eEnv.walletName,
   walletIcon: 'assets/images/github-logo.svg',
   txDelay: e2eEnv.txDelayMs,
+  rpcUrl: e2eEnv.rpcUrl,
 } as const;
 
 let logged = false;
 export function logE2eEnvOnce() {
   if (logged) return;
   console.log(
-    `[e2e env] network=${e2eEnv.network} chainId=${e2eEnv.chainId} wallet=${e2eEnv.walletName} address=${e2eEnv.address} txDelayMs=${e2eEnv.txDelayMs} mcpEndpoint=${e2eEnv.mcpEndpoint}${
+    `[e2e env] network=${e2eEnv.network} chainId=${e2eEnv.chainId} wallet=${e2eEnv.walletName} address=${e2eEnv.address} txDelayMs=${e2eEnv.txDelayMs} mockRpc=${e2eEnv.mockRpc} buySquareNumber=${e2eEnv.buySquareNumber}${
       e2eEnv.loadedFrom ? ` (loaded ${e2eEnv.loadedFrom})` : ''
     }`
   );
