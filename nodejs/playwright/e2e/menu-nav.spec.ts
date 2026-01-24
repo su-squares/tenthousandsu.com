@@ -75,7 +75,7 @@ const clickButtonWithRetry = async (page: Page, buttonTestId: string) => {
 test('test', async ({ page }) => {
   test.setTimeout(30_000);
 
-  await page.goto('http://localhost:4000/');
+  await page.goto('/');
 
   await expect(page.getByRole('button', { name: 'Open menu' })).toBeVisible();
   await openMenu(page);
