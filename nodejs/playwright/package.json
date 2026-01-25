@@ -8,7 +8,20 @@
     "test": "playwright test",
     "test:headed": "playwright test --headed",
     "test:stable": "playwright test --workers=1 --retries=2",
-    "show-report": "playwright show-report"
+    "show-report": "playwright show-report",
+    "--e2e tests--": "",
+    "test:buy-square": "playwright test e2e/buy-square.spec.ts",
+    "test:connect-wallet": "playwright test e2e/connect-wallet.spec.ts",
+    "test:embed": "playwright test e2e/embed.spec.ts",
+    "test:embed-builder": "playwright test e2e/embed-builder.spec.ts",
+    "test:find-square": "playwright test e2e/find-square.spec.ts",
+    "test:happy-path": "playwright test e2e/happy-path.spec.ts",
+    "test:homepage-billboard": "playwright test e2e/homepage-billboard.spec.ts",
+    "test:legacy-personalize": "playwright test e2e/legacy-personalize.spec.ts",
+    "test:legacy-personalize-batch": "playwright test e2e/legacy-personalize-batch.spec.ts",
+    "test:legacy-unpersonalize": "playwright test e2e/legacy-unpersonalize.spec.ts",
+    "test:menu-nav": "playwright test e2e/menu-nav.spec.ts",
+    "test:personalize-modern": "playwright test e2e/personalize-modern"
   },
   "devDependencies": {
     "@playwright/test": "^1.45.0",

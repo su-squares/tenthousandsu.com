@@ -17,6 +17,7 @@ If a command is destructive (for example, `sunet:clean`), warn and confirm first
 ## Choose Your Path
 
 - **Explore contracts via scripts**: follow the checklist and flows below.
+- **Learn architecture via tests**: use the test suite as a guided map of how the contracts fit together.
 - **Skip to Phase 3**: open Phase 3 guides (main + network) and continue there.
 
 ## Pricing (Optional, Before Deploy)
@@ -32,6 +33,45 @@ If yes, update these in `nodejs/smart-contract/.env.contract` before deploying:
 ## Guided Flows (Optional)
 
 Offer a flow and then execute or provide the commands.
+
+### Flow 0: Test-Guided Architecture Tour (Optional)
+
+Ask explicitly:
+- "Do you want to learn the smart contract architecture by walking through the tests?"
+
+If yes, use the tests as a guided map (read first, run only if they want):
+
+- **Where the tests live:** `nodejs/smart-contract/test/` (underlay tests in `nodejs/smart-contract/test/underlay/`).
+- **Run tests (optional):** `pnpm run test` (uses Hardhat local network; no SuNet/Sepolia required).
+
+Suggested walkthrough order + what to highlight:
+
+1) **Core ERC721 behavior**
+   - `nodejs/smart-contract/test/NFToken.test.ts`
+   - `nodejs/smart-contract/test/NFTokenEnumerable.test.ts`
+   - `nodejs/smart-contract/test/NFTokenMetadata.test.ts`
+   - Purpose: baseline ERC721 + enumeration + metadata behaviors the rest of the system builds on.
+
+2) **Minting + sales mechanics**
+   - `nodejs/smart-contract/test/SuVending.test.ts`
+   - Purpose: purchase flow, price enforcement, and how minting is controlled.
+
+3) **Admin + roles**
+   - `nodejs/smart-contract/test/AccessControl.test.ts`
+   - `nodejs/smart-contract/test/SuOperation.test.ts`
+   - `nodejs/smart-contract/test/SuPromo.test.ts`
+   - Purpose: CEO/CFO/COO role gates, withdrawals, and promo transfers.
+
+4) **Underlay (modern personalization)**
+   - `nodejs/smart-contract/test/underlay/AccessControlTwoOfficers.test.ts`
+   - `nodejs/smart-contract/test/underlay/SuSquaresUnderlay.test.ts`
+   - Purpose: cheaper personalization path and the newer two-officer role scheme for underlay.
+
+Architecture insights to call out:
+- **Primary vs underlay:** primary handles mint/ownership + legacy personalization; underlay handles cheaper, modern personalization.
+- **Role model evolution:** legacy roles (CEO/CFO/COO) vs underlay two-officer model.
+- **Why tests matter:** they are executable proof of invariants (supply rules, role gating, mint/promo flows).
+- **Historical context:** older flows on the primary contract are preserved; newer underlay flows reduce cost and simplify personalization.
 
 ### Flow A: Quick Demo (Buy + Underlay Batch)
 
