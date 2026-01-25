@@ -1,4 +1,15 @@
 import { isUserRejectedError } from "@assets-js/personalize-modern/tx.js";
+import { maybeAlertBillboardUpdate } from "@web3/alerts.js";
+import { ChainKey, getWeb3Config } from "@web3/config.js";
+import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
+
+vi.mock("@web3/config.js", () => ({
+  ChainKey: {
+    MAINNET: "mainnet",
+    SEPOLIA: "sepolia",
+  },
+  getWeb3Config: vi.fn(),
+}));
 
 describe("isUserRejectedError", () => {
   describe("error code detection", () => {
@@ -100,5 +111,31 @@ describe("isUserRejectedError", () => {
     it("handles undefined message", () => {
       expect(isUserRejectedError({}, undefined as unknown as string)).toBe(false);
     });
+  });
+});
+
+describe("maybeAlertBillboardUpdate", () => {
+  const getWeb3ConfigMock = getWeb3Config as unknown as ReturnType<typeof vi.fn>;
+  let alertSpy: any = null;
+
+  beforeEach(() => {
+    alertSpy = vi.spyOn(window, "alert").mockImplementation(() => {});
+  });
+
+  afterEach(() => {
+    alertSpy?.mockRestore();
+    vi.clearAllMocks();
+  });
+
+  it("alerts on mainnet", () => {
+    getWeb3ConfigMock.mockReturnValue({ activeNetwork: { key: ChainKey.MAINNET } });
+    maybeAlertBillboardUpdate();
+    expect(alertSpy).toHaveBeenCalledTimes(1);
+  });
+
+  it("does not alert on non-mainnet", () => {
+    getWeb3ConfigMock.mockReturnValue({ activeNetwork: { key: ChainKey.SEPOLIA } });
+    maybeAlertBillboardUpdate();
+    expect(alertSpy).not.toHaveBeenCalled();
   });
 });

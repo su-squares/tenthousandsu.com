@@ -9,6 +9,7 @@ import { getWeb3Config } from "../../web3/config.js";
 import { personalizeUnderlay } from "../../web3/services/underlay.js";
 import { personalizeUnderlayBatch } from "../../web3/services/underlay-batch.js";
 import { buildTxUrl } from "../../web3/services/explorer-links.js";
+import { maybeAlertBillboardUpdate } from "../../web3/alerts.js";
 import { isValidSquareId } from "./store.js";
 import { ensureOwnershipLoaded } from "./ownership.js";
 import { clearOwnedSquaresCache, fetchOwnedSquaresForIds } from "../../web3/services/ownership.js";
@@ -203,6 +204,7 @@ export function initPersonalizeTx(options) {
           txUrl,
           "Transaction confirmed. Your image will show on the Su Squares homepage, which refreshes hourly."
         );
+        maybeAlertBillboardUpdate();
         clearOwnedSquaresCache();
         store.setOwnershipStatus("idle");
         store.setOwnershipProgress(0, null);
