@@ -14,6 +14,53 @@ import { privateKeyToAccount } from 'viem/accounts';
 type NetworkInput = 'Ethereum' | 'Sepolia' | 'Sunet';
 type Network = 'ethereum' | 'sepolia' | 'sunet';
 
+function formatEnvHint(envName?: string): string {
+  return envName ? ` in ${envName}` : '';
+}
+
+function ensurePositiveInteger(value: number, part: string, envName?: string): void {
+  if (!Number.isInteger(value) || value <= 0) {
+    throw new Error(
+      `Invalid token id ${part}${formatEnvHint(envName)}. Use a positive integer or a range (start-end).`
+    );
+  }
+}
+
+function expandTokenRange(input: string, envName?: string): number[] {
+  const cleaned = input.trim();
+  if (!cleaned) {
+    return [];
+  }
+
+  const ids: number[] = [];
+  const parts = cleaned
+    .split(',')
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  for (const part of parts) {
+    const rangeMatch = part.match(/^(\d+)\s*-\s*(\d+)$/);
+    if (rangeMatch) {
+      const start = Number(rangeMatch[1]);
+      const end = Number(rangeMatch[2]);
+      ensurePositiveInteger(start, part, envName);
+      ensurePositiveInteger(end, part, envName);
+      if (end < start) {
+        throw new Error(`Invalid range ${part}${formatEnvHint(envName)}: end must be >= start.`);
+      }
+      for (let i = start; i <= end; i++) {
+        ids.push(i);
+      }
+    } else {
+      const value = Number(part);
+      ensurePositiveInteger(value, part, envName);
+      ids.push(value);
+    }
+  }
+
+  return ids;
+}
+
 // --- ESM-safe __dirname / __filename ---
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -115,6 +162,14 @@ const ChainIdSchema = z
 
 const UrlSchema = z.string().url().optional();
 
+const TokenRangeSchema = z
+  .string()
+  .optional()
+  .transform((value) => {
+    if (value === undefined || value === null || value === '') return [];
+    return expandTokenRange(String(value), 'PERSONALIZE_MODERN_SQUARE_IDS');
+  });
+
 const BoolSchema = z
   .union([z.string(), z.boolean(), z.number()])
   .optional()
@@ -159,6 +214,7 @@ const RawSchema = z.object({
   LEGACY_PERSONALIZE_BATCH_SQUARE_NUMBER: SquareNumberSchema,
   LEGACY_UNPERSONALIZE_SQUARE_NUMBER: SquareNumberSchema,
   LEGACY_UNPERSONALIZE_FAIL_SQUARE_NUMBER: SquareNumberSchema,
+  PERSONALIZE_MODERN_SQUARE_IDS: TokenRangeSchema,
   E2E_MOCK_RPC: BoolSchema.default(false),
 });
 
@@ -176,6 +232,7 @@ const raw = RawSchema.parse({
   LEGACY_PERSONALIZE_BATCH_SQUARE_NUMBER: process.env.LEGACY_PERSONALIZE_BATCH_SQUARE_NUMBER,
   LEGACY_UNPERSONALIZE_SQUARE_NUMBER: process.env.LEGACY_UNPERSONALIZE_SQUARE_NUMBER,
   LEGACY_UNPERSONALIZE_FAIL_SQUARE_NUMBER: process.env.LEGACY_UNPERSONALIZE_FAIL_SQUARE_NUMBER,
+  PERSONALIZE_MODERN_SQUARE_IDS: process.env.PERSONALIZE_MODERN_SQUARE_IDS,
   E2E_MOCK_RPC: process.env.E2E_MOCK_RPC,
 });
 
@@ -227,6 +284,7 @@ export const e2eEnv = {
   legacyPersonalizeBatchSquareNumber: raw.LEGACY_PERSONALIZE_BATCH_SQUARE_NUMBER,
   legacyUnpersonalizeSquareNumber: raw.LEGACY_UNPERSONALIZE_SQUARE_NUMBER,
   legacyUnpersonalizeFailSquareNumber: raw.LEGACY_UNPERSONALIZE_FAIL_SQUARE_NUMBER,
+  personalizeModernSquareIds: raw.PERSONALIZE_MODERN_SQUARE_IDS,
   mockRpc: raw.E2E_MOCK_RPC,
   loadedFrom: loadedPath,
 } as const;
@@ -245,7 +303,7 @@ let logged = false;
 export function logE2eEnvOnce() {
   if (logged) return;
   console.log(
-    `[e2e env] network=${e2eEnv.network} chainId=${e2eEnv.chainId} wallet=${e2eEnv.walletName} address=${e2eEnv.address} txDelayMs=${e2eEnv.txDelayMs} mockRpc=${e2eEnv.mockRpc} buySquareNumber=${e2eEnv.buySquareNumber} legacyPersonalizeSquareNumber=${e2eEnv.legacyPersonalizeSquareNumber} legacyPersonalizeBatchSquareNumber=${e2eEnv.legacyPersonalizeBatchSquareNumber} legacyUnpersonalizeSquareNumber=${e2eEnv.legacyUnpersonalizeSquareNumber} legacyUnpersonalizeFailSquareNumber=${e2eEnv.legacyUnpersonalizeFailSquareNumber}${
+    `[e2e env] network=${e2eEnv.network} chainId=${e2eEnv.chainId} wallet=${e2eEnv.walletName} address=${e2eEnv.address} txDelayMs=${e2eEnv.txDelayMs} mockRpc=${e2eEnv.mockRpc} buySquareNumber=${e2eEnv.buySquareNumber} legacyPersonalizeSquareNumber=${e2eEnv.legacyPersonalizeSquareNumber} legacyPersonalizeBatchSquareNumber=${e2eEnv.legacyPersonalizeBatchSquareNumber} legacyUnpersonalizeSquareNumber=${e2eEnv.legacyUnpersonalizeSquareNumber} legacyUnpersonalizeFailSquareNumber=${e2eEnv.legacyUnpersonalizeFailSquareNumber} personalizeModernSquareIds=${e2eEnv.personalizeModernSquareIds.length}${
       e2eEnv.loadedFrom ? ` (loaded ${e2eEnv.loadedFrom})` : ''
     }`
   );

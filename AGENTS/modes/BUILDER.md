@@ -185,9 +185,10 @@ If the user explicitly requests “modernize with X,” comply—but state the i
 
 ### Language and documentation
 
-* **No TypeScript.** JavaScript is okay.
+* **Jekyll/site (root workspace): JavaScript only.** Do not add TypeScript to the Jekyll site in the root workspace.
 * For complex-ish logic, prefer **JSDoc** (intent, inputs/outputs, edge cases).
 * Skip JSDoc for trivial code.
+* **Nodejs workspaces: TypeScript preferred.** Use TypeScript where those workspaces already do.
 
 ### HTML-first (Jekyll-first) structure
 

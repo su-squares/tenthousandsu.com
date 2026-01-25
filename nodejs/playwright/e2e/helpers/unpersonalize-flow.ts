@@ -55,8 +55,8 @@ export async function runUnpersonalizeFlow(page: Page, options: UnpersonalizeOpt
     const message = page.locator('#unpersonalize-tx-fixture .su-tx-message');
     await expect(message).toContainText(/do not own/i, { timeout: 10_000 });
 
-    if (dialogMessage) {
-      expect(dialogMessage).toMatch(/do not own/i);
+    if (typeof dialogMessage === 'string' && !/do not own/i.test(dialogMessage)) {
+      throw new Error(`Unexpected dialog message: ${dialogMessage}`);
     }
     return;
   }

@@ -6,11 +6,14 @@ export function mockRpcInitScript(opts: {
   salePriceSig?: string;
   personalizePriceSig?: string;
   ownerOfSig?: string;
+  balanceOfSig?: string;
+  tokenOfOwnerByIndexSig?: string;
   ensReverseSig?: string;
   multicallAggregate3Sig?: string;
   purchaseSigs?: string[];
   ownerAddress?: string;
   ownerOverrides?: Array<{ squareId: number; owner: string }>;
+  ownedSquares?: number[];
 }) {
   const state = {
     chainId: opts.chainId,
@@ -56,6 +59,26 @@ export function mockRpcInitScript(opts: {
     const normalized = normalizeAddress(value);
     if (!normalized) return null;
     return `0x${normalized.slice(2).padStart(64, '0')}`;
+  };
+
+  const ownerAddress = normalizeAddress(opts.ownerAddress);
+  const ownedSquares = Array.from(new Set((opts.ownedSquares || []).map(Number)))
+    .filter((value) => Number.isInteger(value) && value >= 1 && value <= 10000)
+    .sort((a, b) => a - b);
+
+  const readAddressArg = (data: string, argIndex: number): string | null => {
+    const start = 10 + argIndex * 64;
+    const hex = data.slice(start, start + 64);
+    if (hex.length !== 64) return null;
+    return normalizeAddress(`0x${hex.slice(24)}`);
+  };
+
+  const readUintArg = (data: string, argIndex: number): number | null => {
+    const start = 10 + argIndex * 64;
+    const hex = data.slice(start, start + 64);
+    if (hex.length !== 64) return null;
+    const value = Number.parseInt(hex, 16);
+    return Number.isFinite(value) ? value : null;
   };
 
   const jsonResponse = (id: unknown, result: unknown) =>
@@ -213,6 +236,8 @@ export function mockRpcInitScript(opts: {
         const salePriceSig = opts.salePriceSig || '';
         const personalizePriceSig = opts.personalizePriceSig || '';
         const ownerOfSig = opts.ownerOfSig || '';
+        const balanceOfSig = opts.balanceOfSig || '';
+        const tokenOfOwnerByIndexSig = opts.tokenOfOwnerByIndexSig || '';
         const ensReverseSig = opts.ensReverseSig || '';
         const multicallAggregate3Sig = opts.multicallAggregate3Sig || '';
 
@@ -229,6 +254,22 @@ export function mockRpcInitScript(opts: {
           const owner = overrideOwner ?? opts.ownerAddress ?? '0x0000000000000000000000000000000000000000';
           const padded = padAddress(owner) || pad32('0x0');
           return jsonResponse(id, padded);
+        }
+        if (balanceOfSig && data.startsWith(balanceOfSig)) {
+          const addr = readAddressArg(data, 0);
+          const matchesOwner = ownerAddress ? addr === ownerAddress : Boolean(addr);
+          const count = matchesOwner ? ownedSquares.length : 0;
+          return jsonResponse(id, pad32(count));
+        }
+        if (tokenOfOwnerByIndexSig && data.startsWith(tokenOfOwnerByIndexSig)) {
+          const addr = readAddressArg(data, 0);
+          const index = readUintArg(data, 1);
+          const matchesOwner = ownerAddress ? addr === ownerAddress : Boolean(addr);
+          const tokenId =
+            matchesOwner && index !== null && index >= 0 && index < ownedSquares.length
+              ? ownedSquares[index]
+              : 0;
+          return jsonResponse(id, pad32(tokenId));
         }
         if (ensReverseSig && data.startsWith(ensReverseSig)) {
           return jsonError(id, 'ENS not available on test network');

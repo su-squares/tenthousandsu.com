@@ -10,4 +10,5 @@ export type MockRpcOptions = {
   failDuplicatePurchase?: boolean;
   ownerAddress?: string;
   ownerOverrides?: MockRpcOwnerOverride[];
+  ownedSquares?: number[];
 };
