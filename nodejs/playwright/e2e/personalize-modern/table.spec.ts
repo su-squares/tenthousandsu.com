@@ -30,13 +30,13 @@ test.describe('Personalize Modern - Table', () => {
     test.skip(!walletConfigFromEnv, 'wallet env missing/invalid');
     logE2eEnvOnce();
 
-    const rawSquareIds = Array.isArray(e2eEnv?.personalizeModernSquareIds)
-      ? (e2eEnv.personalizeModernSquareIds as number[])
+    const rawSquareIds = Array.isArray(e2eEnv?.personalizeSquareIds)
+      ? (e2eEnv.personalizeSquareIds as number[])
       : [];
     const squareIds = rawSquareIds
       .map((id: number) => Number(id))
       .filter((id: number) => Number.isInteger(id) && id >= 1 && id <= 10000);
-    test.skip(squareIds.length === 0, 'PERSONALIZE_MODERN_SQUARE_IDS missing/empty');
+    test.skip(squareIds.length === 0, 'PERSONALIZE_SQUARE_ID missing/empty');
 
     const squareId = squareIds[0];
     const title = `Manual Title ${squareId}`;

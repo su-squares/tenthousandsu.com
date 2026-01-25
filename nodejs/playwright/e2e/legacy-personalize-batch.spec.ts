@@ -54,7 +54,7 @@ test.describe('Legacy personalize batch flow', () => {
     await visitLegacyPersonalizeBatchPage(page);
     await setup.waitForWagmi();
 
-    const topLeftSquareNumber = e2eEnv?.legacyPersonalizeBatchSquareNumber || 1;
+    const topLeftSquareNumber = e2eEnv?.legacyPersonalizeBatchSquareId || 1;
     const walletName = walletConfigFromEnv.walletName || 'Wallet';
     const imagePath = getLegacyPersonalizeBatchImagePath();
 

@@ -54,7 +54,7 @@ test.describe('Legacy personalize flow', () => {
     await visitLegacyPersonalizePage(page);
     await setup.waitForWagmi();
 
-    const squareNumber = e2eEnv?.legacyPersonalizeSquareNumber || 1;
+    const squareNumber = e2eEnv?.legacyPersonalizeSquareId || 1;
     const walletName = walletConfigFromEnv.walletName || 'Wallet';
     const imagePath = getLegacyPersonalizeImagePath();
 

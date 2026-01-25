@@ -24,7 +24,13 @@ async function mockMainContractPersonalization(page: any, squareIds: number[]) {
   }
 
   await page.addInitScript(
-    ({ extra, personalizations }) => {
+    ({
+      extra,
+      personalizations,
+    }: {
+      extra: Array<unknown>;
+      personalizations: Array<[string, string] | null>;
+    }) => {
       const originalFetch = window.fetch.bind(window);
       window.fetch = async (input: RequestInfo | URL, init?: RequestInit) => {
         const url = typeof input === 'string'
@@ -91,7 +97,7 @@ test.describe.serial('Legacy unpersonalize flow', () => {
       walletConfig,
     });
 
-    const squareNumber = e2eEnv?.legacyUnpersonalizeSquareNumber || 1;
+    const squareNumber = e2eEnv?.legacyUnpersonalizeSquareId || 1;
     await mockMainContractPersonalization(page, [squareNumber]);
     await page.goto('/personalize-modern.html', { waitUntil: 'domcontentloaded' });
     await setup.waitForWagmi();
@@ -106,10 +112,10 @@ test.describe.serial('Legacy unpersonalize flow', () => {
     test.skip(!walletConfigFromEnv, 'wallet env missing/invalid');
     logE2eEnvOnce();
 
-    const failSquare = e2eEnv?.legacyUnpersonalizeFailSquareNumber;
+    const failSquare = e2eEnv?.legacyUnpersonalizeFailSquareId;
     test.skip(!failSquare, 'no unowned square configured');
     test.skip(
-      failSquare === e2eEnv?.legacyUnpersonalizeSquareNumber,
+      failSquare === e2eEnv?.legacyUnpersonalizeSquareId,
       'unowned square matches owned square'
     );
 

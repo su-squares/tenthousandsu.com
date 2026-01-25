@@ -51,14 +51,14 @@ test.describe('Buy Square flow', () => {
     await visitBuyPage(page);
     await setup.waitForWagmi();
 
-    const preferredSquare = e2eEnv?.buySquareNumber || 1;
+    const preferredSquareId = e2eEnv?.buySquareId || 1;
     const walletName = walletConfigFromEnv.walletName || 'Wallet';
 
     const projectNames = (testInfo.config.projects || []).map((project) => project.name);
     const projectIndex = Math.max(0, projectNames.indexOf(testInfo.project.name));
     const offsetSquare = useMockRpc
-      ? preferredSquare
-      : ((preferredSquare - 1 + projectIndex) % 10000) + 1;
+      ? preferredSquareId
+      : ((preferredSquareId - 1 + projectIndex) % 10000) + 1;
 
     const squareNumber = useMockRpc
       ? offsetSquare

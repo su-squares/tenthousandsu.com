@@ -69,6 +69,13 @@ function initPage() {
   let squareValidationHandle = null;
   let squareValidationHandleType = null;
 
+  const getInitialSquareId = () => {
+    const params = new URLSearchParams(window.location.search);
+    if (!params.has("square")) return null;
+    const parsed = parseSquareInput(params.get("square"));
+    return isValidSquareId(parsed) ? parsed : null;
+  };
+
   const { validateSquareErrors, validateForSubmit, markOwnershipErrorsFromTx } =
     createValidationController({
       store,
@@ -79,6 +86,15 @@ function initPage() {
       titleMax: TITLE_MAX,
       uriMax: URI_MAX,
     });
+
+  const initialSquareId = getInitialSquareId();
+  if (initialSquareId !== null) {
+    const firstRow = store.getState().rows[0];
+    if (firstRow) {
+      store.updateRow(firstRow.id, { squareId: initialSquareId });
+      validateSquareErrors(false);
+    }
+  }
 
   const applyBatchRows = createBatchApplier({
     store,

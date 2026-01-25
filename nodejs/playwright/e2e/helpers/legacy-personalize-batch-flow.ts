@@ -72,7 +72,7 @@ export async function fillLegacyPersonalizeBatchForm(page: Page, options: Legacy
     if (topLeftColumn > maxColumn || topLeftRow > maxRow) {
       throw new Error(
         `Top-left square ${options.topLeftSquareNumber} with image size ${squaresWide}x${squaresTall} exceeds the 100x100 grid. ` +
-          `Choose a top-left square with column <= ${maxColumn} and row <= ${maxRow} (set LEGACY_PERSONALIZE_BATCH_SQUARE_NUMBER).`
+          `Choose a top-left square with column <= ${maxColumn} and row <= ${maxRow} (set LEGACY_PERSONALIZE_BATCH_SQUARE_ID).`
       );
     }
   }

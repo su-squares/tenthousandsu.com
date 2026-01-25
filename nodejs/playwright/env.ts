@@ -167,7 +167,7 @@ const TokenRangeSchema = z
   .optional()
   .transform((value) => {
     if (value === undefined || value === null || value === '') return [];
-    return expandTokenRange(String(value), 'PERSONALIZE_MODERN_SQUARE_IDS');
+    return expandTokenRange(String(value), 'PERSONALIZE_SQUARE_ID');
   });
 
 const BoolSchema = z
@@ -180,7 +180,7 @@ const BoolSchema = z
     return ['1', 'true', 'yes', 'on'].includes(s);
   });
 
-const SquareNumberSchema = z
+const SquareIdSchema = z
   .union([z.string(), z.number()])
   .optional()
   .transform((v) => {
@@ -190,7 +190,7 @@ const SquareNumberSchema = z
     return Math.trunc(n);
   })
   .refine((v) => v >= 1 && v <= 10000, {
-    message: 'BUY_SQUARE_NUMBER must be between 1 and 10000',
+    message: 'Square ID must be between 1 and 10000',
   });
 
 const RawSchema = z.object({
@@ -209,12 +209,12 @@ const RawSchema = z.object({
       if (!Number.isFinite(n) || n < 0) return 2000;
       return Math.min(n, 60_000);
     }),
-  BUY_SQUARE_NUMBER: SquareNumberSchema,
-  LEGACY_PERSONALIZE_SQUARE_NUMBER: SquareNumberSchema,
-  LEGACY_PERSONALIZE_BATCH_SQUARE_NUMBER: SquareNumberSchema,
-  LEGACY_UNPERSONALIZE_SQUARE_NUMBER: SquareNumberSchema,
-  LEGACY_UNPERSONALIZE_FAIL_SQUARE_NUMBER: SquareNumberSchema,
-  PERSONALIZE_MODERN_SQUARE_IDS: TokenRangeSchema,
+  BUY_SQUARE_ID: SquareIdSchema,
+  LEGACY_PERSONALIZE_SQUARE_ID: SquareIdSchema,
+  LEGACY_PERSONALIZE_BATCH_SQUARE_ID: SquareIdSchema,
+  LEGACY_UNPERSONALIZE_SQUARE_ID: SquareIdSchema,
+  LEGACY_UNPERSONALIZE_FAIL_SQUARE_ID: SquareIdSchema,
+  PERSONALIZE_SQUARE_ID: TokenRangeSchema,
   E2E_MOCK_RPC: BoolSchema.default(false),
 });
 
@@ -227,12 +227,12 @@ const raw = RawSchema.parse({
   BASE_URL: process.env.TEST_BASE_URL,
   WALLET_NAME: process.env.WALLET_NAME,
   TX_DELAY_MS: process.env.TX_DELAY_MS,
-  BUY_SQUARE_NUMBER: process.env.BUY_SQUARE_NUMBER,
-  LEGACY_PERSONALIZE_SQUARE_NUMBER: process.env.LEGACY_PERSONALIZE_SQUARE_NUMBER,
-  LEGACY_PERSONALIZE_BATCH_SQUARE_NUMBER: process.env.LEGACY_PERSONALIZE_BATCH_SQUARE_NUMBER,
-  LEGACY_UNPERSONALIZE_SQUARE_NUMBER: process.env.LEGACY_UNPERSONALIZE_SQUARE_NUMBER,
-  LEGACY_UNPERSONALIZE_FAIL_SQUARE_NUMBER: process.env.LEGACY_UNPERSONALIZE_FAIL_SQUARE_NUMBER,
-  PERSONALIZE_MODERN_SQUARE_IDS: process.env.PERSONALIZE_MODERN_SQUARE_IDS,
+  BUY_SQUARE_ID: process.env.BUY_SQUARE_ID,
+  LEGACY_PERSONALIZE_SQUARE_ID: process.env.LEGACY_PERSONALIZE_SQUARE_ID,
+  LEGACY_PERSONALIZE_BATCH_SQUARE_ID: process.env.LEGACY_PERSONALIZE_BATCH_SQUARE_ID,
+  LEGACY_UNPERSONALIZE_SQUARE_ID: process.env.LEGACY_UNPERSONALIZE_SQUARE_ID,
+  LEGACY_UNPERSONALIZE_FAIL_SQUARE_ID: process.env.LEGACY_UNPERSONALIZE_FAIL_SQUARE_ID,
+  PERSONALIZE_SQUARE_ID: process.env.PERSONALIZE_SQUARE_ID,
   E2E_MOCK_RPC: process.env.E2E_MOCK_RPC,
 });
 
@@ -279,12 +279,12 @@ export const e2eEnv = {
   baseUrl: raw.BASE_URL,
   walletName: raw.WALLET_NAME,
   txDelayMs: raw.TX_DELAY_MS,
-  buySquareNumber: raw.BUY_SQUARE_NUMBER,
-  legacyPersonalizeSquareNumber: raw.LEGACY_PERSONALIZE_SQUARE_NUMBER,
-  legacyPersonalizeBatchSquareNumber: raw.LEGACY_PERSONALIZE_BATCH_SQUARE_NUMBER,
-  legacyUnpersonalizeSquareNumber: raw.LEGACY_UNPERSONALIZE_SQUARE_NUMBER,
-  legacyUnpersonalizeFailSquareNumber: raw.LEGACY_UNPERSONALIZE_FAIL_SQUARE_NUMBER,
-  personalizeModernSquareIds: raw.PERSONALIZE_MODERN_SQUARE_IDS,
+  buySquareId: raw.BUY_SQUARE_ID,
+  legacyPersonalizeSquareId: raw.LEGACY_PERSONALIZE_SQUARE_ID,
+  legacyPersonalizeBatchSquareId: raw.LEGACY_PERSONALIZE_BATCH_SQUARE_ID,
+  legacyUnpersonalizeSquareId: raw.LEGACY_UNPERSONALIZE_SQUARE_ID,
+  legacyUnpersonalizeFailSquareId: raw.LEGACY_UNPERSONALIZE_FAIL_SQUARE_ID,
+  personalizeSquareIds: raw.PERSONALIZE_SQUARE_ID,
   mockRpc: raw.E2E_MOCK_RPC,
   loadedFrom: loadedPath,
 } as const;
@@ -303,7 +303,7 @@ let logged = false;
 export function logE2eEnvOnce() {
   if (logged) return;
   console.log(
-    `[e2e env] network=${e2eEnv.network} chainId=${e2eEnv.chainId} wallet=${e2eEnv.walletName} address=${e2eEnv.address} txDelayMs=${e2eEnv.txDelayMs} mockRpc=${e2eEnv.mockRpc} buySquareNumber=${e2eEnv.buySquareNumber} legacyPersonalizeSquareNumber=${e2eEnv.legacyPersonalizeSquareNumber} legacyPersonalizeBatchSquareNumber=${e2eEnv.legacyPersonalizeBatchSquareNumber} legacyUnpersonalizeSquareNumber=${e2eEnv.legacyUnpersonalizeSquareNumber} legacyUnpersonalizeFailSquareNumber=${e2eEnv.legacyUnpersonalizeFailSquareNumber} personalizeModernSquareIds=${e2eEnv.personalizeModernSquareIds.length}${
+    `[e2e env] network=${e2eEnv.network} chainId=${e2eEnv.chainId} wallet=${e2eEnv.walletName} address=${e2eEnv.address} txDelayMs=${e2eEnv.txDelayMs} mockRpc=${e2eEnv.mockRpc} buySquareId=${e2eEnv.buySquareId} legacyPersonalizeSquareId=${e2eEnv.legacyPersonalizeSquareId} legacyPersonalizeBatchSquareId=${e2eEnv.legacyPersonalizeBatchSquareId} legacyUnpersonalizeSquareId=${e2eEnv.legacyUnpersonalizeSquareId} legacyUnpersonalizeFailSquareId=${e2eEnv.legacyUnpersonalizeFailSquareId} personalizeSquareIds=${e2eEnv.personalizeSquareIds.length}${
       e2eEnv.loadedFrom ? ` (loaded ${e2eEnv.loadedFrom})` : ''
     }`
   );
