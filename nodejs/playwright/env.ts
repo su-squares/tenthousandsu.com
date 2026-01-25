@@ -155,6 +155,10 @@ const RawSchema = z.object({
       return Math.min(n, 60_000);
     }),
   BUY_SQUARE_NUMBER: SquareNumberSchema,
+  LEGACY_PERSONALIZE_SQUARE_NUMBER: SquareNumberSchema,
+  LEGACY_PERSONALIZE_BATCH_SQUARE_NUMBER: SquareNumberSchema,
+  LEGACY_UNPERSONALIZE_SQUARE_NUMBER: SquareNumberSchema,
+  LEGACY_UNPERSONALIZE_FAIL_SQUARE_NUMBER: SquareNumberSchema,
   E2E_MOCK_RPC: BoolSchema.default(false),
 });
 
@@ -168,6 +172,10 @@ const raw = RawSchema.parse({
   WALLET_NAME: process.env.WALLET_NAME,
   TX_DELAY_MS: process.env.TX_DELAY_MS,
   BUY_SQUARE_NUMBER: process.env.BUY_SQUARE_NUMBER,
+  LEGACY_PERSONALIZE_SQUARE_NUMBER: process.env.LEGACY_PERSONALIZE_SQUARE_NUMBER,
+  LEGACY_PERSONALIZE_BATCH_SQUARE_NUMBER: process.env.LEGACY_PERSONALIZE_BATCH_SQUARE_NUMBER,
+  LEGACY_UNPERSONALIZE_SQUARE_NUMBER: process.env.LEGACY_UNPERSONALIZE_SQUARE_NUMBER,
+  LEGACY_UNPERSONALIZE_FAIL_SQUARE_NUMBER: process.env.LEGACY_UNPERSONALIZE_FAIL_SQUARE_NUMBER,
   E2E_MOCK_RPC: process.env.E2E_MOCK_RPC,
 });
 
@@ -215,6 +223,10 @@ export const e2eEnv = {
   walletName: raw.WALLET_NAME,
   txDelayMs: raw.TX_DELAY_MS,
   buySquareNumber: raw.BUY_SQUARE_NUMBER,
+  legacyPersonalizeSquareNumber: raw.LEGACY_PERSONALIZE_SQUARE_NUMBER,
+  legacyPersonalizeBatchSquareNumber: raw.LEGACY_PERSONALIZE_BATCH_SQUARE_NUMBER,
+  legacyUnpersonalizeSquareNumber: raw.LEGACY_UNPERSONALIZE_SQUARE_NUMBER,
+  legacyUnpersonalizeFailSquareNumber: raw.LEGACY_UNPERSONALIZE_FAIL_SQUARE_NUMBER,
   mockRpc: raw.E2E_MOCK_RPC,
   loadedFrom: loadedPath,
 } as const;
@@ -233,7 +245,7 @@ let logged = false;
 export function logE2eEnvOnce() {
   if (logged) return;
   console.log(
-    `[e2e env] network=${e2eEnv.network} chainId=${e2eEnv.chainId} wallet=${e2eEnv.walletName} address=${e2eEnv.address} txDelayMs=${e2eEnv.txDelayMs} mockRpc=${e2eEnv.mockRpc} buySquareNumber=${e2eEnv.buySquareNumber}${
+    `[e2e env] network=${e2eEnv.network} chainId=${e2eEnv.chainId} wallet=${e2eEnv.walletName} address=${e2eEnv.address} txDelayMs=${e2eEnv.txDelayMs} mockRpc=${e2eEnv.mockRpc} buySquareNumber=${e2eEnv.buySquareNumber} legacyPersonalizeSquareNumber=${e2eEnv.legacyPersonalizeSquareNumber} legacyPersonalizeBatchSquareNumber=${e2eEnv.legacyPersonalizeBatchSquareNumber} legacyUnpersonalizeSquareNumber=${e2eEnv.legacyUnpersonalizeSquareNumber} legacyUnpersonalizeFailSquareNumber=${e2eEnv.legacyUnpersonalizeFailSquareNumber}${
       e2eEnv.loadedFrom ? ` (loaded ${e2eEnv.loadedFrom})` : ''
     }`
   );

@@ -1,4 +1,6 @@
 import { expect, type Page } from '@playwright/test';
+import { expectTxStatus } from './tx-flow.js';
+import { maybeConnectWallet } from './wallet-flow.js';
 
 type BuyFlowOptions = {
   squareNumber: number;
@@ -14,7 +16,6 @@ const SELECTORS = {
   mintSuccess: '#mint-success',
   mintAnother: '#mint-another',
   pickSquare: '#pick-a-square',
-  txStatus: '[data-testid="tx-status"]',
 };
 
 export async function visitBuyPage(page: Page) {
@@ -73,23 +74,8 @@ export async function completeMint(page: Page, walletName: string, expectFailure
   await expect(mintButton).toBeVisible();
   await mintButton.click();
 
-  const connectHeading = page.getByRole('heading', { name: /connect your wallet/i });
-  const connectVisible = await connectHeading
-    .waitFor({ state: 'visible', timeout: 3000 })
-    .then(() => true)
-    .catch(() => false);
-
-  if (connectVisible) {
-    const walletButton = page.getByRole('button', { name: new RegExp(walletName, 'i') });
-    await expect(walletButton).toBeVisible({ timeout: 10_000 });
-    await walletButton.click();
-
-    const connectingHeading = page.getByRole('heading', { name: /connecting/i });
-    await connectingHeading.waitFor({ state: 'visible', timeout: 10_000 }).catch(() => {});
-  }
-
-  const status = page.locator(SELECTORS.txStatus);
-  await expect(status).toHaveAttribute('data-status', expectFailure ? 'error' : 'success', { timeout: 20_000 });
+  await maybeConnectWallet(page, walletName);
+  await expectTxStatus(page, expectFailure ? 'error' : 'success');
 
   if (expectFailure) {
     await expect(page.locator(SELECTORS.mintSuccess)).toBeHidden();

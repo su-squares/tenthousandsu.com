@@ -1,5 +1,6 @@
 import { test, expect } from '@playwright/test';
 import { setupTest } from '../wallet/index.js';
+import { connectWalletFromModal, openConnectWalletModal } from './helpers/wallet-flow.js';
 
 let walletConfigFromEnv: any = null;
 let logE2eEnvOnce: () => void = () => {};
@@ -34,19 +35,8 @@ test.describe('Connect Wallet modal', () => {
     await setup.waitForWagmi();
 
     const connectButton = page.locator('#connect-wallet');
-    await expect(connectButton).toBeVisible({ timeout: 10_000 });
-    await expect(connectButton).toBeEnabled({ timeout: 10_000 });
-    await connectButton.click();
-
-    const listHeading = page.getByRole('heading', { name: /connect your wallet/i });
-    await expect(listHeading).toBeVisible({ timeout: 10_000 });
-
-    const walletButton = page.getByRole('button', { name: new RegExp(walletConfigFromEnv.walletName, 'i') });
-    await expect(walletButton).toBeVisible({ timeout: 10_000 });
-    await walletButton.click();
-
-    const connectingHeading = page.getByRole('heading', { name: /connecting/i });
-    await expect(connectingHeading).toBeVisible({ timeout: 10_000 });
+    await openConnectWalletModal(page);
+    await connectWalletFromModal(page, walletConfigFromEnv.walletName, { requireConnecting: true });
 
     // Wait for wallet connection to be recorded in the injected provider.
     await page.waitForFunction(
@@ -105,8 +95,7 @@ test.describe('Connect Wallet modal', () => {
       }
 
       // Select the wallet to trigger connection
-      const walletButton = page.getByRole('button', { name: new RegExp(walletConfigFromEnv.walletName, 'i') });
-      await walletButton.click();
+      await connectWalletFromModal(page, walletConfigFromEnv.walletName);
 
       // Wait for provider to have accounts (handles both new connection and reconnection)
       await page.waitForFunction(
