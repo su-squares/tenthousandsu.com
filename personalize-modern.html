@@ -65,57 +65,49 @@ image: "{{ site.baseurl }}/assets/images/su-OG.png"
       >
         <div class="bigaccordion__content">
           <div class="bigaccordion__inner">
-            <h4>Getting Started</h4>
-            <p>Use the <strong>Billboard Visualizer</strong> and <strong>Table</strong> together to personalize your Squares. The billboard shows you visually where your Squares are located, while the table lets you edit their content.</p>
-
-            <h4>Show My Squares</h4>
-            <p>Click <strong>"Show my Squares"</strong> to fetch all Squares you own from the blockchain. This will highlight your Squares on the billboard and populate the table with your holdings.</p>
-
-            <h4>Billboard Visualizer</h4>
-            <p>The billboard helps you visualize your Squares and preview changes:</p>
-            <ul>
-              <li><strong>Owned Mode:</strong> Highlights Squares you own with color-coded glows (yellow = not personalized, green = already personalized)</li>
-              <li><strong>Preview Mode:</strong> Shows how your changes will appear on the live billboard once processed</li>
-              <li><strong>Selected:</strong> Blue glow indicates Squares currently in your table</li>
-              <li><strong>Errors:</strong> Red glow indicates rows with validation errors that need fixing</li>
-            </ul>
-            <p>Click any Square you own to add it to the table. Click again to deselect.</p>
-
-            <h4>Using the Table</h4>
-            <p>Each row in the table represents one Square to personalize:</p>
+            <h4>The Personalization Table</h4>
+            <p>The table is where you set the personalized content for your Squares. Each Square you want to personalize gets its own row with four fields:</p>
             <ul>
               <li><strong>Square #:</strong> The token ID (1-10000)</li>
-              <li><strong>Title:</strong> Display text shown when hovering over the Square</li>
-              <li><strong>URI:</strong> Link destination when clicked (URL, <code>mailto:</code>, <code>sms:</code>, <code>eth:</code>, etc.)</li>
+              <li><strong>Title:</strong> Text shown when hovering over the Square</li>
+              <li><strong>URI:</strong> Where the Square links to when clicked (URL, <code>mailto:</code>, <code>sms:</code>, <code>eth:</code>, etc.)</li>
               <li><strong>Image:</strong> A 10x10 pixel image for the Square</li>
             </ul>
 
-            <h4>Choose Squares Button</h4>
-            <p>Click <strong>"Choose Squares"</strong> to open a selection panel showing all your owned Squares. Check the ones you want to add to the table, or uncheck to remove them.</p>
+            <h4>Ways to Add Squares to the Table</h4>
+            <p>There are several methods for adding and editing rows in the table:</p>
 
-            <h4>CSV Batch Tool</h4>
-            <p>For bulk editing, use the CSV dropdown above the table:</p>
+            <h5>Manual Entry</h5>
+            <p>Click the <strong>"+"</strong> button below the table to add a new row, then type in the values directly.</p>
+
+            <h5>Billboard Selection</h5>
+            <p>Click <strong>"Show my Squares"</strong> to highlight your owned Squares on the billboard. Then click any Square you own to add it to the table. Click again to remove it.</p>
+            <p>To locate a Square on the billboard, click the <img src="{{ site.baseurl }}/assets/images/dr.png" alt="arrow icon" style="height:1em;vertical-align:middle"> icon next to any row to show an arrow pointing to it. Click again to hide, or use the "Hide" button below the billboard.</p>
+
+            <h5>Choose Squares</h5>
+            <p>Click <strong>"Choose Squares"</strong> to open a checklist of all your owned Squares. Check to add or uncheck to remove from the table.</p>
+
+            <h5>CSV Batch</h5>
+            <p>For bulk text editing, use the CSV dropdown:</p>
             <ol>
-              <li><strong>Download Template:</strong> Get a CSV file with your current table data (or an example template)</li>
-              <li>Edit the CSV in any spreadsheet app (Excel, Google Sheets, etc.)</li>
-              <li><strong>Upload CSV:</strong> Import your edited data to populate the table</li>
+              <li><strong>Download CSV:</strong> Get a template with your current table data</li>
+              <li>Edit in any spreadsheet app (Excel, Google Sheets, etc.)</li>
+              <li><strong>Upload CSV:</strong> Import your edited data</li>
             </ol>
-            <p>CSV columns: <code>square</code>, <code>title</code>, <code>uri</code>. Images are not included in CSV and must be added separately.</p>
+            <p>CSV columns: <code>square</code>, <code>title</code>, <code>uri</code>. Images must be added separately.</p>
 
-            <h4>Image Batch Tool</h4>
+            <h5>Image Batch</h5>
             <p>To upload multiple images at once:</p>
             <ol>
-              <li>Create a folder with 10x10 pixel images</li>
-              <li>Name each image with its Square number (e.g., <code>1.png</code>, <code>42.png</code>, <code>7421.png</code>)</li>
+              <li>Create a folder with 10x10 pixel images named by Square number (e.g., <code>1.png</code>, <code>42.png</code>)</li>
               <li>Use the Image Batch dropdown and click <strong>"Upload Folder"</strong></li>
             </ol>
-            <p>The batch tools will create new rows or update existing ones automatically.</p>
 
-            <h4>Upload Image for Placement</h4>
-            <p>Click <strong>"Upload Image"</strong> to place a larger image on the billboard. Drag and resize it to cover multiple Squares, then the image will be automatically chopped into 10x10 pieces for each Square it covers.</p>
+            <h5>Upload Image for Placement</h5>
+            <p>Click <strong>"Upload Image"</strong> to place a larger image on the billboard. Drag and resize it to cover multiple Squares, and it will be automatically chopped into 10x10 pieces for each Square it covers.</p>
 
-            <h4>Processing Your Personalization</h4>
-            <p>Once satisfied with your table and preview, click <strong>"Personalize"</strong> to submit the transaction. The fee is <strong><span id="personalize-price-display-2">0.001 ETH</span> per Square</strong>, multiplied by the number of Squares you're personalizing.</p>
+            <h4>Submit</h4>
+            <p>Once satisfied with your table, click <strong>"Personalize"</strong> to submit the transaction. The fee is <strong><span id="personalize-price-display-2">0.001 ETH</span> per Square</strong>.</p>
           </div>
         </div>
       </div>
