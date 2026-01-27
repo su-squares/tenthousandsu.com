@@ -34,6 +34,10 @@ const SUBMIT_BUTTON_ID = "sb-square-lookup-submit";
 let listChooserHandle: ReturnType<typeof attachListChooser> | null = null;
 let billboardChooserHandle: ReturnType<typeof attachBillboardChooser> | null = null;
 
+function hasExtra(_id: number, ctx: Object) {
+  return Boolean((ctx as { extra?: unknown }).extra);
+}
+
 export const SquareLookup: Story = {
   render: (args) => `
     <article class="square-lookup${args.variant === "narrow" ? " square-lookup--narrow" : ""}" id="pick-a-square-lookup">
@@ -61,7 +65,7 @@ export const SquareLookup: Story = {
     listChooserHandle = attachListChooser({
       input,
       trigger: listButton,
-      filter: (_id, ctx) => Boolean(ctx.extra),
+      filter: hasExtra,
       onSelect: (id) => {
         // eslint-disable-next-line no-console
         console.log("Selected square from list:", id);
@@ -75,7 +79,7 @@ export const SquareLookup: Story = {
     billboardChooserHandle = attachBillboardChooser({
       input,
       trigger: billboardButton,
-      filter: (_id, ctx) => Boolean(ctx.extra),
+      filter: hasExtra,
       onSelect: (id) => {
         // eslint-disable-next-line no-console
         console.log("Selected square from billboard:", id);

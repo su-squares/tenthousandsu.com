@@ -126,13 +126,28 @@ function initMapInteractions(root: HTMLElement, data: { personalizations: Square
   const wrapper = root.querySelector<HTMLElement>(".map-wrapper");
   if (!mapImage || !positionEl || !tooltipEl || !wrapper) return;
 
+  interface PanZoomController {
+    screenToCanvas: (clientX: number, clientY: number) => { x: number; y: number };
+    reset: () => void;
+    destroy: () => void;
+    isActive: boolean;
+    hasPanned?: () => boolean;
+    scale?: number;
+  }
+
+  const mapImageEl = mapImage;
+  const positionElEl = positionEl;
+  const tooltipElEl = tooltipEl;
+  const wrapperEl = wrapper;
+  const anchorEl = anchor;
+
   const boardUrl = resolveAssetUrl("/build/wholeSquare.png");
-  mapImage.src = boardUrl;
+  mapImageEl.src = boardUrl;
   if (statusEl) {
     statusEl.textContent = "Hover or tap to inspect squares.";
   }
 
-  const panZoom = createPanZoom(wrapper);
+  const panZoom = createPanZoom(wrapperEl) as PanZoomController;
   resetBtn?.addEventListener("click", () => {
     panZoom?.reset?.();
   });
@@ -146,9 +161,9 @@ function initMapInteractions(root: HTMLElement, data: { personalizations: Square
 
   function getCellSize() {
     if (panZoom && panZoom.isActive) {
-      return wrapper.offsetWidth / GRID_DIMENSION;
+      return wrapperEl.offsetWidth / GRID_DIMENSION;
     }
-    const rect = mapImage.getBoundingClientRect();
+    const rect = mapImageEl.getBoundingClientRect();
     return rect.width ? rect.width / GRID_DIMENSION : 10;
   }
 
@@ -157,28 +172,28 @@ function initMapInteractions(root: HTMLElement, data: { personalizations: Square
     const isBottomHalf = row >= GRID_DIMENSION / 2;
 
     if (isLeftHalf) {
-      tooltipEl.style.left = `${col * cellSize + cellSize * 1.5}px`;
-      tooltipEl.style.right = "auto";
+      tooltipElEl.style.left = `${col * cellSize + cellSize * 1.5}px`;
+      tooltipElEl.style.right = "auto";
     } else {
-      tooltipEl.style.left = "auto";
-      tooltipEl.style.right = `${(GRID_DIMENSION - col - 1) * cellSize + cellSize * 1.5}px`;
+      tooltipElEl.style.left = "auto";
+      tooltipElEl.style.right = `${(GRID_DIMENSION - col - 1) * cellSize + cellSize * 1.5}px`;
     }
 
     const horizontalOrigin = isLeftHalf ? "left" : "right";
     const verticalOrigin = isBottomHalf ? "bottom" : "top";
-    tooltipEl.style.transformOrigin = `${horizontalOrigin} ${verticalOrigin}`;
+    tooltipElEl.style.transformOrigin = `${horizontalOrigin} ${verticalOrigin}`;
 
     const verticalOffset = isBottomHalf ? -cellSize * 0.5 : cellSize * 1.5;
     const rawTop = row * cellSize + verticalOffset;
-    const wrapperHeight = wrapper?.offsetHeight || GRID_DIMENSION * cellSize;
+    const wrapperHeight = wrapperEl.offsetHeight || GRID_DIMENSION * cellSize;
     const clampedTop = Math.min(Math.max(rawTop, 0), wrapperHeight - cellSize);
-    tooltipEl.style.top = `${clampedTop}px`;
+    tooltipElEl.style.top = `${clampedTop}px`;
 
     if (panZoom && panZoom.isActive && typeof panZoom.scale === "number") {
       const scale = (panZoom as any).scale || 1;
-      tooltipEl.style.transform = `scale(${1 / scale})`;
+      tooltipElEl.style.transform = `scale(${1 / scale})`;
     } else {
-      tooltipEl.style.transform = "";
+      tooltipElEl.style.transform = "";
     }
   }
 
@@ -188,40 +203,40 @@ function initMapInteractions(root: HTMLElement, data: { personalizations: Square
     const row = Math.floor((square - 1) / GRID_DIMENSION);
     const cellSize = getCellSize();
 
-    positionEl.style.display = "block";
-    positionEl.style.width = `${cellSize}px`;
-    positionEl.style.height = `${cellSize}px`;
-    positionEl.style.left = `${col * cellSize}px`;
-    positionEl.style.top = `${row * cellSize}px`;
+    positionElEl.style.display = "block";
+    positionElEl.style.width = `${cellSize}px`;
+    positionElEl.style.height = `${cellSize}px`;
+    positionElEl.style.left = `${col * cellSize}px`;
+    positionElEl.style.top = `${row * cellSize}px`;
 
     const details = data.personalizations[square - 1];
     const normalizedHref = details?.[1] ? normalizeHref(details[1]) : "";
     if (!details) {
-      tooltipEl.textContent = `Square #${square} is available for sale, click to buy.`;
-      anchor?.setAttribute("href", `/buy?square=${square}`);
+      tooltipElEl.textContent = `Square #${square} is available for sale, click to buy.`;
+      anchorEl?.setAttribute("href", `/buy?square=${square}`);
     } else if (!details[0] && !details[1]) {
-      tooltipEl.textContent = `Square #${square} was purchased but not yet personalized.`;
-      anchor?.removeAttribute("href");
+      tooltipElEl.textContent = `Square #${square} was purchased but not yet personalized.`;
+      anchorEl?.removeAttribute("href");
     } else {
-      tooltipEl.textContent = `Square #${square} — ${details[0] || "Personalized square"}`;
+      tooltipElEl.textContent = `Square #${square} — ${details[0] || "Personalized square"}`;
       if (normalizedHref) {
-        anchor?.setAttribute("href", normalizedHref);
+        anchorEl?.setAttribute("href", normalizedHref);
       } else {
-        anchor?.removeAttribute("href");
+        anchorEl?.removeAttribute("href");
       }
     }
 
-    if (anchor) {
-      anchor.setAttribute("title", describeSquarePlacement(square));
+    if (anchorEl) {
+      anchorEl.setAttribute("title", describeSquarePlacement(square));
     }
 
-    tooltipEl.style.display = "block";
+    tooltipElEl.style.display = "block";
     setTooltipPosition(col, row, cellSize);
   }
 
   function clearSelection() {
-    positionEl.style.display = "none";
-    tooltipEl.style.display = "none";
+    positionElEl.style.display = "none";
+    tooltipElEl.style.display = "none";
   }
 
   function getSquareFromPointer(clientX: number, clientY: number) {
@@ -232,7 +247,7 @@ function initMapInteractions(root: HTMLElement, data: { personalizations: Square
       x = coords.x;
       y = coords.y;
     } else {
-      const rect = mapImage.getBoundingClientRect();
+      const rect = mapImageEl.getBoundingClientRect();
       x = clientX - rect.left;
       y = clientY - rect.top;
     }
@@ -242,16 +257,16 @@ function initMapInteractions(root: HTMLElement, data: { personalizations: Square
     return row * GRID_DIMENSION + col + 1;
   }
 
-  mapImage.addEventListener("mousemove", (event) => {
+  mapImageEl.addEventListener("mousemove", (event) => {
     const square = getSquareFromPointer(event.clientX, event.clientY);
     updateActiveSquare(square);
   });
 
-  mapImage.addEventListener("mouseleave", () => {
+  mapImageEl.addEventListener("mouseleave", () => {
     clearSelection();
   });
 
-  mapImage.addEventListener("touchend", (event) => {
+  mapImageEl.addEventListener("touchend", (event) => {
     if (panZoom && typeof (panZoom as any).hasPanned === "function" && (panZoom as any).hasPanned()) {
       return;
     }
@@ -263,7 +278,7 @@ function initMapInteractions(root: HTMLElement, data: { personalizations: Square
   });
 
   window.addEventListener("resize", () => {
-    if (tooltipEl.style.display === "block") {
+    if (tooltipElEl.style.display === "block") {
       updateActiveSquare(activeSquare);
     }
   });

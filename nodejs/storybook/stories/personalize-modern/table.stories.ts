@@ -22,6 +22,21 @@ const meta: Meta = {
 
 export default meta;
 
+type PersonalizeTableArgs = {
+  store: ReturnType<typeof createPersonalizeStore>;
+  tableBody: HTMLTableSectionElement;
+  gutterBody: HTMLDivElement;
+  wrapper: HTMLDivElement;
+  onFieldInput?: (rowId: string, field: string, value: string) => void;
+  onFieldBlur?: (rowId: string, field: string, value: string) => void;
+  onRowDelete?: (rowId: string) => void;
+  onRowLocate?: (rowId: string) => void;
+};
+
+const createPersonalizeTableTyped = createPersonalizeTable as unknown as (
+  args: PersonalizeTableArgs
+) => ReturnType<typeof createPersonalizeTable>;
+
 const ROOT_ID = "sb-personalize-table-root";
 const PREVIEW_SVG = encodeURIComponent(
   "<svg xmlns='http://www.w3.org/2000/svg' width='10' height='10'><rect width='10' height='10' fill='#39ff14'/></svg>"
@@ -158,7 +173,7 @@ export const Default: Story = {
       store.setLocatorRow(rowId);
     };
 
-    createPersonalizeTable({
+    createPersonalizeTableTyped({
       store,
       tableBody,
       gutterBody,

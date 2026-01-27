@@ -49,8 +49,10 @@ function matchesFilter(mode: BillboardChooserStoryArgs["filterMode"], meta: Filt
 }
 
 function buildBillboardFilter(mode: BillboardChooserStoryArgs["filterMode"]) {
-  return (_id: number, ctx: { personalization: unknown; extra: unknown }) =>
-    matchesFilter(mode, ctx.extra as FilterMeta);
+  return (_id: number, ctx: Object) => {
+    const meta = (ctx as { extra?: FilterMeta }).extra;
+    return matchesFilter(mode, meta);
+  };
 }
 
 let billboardChooserHandle: ReturnType<typeof attachBillboardChooser> | null = null;
