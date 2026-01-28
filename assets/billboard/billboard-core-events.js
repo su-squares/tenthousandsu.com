@@ -10,7 +10,7 @@
  * - Business rules (filtering, activation meaning)
  */
 
-import { GRID_DIMENSION, getSquareFromPosition } from "./billboard-utils.js";
+import { GRID_DIMENSION, getSquareFromPosition, isTouchDevice } from "./billboard-utils.js";
 import { getSquareFromCell, updateGridSelection } from "./billboard-view.js";
 
 /**
@@ -46,11 +46,86 @@ export function attachBillboardEvents(ctx) {
   } = ctx;
 
   const { wrapper, image, grid, cells } = elements;
+  const touchEnvironment = isTouchDevice();
+  const DOUBLE_TAP_WINDOW_MS = 1200;
+  const POINTER_TYPE_WINDOW_MS = 1200;
+  const SUPPRESS_CLICK_WINDOW_MS = 1000;
+  const TAP_MOVE_TOLERANCE_PX = 12;
+  const TAP_MAX_DURATION_MS = 700;
+  let pendingTouchSquare = null;
+  let pendingTouchAt = 0;
+  let lastPointerWasTouch = false;
+  let lastPointerTypeAt = 0;
+  let suppressClickUntil = 0;
+  let touchStartX = null;
+  let touchStartY = null;
+  let touchStartAt = 0;
+
+  function recordPointerType(event) {
+    if (!event) return;
+    if ("pointerType" in event) {
+      if (event.pointerType === "touch") {
+        lastPointerWasTouch = true;
+        lastPointerTypeAt = Date.now();
+        return;
+      }
+      if (event.pointerType === "mouse" || event.pointerType === "pen") {
+        lastPointerWasTouch = false;
+        lastPointerTypeAt = Date.now();
+        return;
+      }
+    }
+
+    if (event.touches || event.changedTouches) {
+      lastPointerWasTouch = true;
+      lastPointerTypeAt = Date.now();
+    }
+  }
+
+  function shouldRequireDoubleTap(event) {
+    if (!touchEnvironment) return false;
+    const now = Date.now();
+    if (lastPointerTypeAt && now - lastPointerTypeAt < POINTER_TYPE_WINDOW_MS) {
+      return lastPointerWasTouch;
+    }
+    return true;
+  }
+
+  function wasTouchTap(event) {
+    if (touchStartX === null || touchStartY === null || !touchStartAt) {
+      return false;
+    }
+    if (!event || !event.changedTouches || !event.changedTouches[0]) {
+      return false;
+    }
+
+    const touch = event.changedTouches[0];
+    const dx = touch.clientX - touchStartX;
+    const dy = touch.clientY - touchStartY;
+    const distance = Math.sqrt(dx * dx + dy * dy);
+    const duration = Date.now() - touchStartAt;
+
+    return distance <= TAP_MOVE_TOLERANCE_PX && duration <= TAP_MAX_DURATION_MS;
+  }
+
+  function handleTouchStart(event) {
+    recordPointerType(event);
+    if (!event || !event.touches || event.touches.length !== 1) {
+      touchStartX = null;
+      touchStartY = null;
+      touchStartAt = 0;
+      return;
+    }
+    touchStartX = event.touches[0].clientX;
+    touchStartY = event.touches[0].clientY;
+    touchStartAt = Date.now();
+  }
 
   function isTouchLikeEvent(event) {
     if (!event) return false;
     if ("pointerType" in event && event.pointerType === "touch") return true;
     if (event.touches || event.changedTouches) return true;
+    if (touchEnvironment && event.type === "click") return true;
     return Boolean(panZoom && panZoom.isActive);
   }
 
@@ -94,6 +169,7 @@ export function attachBillboardEvents(ctx) {
   }
 
   function handlePointerMove(event) {
+    recordPointerType(event);
     if (event && "pointerType" in event && event.pointerType === "touch") {
       return;
     }
@@ -117,6 +193,7 @@ export function attachBillboardEvents(ctx) {
   }
 
   function handleClick(event) {
+    recordPointerType(event);
     if (panZoom && panZoom.hasPanned && panZoom.hasPanned()) {
       return;
     }
@@ -126,15 +203,25 @@ export function attachBillboardEvents(ctx) {
       return;
     }
 
+    const now = Date.now();
+    if (suppressClickUntil && now < suppressClickUntil) {
+      return;
+    }
+
     // Touch UX: first tap previews (shows tooltip), second tap activates.
-    if (isTouchLikeEvent(event)) {
-      const current = getCurrentSquare();
-      if (!current || current !== squareNumber) {
+    if (shouldRequireDoubleTap(event) || isTouchLikeEvent(event)) {
+      const isSameSquare = pendingTouchSquare === squareNumber;
+      const isWithinWindow = now - pendingTouchAt < DOUBLE_TAP_WINDOW_MS;
+      if (!isSameSquare || !isWithinWindow) {
+        pendingTouchSquare = squareNumber;
+        pendingTouchAt = now;
         if (event.preventDefault) event.preventDefault();
         if (event.stopPropagation) event.stopPropagation();
         setSquare(squareNumber);
         return;
       }
+      pendingTouchSquare = null;
+      pendingTouchAt = 0;
     }
 
     if (squareNumber && enableGrid && cellClosestSelector && event?.target?.closest) {
@@ -147,6 +234,49 @@ export function attachBillboardEvents(ctx) {
       }
     }
 
+    activateSquare(squareNumber, event);
+  }
+
+  function handleTouchEnd(event) {
+    recordPointerType(event);
+    if (!shouldRequireDoubleTap(event)) return;
+
+    if (panZoom && panZoom.hasPanned && panZoom.hasPanned()) {
+      pendingTouchSquare = null;
+      pendingTouchAt = 0;
+      suppressClickUntil = Date.now() + SUPPRESS_CLICK_WINDOW_MS;
+      return;
+    }
+
+    if (!wasTouchTap(event)) {
+      pendingTouchSquare = null;
+      pendingTouchAt = 0;
+      suppressClickUntil = Date.now() + SUPPRESS_CLICK_WINDOW_MS;
+      return;
+    }
+
+    const squareNumber = getSquareFromEventOrCell(event);
+    if (!squareNumber) return;
+
+    const now = Date.now();
+    const isSameSquare = pendingTouchSquare === squareNumber;
+    const isWithinWindow = now - pendingTouchAt < DOUBLE_TAP_WINDOW_MS;
+
+    suppressClickUntil = now + SUPPRESS_CLICK_WINDOW_MS;
+
+    if (!isSameSquare || !isWithinWindow) {
+      pendingTouchSquare = squareNumber;
+      pendingTouchAt = now;
+      if (event.preventDefault) event.preventDefault();
+      if (event.stopPropagation) event.stopPropagation();
+      setSquare(squareNumber);
+      return;
+    }
+
+    pendingTouchSquare = null;
+    pendingTouchAt = 0;
+    if (event.preventDefault) event.preventDefault();
+    if (event.stopPropagation) event.stopPropagation();
     activateSquare(squareNumber, event);
   }
 
@@ -220,6 +350,8 @@ export function attachBillboardEvents(ctx) {
   pointerSurface.addEventListener("pointerdown", handlePointerMove);
   pointerSurface.addEventListener("pointerleave", handlePointerLeave);
   pointerSurface.addEventListener("click", handleClick);
+  pointerSurface.addEventListener("touchstart", handleTouchStart, { passive: true });
+  pointerSurface.addEventListener("touchend", handleTouchEnd, { passive: false });
 
   if (grid && enableKeyboard) {
     grid.addEventListener("focusin", handleGridFocus);
@@ -235,6 +367,8 @@ export function attachBillboardEvents(ctx) {
     pointerSurface.removeEventListener("pointerdown", handlePointerMove);
     pointerSurface.removeEventListener("pointerleave", handlePointerLeave);
     pointerSurface.removeEventListener("click", handleClick);
+    pointerSurface.removeEventListener("touchstart", handleTouchStart);
+    pointerSurface.removeEventListener("touchend", handleTouchEnd);
 
     if (grid && enableKeyboard) {
       grid.removeEventListener("focusin", handleGridFocus);

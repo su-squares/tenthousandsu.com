@@ -10,7 +10,7 @@
  * @returns {Object} Pan-zoom controller with screenToCanvas(), reset(), destroy()
  */
 export function createPanZoom(wrapper, options = {}) {
-  const { minScale = 1, maxScale = 5 } = options;
+  const { minScale = 1, maxScale = 6 } = options;
 
   // Check for touch support - only activate on touch devices
   const isTouchDevice = "ontouchstart" in window || navigator.maxTouchPoints > 0;
@@ -110,24 +110,18 @@ export function createPanZoom(wrapper, options = {}) {
 
       const newScale = clamp(initialScale * scaleRatio, minScale, maxScale);
 
-      // Focal point zoom - zoom toward the midpoint of the pinch
+      // Focal point zoom - keep the same canvas point under the midpoint
       const rect = wrapper.parentElement.getBoundingClientRect();
       const midpoint = getMidpoint(e.touches[0], e.touches[1]);
-      const focalX = midpoint.x - rect.left;
-      const focalY = midpoint.y - rect.top;
+      const screenX = midpoint.x - rect.left;
+      const screenY = midpoint.y - rect.top;
 
-      // Calculate new translate to keep focal point stationary
-      const scaleDelta = newScale / initialScale;
-      translateX = focalX - (focalX - initialTranslateX) * scaleDelta;
-      translateY = focalY - (focalY - initialTranslateY) * scaleDelta;
+      const canvasX = (screenX - initialTranslateX) / initialScale;
+      const canvasY = (screenY - initialTranslateY) / initialScale;
+
+      translateX = screenX - canvasX * newScale;
+      translateY = screenY - canvasY * newScale;
       scale = newScale;
-
-      // Also apply pan from midpoint movement
-      const initialMidpoint = getMidpoint(initialTouches[0], initialTouches[1]);
-      const midpointDeltaX = midpoint.x - initialMidpoint.x;
-      const midpointDeltaY = midpoint.y - initialMidpoint.y;
-      translateX += midpointDeltaX;
-      translateY += midpointDeltaY;
 
       constrainBounds();
       applyTransform();
