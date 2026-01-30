@@ -10,6 +10,12 @@ All commands below assume you are in `nodejs/smart-contract` unless noted.
 - Phase 1 Sepolia completed
 - `pnpm -w install` has been run
 - `.env.contract` set with `SEPOLIA_RPC_URL` and `SEPOLIA_PRIVATE_KEY`
+- Listener note (Sepolia free tier): some RPC providers limit `eth_getLogs` to very small block ranges. If you see catch-up errors, either use a paid plan or set smaller chunk sizes in `.env.contract`:
+  ```bash
+  # For free-tier Sepolia RPCs (eth_getLogs limit ~10 blocks)
+  RPC_LOGS_CHUNK_SIZE=10
+  RPC_LOGS_MIN_CHUNK_SIZE=10
+  ```
 
 ## 1) Deploy Contracts
 

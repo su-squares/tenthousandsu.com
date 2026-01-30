@@ -6,7 +6,10 @@ This phase guides you through the live dapp once the site is running.
 
 - Phase 3 complete (listener or update:assets running, runtime config generated).
 - Wallet on the correct network with funds and any squares you plan to use.
-- Mandatory for local dev: uncomment `- erc721/` in `_config.yml` under `exclude:` to avoid very slow Jekyll builds. This is not needed for SuNet or Sepolia development.
+- Mandatory for local dev: uncomment `- erc721/` in `_config.yml` under `exclude:` to avoid very slow Jekyll builds.
+- Optional (local only): ask if they want to view NFTs in their wallet directly.
+  - If yes, warn that Jekyll builds will be significantly slower because ERC-721 metadata must be hosted.
+  - To enable it, comment out the matching exclude entry (`erc721-sunet/` or `erc721-sepolia/`) so Jekyll processes and serves that metadata.
 
 ## Interaction Mode (Agent Prompt)
 
@@ -24,6 +27,7 @@ If they want specific parts, present the activities list below and ask which one
 - If they want to personalize but do not own any squares, route them to Buy first.
 - If they want to buy in bulk, recommend the Phase 2 CLI scripts and then return to the dapp to personalize.
 - If they cannot see their updates, route to Troubleshooting before repeating steps.
+- Ask whether they want wallet-visible NFTs in local dev; if yes, warn about slow builds and unexclude the matching ERC-721 folder.
 
 ### Activities list (offer this when they want a custom path)
 

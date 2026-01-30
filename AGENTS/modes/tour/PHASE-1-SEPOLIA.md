@@ -38,6 +38,10 @@ You need an RPC endpoint to connect to the Sepolia network. Options:
   - Create a new project
   - Copy the Sepolia endpoint URL
 
+#### Listener Note (Sepolia free tier limits)
+
+If you plan to run the **event listener** in Phase 2, free-tier RPCs (Alchemy/Infura) often limit `eth_getLogs` to very small block ranges (for example, 10 blocks). The listener catch-up defaults are larger, so you may need to **upgrade your RPC plan** or **set smaller chunk sizes** in `.env.contract` when you get to Phase 2.
+
 ### 3. Etherscan API Key (Optional but Recommended)
 
 Etherscan API key allows automatic contract verification, making your contract source code publicly viewable:
