@@ -4,6 +4,11 @@ const mockGetWeb3Config = vi.fn();
 
 vi.mock('@web3/config/index.js', () => ({
   getWeb3Config: mockGetWeb3Config,
+  ChainKey: {
+    MAINNET: 'mainnet',
+    SEPOLIA: 'sepolia',
+    SUNET: 'sunet',
+  },
 }));
 
 vi.mock('@web3/config/logger.js', () => ({
@@ -19,7 +24,7 @@ describe('services/pricing.js', () => {
     vi.resetModules();
 
     mockGetWeb3Config.mockReturnValue({
-      activeNetwork: { chainId: 1 },
+      activeNetwork: { chainId: 11155111, key: 'sepolia' },
       contracts: {
         primary: '0x1234567890123456789012345678901234567890',
         underlay: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
@@ -77,7 +82,7 @@ describe('services/pricing.js', () => {
 
     it('should throw if contract address not configured', async () => {
       mockGetWeb3Config.mockReturnValue({
-        activeNetwork: { chainId: 1 },
+        activeNetwork: { chainId: 11155111, key: 'sepolia' },
         contracts: { primary: null },
       });
 

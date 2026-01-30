@@ -367,6 +367,7 @@ image: "{{ site.baseurl }}/assets/images/su-OG.png"
       openWalletChooser,
     } from "{{ site.baseurl }}/assets/web3/foundation.js";
     import { createTxFixture } from "{{ site.baseurl }}/assets/web3/tx/index.js";
+    import { getTxErrorMessage } from "{{ site.baseurl }}/assets/web3/tx/errors.js";
     import { getWeb3Config } from "{{ site.baseurl }}/assets/web3/config.js";
 
     const unpersonalizeModalTrigger = document.getElementById("open-unpersonalize-modal");
@@ -549,8 +550,9 @@ image: "{{ site.baseurl }}/assets/images/su-OG.png"
             );
           } catch (error) {
             console.error("Unpersonalize transaction failed:", error);
-            unpersonalizeTxUi.markError(error?.message || "Transaction failed");
-            return alert(error?.message || "Transaction failed");
+            const message = getTxErrorMessage(error, { isWalletConnect });
+            unpersonalizeTxUi.markError(message);
+            return alert(message);
           }
         });
       });

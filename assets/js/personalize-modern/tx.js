@@ -5,6 +5,7 @@ import {
   openWalletChooser,
 } from "../../web3/foundation.js";
 import { createTxFixture } from "../../web3/tx/index.js";
+import { getTxErrorMessage } from "../../web3/tx/errors.js";
 import { getWeb3Config } from "../../web3/config.js";
 import { personalizeUnderlay } from "../../web3/services/underlay.js";
 import { personalizeUnderlayBatch } from "../../web3/services/underlay-batch.js";
@@ -209,7 +210,7 @@ export function initPersonalizeTx(options) {
         store.setOwnershipStatus("idle");
         store.setOwnershipProgress(0, null);
       } catch (error) {
-        const message = error?.message || "Transaction failed";
+        const message = getTxErrorMessage(error, { isWalletConnect });
         txUi.markError(message);
         if (!isUserRejectedError(error, message)) {
           markOwnershipErrorsFromTx(message);

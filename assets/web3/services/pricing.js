@@ -1,4 +1,4 @@
-import { getWeb3Config } from "../config/index.js";
+import { getWeb3Config, ChainKey } from "../config/index.js";
 import { createDebugLogger } from "../config/logger.js";
 
 const log = createDebugLogger("pricing");
@@ -24,6 +24,13 @@ const UNDERLAY_PRICE_ABI = [
 ];
 
 const priceCache = new Map(); // key: `${chainId}:${address}` -> bigint
+const MAINNET_MINT_PRICE_ETH = 0.5;
+const MAINNET_PERSONALIZE_PRICE_ETH = 0.001;
+
+function toWei(ethPrice) {
+  const numeric = Number.isFinite(ethPrice) ? ethPrice : 0;
+  return BigInt(Math.floor(numeric * 1e18));
+}
 
 function cacheKey(chainId, address) {
   return `${chainId ?? "unknown"}:${address}`;
@@ -100,7 +107,10 @@ async function readPriceFromContract({ wagmi, address, abi, functionName, label 
  * @returns {Promise<bigint>}
  */
 export async function getMintPriceWei(wagmi) {
-  const { contracts } = getWeb3Config();
+  const { contracts, activeNetwork } = getWeb3Config();
+  if (activeNetwork?.key === ChainKey.MAINNET) {
+    return toWei(MAINNET_MINT_PRICE_ETH);
+  }
   return readPriceFromContract({
     wagmi,
     address: contracts?.primary,
@@ -117,7 +127,10 @@ export async function getMintPriceWei(wagmi) {
  * @returns {Promise<bigint>}
  */
 export async function getPersonalizePriceWei(wagmi) {
-  const { contracts } = getWeb3Config();
+  const { contracts, activeNetwork } = getWeb3Config();
+  if (activeNetwork?.key === ChainKey.MAINNET) {
+    return toWei(MAINNET_PERSONALIZE_PRICE_ETH);
+  }
   return readPriceFromContract({
     wagmi,
     address: contracts?.underlay,
