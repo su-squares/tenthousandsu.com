@@ -78,27 +78,92 @@ type PersonalizationEvent = {
   };
 };
 
+function getProvider(contract: Contract): { getBlockNumber: () => Promise<number> } | null {
+  const runner = (contract as unknown as { runner?: unknown }).runner as {
+    provider?: { getBlockNumber?: () => Promise<number> };
+    getBlockNumber?: () => Promise<number>;
+  } | null;
+  if (runner?.provider?.getBlockNumber) return runner.provider as { getBlockNumber: () => Promise<number> };
+  if (runner?.getBlockNumber) return runner as { getBlockNumber: () => Promise<number> };
+  const legacyProvider = (contract as unknown as { provider?: { getBlockNumber?: () => Promise<number> } })
+    .provider;
+  if (legacyProvider?.getBlockNumber) return legacyProvider as { getBlockNumber: () => Promise<number> };
+  return null;
+}
+
+function isLogRangeError(error: unknown) {
+  const code = (error as { code?: number })?.code;
+  if (code === -32005 || code === -32000) return true;
+  const message = String((error as { message?: string })?.message || "").toLowerCase();
+  return (
+    message.includes("block range") ||
+    message.includes("eth_getlogs") ||
+    message.includes("log response") ||
+    message.includes("range too") ||
+    message.includes("too many") ||
+    message.includes("exceed")
+  );
+}
+
 async function queryLatestUnderlayEvent(
   contract: Contract,
   tokenId: number,
   fromBlock: number,
 ): Promise<PersonalizationEvent | null> {
   const filter = contract.filters.PersonalizedUnderlay(tokenId);
-  const events = (await contract.queryFilter(filter, fromBlock, "latest")) as PersonalizationEvent[];
+  const provider = getProvider(contract);
+  if (!provider) {
+    throw new Error("Unable to resolve provider for underlay log query.");
+  }
 
-  return events.reduce<PersonalizationEvent | null>((latest, event) => {
-    if (!latest) {
-      return event;
+  const latestBlock = await provider.getBlockNumber();
+  const startBlock = Math.max(0, Number.isFinite(fromBlock) ? fromBlock : 0);
+  if (startBlock > latestBlock) {
+    return null;
+  }
+
+  const configuredChunk = Number.parseInt(process.env.TOKEN_CHECK_LOG_CHUNK ?? "", 10);
+  const configuredMin = Number.parseInt(process.env.TOKEN_CHECK_LOG_CHUNK_MIN ?? "", 10);
+  let chunkSize = Number.isFinite(configuredChunk) && configuredChunk > 0 ? configuredChunk : 2000;
+  const minChunkSize = Number.isFinite(configuredMin) && configuredMin > 0 ? configuredMin : 10;
+
+  let latestEvent: PersonalizationEvent | null = null;
+  let cursor = startBlock;
+
+  while (cursor <= latestBlock) {
+    const toBlock = Math.min(cursor + chunkSize - 1, latestBlock);
+    try {
+      const events = (await contract.queryFilter(filter, cursor, toBlock)) as PersonalizationEvent[];
+      latestEvent = events.reduce<PersonalizationEvent | null>((latest, event) => {
+        if (!latest) {
+          return event;
+        }
+        if (
+          (event.blockNumber ?? 0) > (latest.blockNumber ?? 0) ||
+          ((event.blockNumber ?? 0) === (latest.blockNumber ?? 0) &&
+            (event.logIndex ?? 0) > (latest.logIndex ?? 0))
+        ) {
+          return event;
+        }
+        return latest;
+      }, latestEvent);
+      cursor = toBlock + 1;
+    } catch (error) {
+      if (chunkSize > minChunkSize && isLogRangeError(error)) {
+        const nextChunk = Math.max(minChunkSize, Math.floor(chunkSize / 2));
+        if (nextChunk !== chunkSize) {
+          console.warn(
+            `eth_getLogs range too wide; retrying with smaller chunk size (${chunkSize} -> ${nextChunk}).`,
+          );
+          chunkSize = nextChunk;
+          continue;
+        }
+      }
+      throw error;
     }
-    if (
-      (event.blockNumber ?? 0) > (latest.blockNumber ?? 0) ||
-      ((event.blockNumber ?? 0) === (latest.blockNumber ?? 0) &&
-        (event.logIndex ?? 0) > (latest.logIndex ?? 0))
-    ) {
-      return event;
-    }
-    return latest;
-  }, null);
+  }
+
+  return latestEvent;
 }
 
 async function main(): Promise<void> {
