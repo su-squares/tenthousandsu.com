@@ -464,7 +464,7 @@ export function initEmbedBillboard(options) {
 
     const hint = document.createElement("p");
     hint.className = "billboard__mobile-hint";
-    hint.textContent = "Pinch to zoom, drag to pan.";
+    hint.textContent = "Pinch to zoom, drag to pan, double tap.";
     hint.style.color = hintColor;
     hint.style.marginBottom = "5px";
     if (parent) {

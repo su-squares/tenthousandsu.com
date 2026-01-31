@@ -199,7 +199,7 @@ export function attachBillboardChooser({
     headerRow.appendChild(closeButton);
 
     // Mobile hint (uses chooser styling, not billboard)
-    const mobileHint = createMobileHint("Pinch to zoom, drag to pan.", "su-chooser__mobile-hint");
+    const mobileHint = createMobileHint("Pinch to zoom, drag to pan, double tap.", "su-chooser__mobile-hint");
 
     // Billboard container
     const billboardContainer = document.createElement("div");

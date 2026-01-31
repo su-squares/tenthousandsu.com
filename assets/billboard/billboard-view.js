@@ -109,11 +109,11 @@ export function createResetButton(options = {}) {
 
 /**
  * Create mobile hint element
- * @param {string} [text="Pinch to zoom, drag to pan."]
+ * @param {string} [text="Pinch to zoom, drag to pan, double tap."]
  * @param {string} [className="billboard__mobile-hint"]
  * @returns {HTMLElement}
  */
-export function createMobileHint(text = "Pinch to zoom, drag to pan.", className = "billboard__mobile-hint") {
+export function createMobileHint(text = "Pinch to zoom, drag to pan, double tap.", className = "billboard__mobile-hint") {
   const hint = document.createElement("p");
   hint.className = className;
   hint.textContent = text;
