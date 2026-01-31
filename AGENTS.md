@@ -110,3 +110,4 @@ The tour guide will route you into phases:
 * Provide copy/paste-ready commands when relevant.
 * Confirm success at each phase before advancing.
 * If an error occurs, request the exact output and unblock with the smallest fix.
+* Do not paste full file contents unless the user explicitly asks.
