@@ -73,16 +73,56 @@ export async function setupHomepageBillboard(page: Page) {
   await page.locator(HOMEPAGE_SELECTORS.grid).waitFor({ state: 'visible', timeout: 20_000 });
 }
 
-export function squareCell(page: Page, squareNumber: number): Locator {
-  return page.locator(`${HOMEPAGE_SELECTORS.grid} [data-square="${squareNumber}"]`);
+export function squareCell(
+  page: Page,
+  squareNumber: number,
+  gridSelector: string = HOMEPAGE_SELECTORS.grid
+): Locator {
+  return page.locator(`${gridSelector} [data-square="${squareNumber}"]`);
 }
 
-export async function hoverSquare(page: Page, squareNumber: number) {
-  await squareCell(page, squareNumber).hover();
+export async function hoverSquare(
+  page: Page,
+  squareNumber: number,
+  gridSelector: string = HOMEPAGE_SELECTORS.grid
+) {
+  await squareCell(page, squareNumber, gridSelector).hover();
 }
 
-export async function clickSquare(page: Page, squareNumber: number) {
-  await squareCell(page, squareNumber).click();
+export async function clickSquare(
+  page: Page,
+  squareNumber: number,
+  gridSelector: string = HOMEPAGE_SELECTORS.grid
+) {
+  await activateSquare(page, squareNumber, { gridSelector });
+}
+
+export async function activateSquare(
+  page: Page,
+  squareNumber: number,
+  options: {
+    forceDoubleTap?: boolean;
+    forceSingleTap?: boolean;
+    gridSelector?: string;
+  } = {}
+) {
+  const cell = squareCell(page, squareNumber, options.gridSelector);
+  const shouldDoubleTap = options.forceDoubleTap
+    ? true
+    : options.forceSingleTap
+      ? false
+      : await page.evaluate(
+          () => "ontouchstart" in window || navigator.maxTouchPoints > 0
+        );
+
+  if (shouldDoubleTap) {
+    await cell.tap();
+    await page.waitForTimeout(50);
+    await cell.tap();
+    return;
+  }
+
+  await cell.click();
 }
 
 export async function expectTooltipContains(page: Page, text: string) {

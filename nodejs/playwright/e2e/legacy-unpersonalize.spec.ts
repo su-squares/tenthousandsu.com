@@ -1,6 +1,7 @@
 import { test } from '@playwright/test';
 import { setupTest } from '../wallet/index.js';
 import { installMockRpc } from './mocks/rpc/index.js';
+import { installMockBillboard } from './mocks/billboard/index.js';
 import { runUnpersonalizeFlow } from './helpers/unpersonalize-flow.js';
 
 const NON_OWNER_ADDRESS = '0x000000000000000000000000000000000000dead';
@@ -78,11 +79,15 @@ test.describe.serial('Legacy unpersonalize flow', () => {
     logE2eEnvOnce();
 
     const useMockRpc = Boolean(e2eEnv?.mockRpc);
+    const useMockBillboard = Boolean(e2eEnv?.mockBillboard);
     if (useMockRpc) {
       await installMockRpc(page, {
         chainId: e2eEnv.chainId,
         ownerAddress: walletConfigFromEnv.address,
       });
+    }
+    if (useMockRpc && useMockBillboard) {
+      await installMockBillboard(page, e2eEnv.mockBillboardConfig);
     }
 
     const walletConfig = { ...walletConfigFromEnv };
@@ -120,6 +125,7 @@ test.describe.serial('Legacy unpersonalize flow', () => {
     );
 
     const useMockRpc = Boolean(e2eEnv?.mockRpc);
+    const useMockBillboard = Boolean(e2eEnv?.mockBillboard);
     if (useMockRpc) {
       await installMockRpc(page, {
         chainId: e2eEnv.chainId,
@@ -128,6 +134,9 @@ test.describe.serial('Legacy unpersonalize flow', () => {
           { squareId: failSquare, owner: NON_OWNER_ADDRESS },
         ],
       });
+    }
+    if (useMockRpc && useMockBillboard) {
+      await installMockBillboard(page, e2eEnv.mockBillboardConfig);
     }
 
     const walletConfig = { ...walletConfigFromEnv };

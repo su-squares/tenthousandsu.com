@@ -1,14 +1,47 @@
 import { test, expect } from '@playwright/test';
+import { readFileSync } from 'fs';
+import { fileURLToPath } from 'url';
+import { dirname, resolve } from 'path';
 import { setupTest } from '../../wallet/index.js';
 import { installMockRpc } from '../mocks/rpc/index.js';
+import { installMockBillboard } from '../mocks/billboard/index.js';
 import { expectTxStatus } from '../helpers/tx-flow.js';
-import { maybeConnectWallet } from '../helpers/wallet-flow.js';
+import { connectWalletFromModal, maybeConnectWallet, openConnectWalletModal } from '../helpers/wallet-flow.js';
 import { getRed10x10Path, visitPersonalizeModernPage } from '../helpers/personalize-modern.js';
 
 let e2eEnv: any = null;
 let walletConfigFromEnv: any = null;
 let logE2eEnvOnce: () => void = () => {};
 let envLoadError: Error | null = null;
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const RUNTIME_CONFIG_PATH = resolve(
+  __dirname,
+  '..',
+  '..',
+  '..',
+  '..',
+  'assets',
+  'web3',
+  'config',
+  'runtime.generated.js'
+);
+
+function buildRuntimeOverride(chainKey: string, chainId: number) {
+  const source = readFileSync(RUNTIME_CONFIG_PATH, 'utf-8');
+  const normalized = String(chainKey || '').toLowerCase();
+  const isSunet = normalized === 'sunet';
+  const override = [
+    '',
+    'window.suWeb3 = Object.assign({}, window.suWeb3, {',
+    `  chain: "${normalized}",`,
+    ...(isSunet ? [`  sunetChainId: ${Number(chainId)}`] : []),
+    '});',
+    '',
+  ].join('\n');
+  return source + override;
+}
 
 test.describe('Personalize Modern - Table', () => {
   test.beforeAll(async () => {
@@ -43,11 +76,28 @@ test.describe('Personalize Modern - Table', () => {
     const uri = `https://example.com/${squareId}`;
 
     const useMockRpc = Boolean(e2eEnv?.mockRpc);
+    const useMockBillboard = Boolean(e2eEnv?.mockBillboard);
     if (useMockRpc) {
       await installMockRpc(page, {
         chainId: e2eEnv.chainId,
         ownerAddress: e2eEnv.address,
+        ownedSquares: squareIds,
+        interceptAllRpc: true,
       });
+    }
+    if (useMockRpc && useMockBillboard) {
+      await installMockBillboard(page, e2eEnv.mockBillboardConfig);
+    }
+
+    if (useMockRpc) {
+      const overrideScript = buildRuntimeOverride(e2eEnv.network, e2eEnv.chainId);
+      await page.route(/assets\/web3\/config\/runtime\.generated\.js/i, (route) =>
+        route.fulfill({
+          status: 200,
+          contentType: 'application/javascript',
+          body: overrideScript,
+        })
+      );
     }
 
     const walletConfig = { ...walletConfigFromEnv };
@@ -62,8 +112,13 @@ test.describe('Personalize Modern - Table', () => {
       walletConfig,
     });
 
-    await visitPersonalizeModernPage(page);
-    await setup.waitForWagmi();
+      await visitPersonalizeModernPage(page);
+      await setup.waitForWagmi();
+
+    // Connect wallet before ownership-dependent actions
+    await openConnectWalletModal(page);
+    await connectWalletFromModal(page, walletConfigFromEnv.walletName || 'Wallet', { forceClick: true });
+    await setup.waitForAccounts();
 
     const row = page.locator('#personalize-table-body tr').first();
     await row.waitFor();

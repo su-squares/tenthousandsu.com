@@ -2,6 +2,7 @@ export function mockRpcInitScript(opts: {
   chainId: number;
   salePriceWei?: string;
   personalizePriceWei?: string;
+  balanceWei?: string;
   failDuplicatePurchase?: boolean;
   salePriceSig?: string;
   personalizePriceSig?: string;
@@ -14,14 +15,17 @@ export function mockRpcInitScript(opts: {
   ownerAddress?: string;
   ownerOverrides?: Array<{ squareId: number; owner: string }>;
   ownedSquares?: number[];
+  interceptAllRpc?: boolean;
 }) {
   const state = {
     chainId: opts.chainId,
     salePriceWei: opts.salePriceWei,
     personalizePriceWei: opts.personalizePriceWei,
+    balanceWei: opts.balanceWei,
     failDuplicatePurchase: opts.failDuplicatePurchase,
     purchasedSquares: new Set<number>(),
     blockNumber: Math.floor(Date.now() / 1000),
+    interceptAllRpc: Boolean(opts.interceptAllRpc),
   };
 
   const ownerOverrides = new Map<number, string>();
@@ -48,6 +52,39 @@ export function mockRpcInitScript(opts: {
   const encodeAggregate3Empty = () => {
     const words = [pad32('0x20'), pad32('0x0')];
     return `0x${words.map((word) => word.slice(2)).join('')}`;
+  };
+  const encodeAggregate3Results = (results: Array<{ success: boolean; returnData: string }>) => {
+    const tupleChunks: string[] = [];
+    const tupleSizes: number[] = [];
+
+    results.forEach((result) => {
+      const successHex = pad32(result.success ? '0x1' : '0x0');
+      const offsetHex = pad32('0x40');
+      const dataHex = (result.returnData || '0x').replace(/^0x/i, '');
+      const byteLen = Math.ceil(dataHex.length / 2);
+      const lenHex = pad32(`0x${byteLen.toString(16)}`);
+      const paddedLen = Math.ceil(byteLen / 32) * 32;
+      const paddedData = dataHex.padEnd(paddedLen * 2, '0');
+      const chunk = `${successHex.slice(2)}${offsetHex.slice(2)}${lenHex.slice(2)}${paddedData}`;
+      tupleChunks.push(chunk);
+      tupleSizes.push(chunk.length / 2);
+    });
+
+    const head = pad32('0x20');
+    const length = pad32(`0x${results.length.toString(16)}`);
+    const offsets: string[] = [];
+    // Offsets are relative to the OFFSET WORD's position (not the length word).
+    // Data region starts 32 bytes after the last offset word.
+    // For n elements: offset[i] is at byte 32 + 32 + i*32 = 64 + i*32
+    // Data region starts at byte 64 + n*32
+    // So offset[0] should be 32*n (bytes from offset[0] to data region start)
+    let cursor = 32 * results.length;
+    for (const size of tupleSizes) {
+      offsets.push(pad32(`0x${cursor.toString(16)}`).slice(2));
+      cursor += size;
+    }
+
+    return `0x${head.slice(2)}${length.slice(2)}${offsets.join('')}${tupleChunks.join('')}`;
   };
   const normalizeAddress = (value: unknown): string | null => {
     if (typeof value !== 'string') return null;
@@ -81,14 +118,26 @@ export function mockRpcInitScript(opts: {
     return Number.isFinite(value) ? value : null;
   };
 
+  const makeJsonResponse = (id: unknown, result: unknown) => ({
+    jsonrpc: '2.0',
+    id,
+    result,
+  });
+
+  const makeJsonError = (id: unknown, message: string) => ({
+    jsonrpc: '2.0',
+    id,
+    error: { code: -32000, message },
+  });
+
   const jsonResponse = (id: unknown, result: unknown) =>
-    new Response(JSON.stringify({ jsonrpc: '2.0', id, result }), {
+    new Response(JSON.stringify(makeJsonResponse(id, result)), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
 
   const jsonError = (id: unknown, message: string) =>
-    new Response(JSON.stringify({ jsonrpc: '2.0', id, error: { code: -32000, message } }), {
+    new Response(JSON.stringify(makeJsonError(id, message)), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });
@@ -104,6 +153,122 @@ export function mockRpcInitScript(opts: {
   };
 
   const PURCHASE_SIGS = new Set<string>(opts.purchaseSigs || []);
+
+  const resolveCallData = (callData: string) => {
+    const data = typeof callData === 'string' ? callData.toLowerCase() : '';
+    const salePriceSig = opts.salePriceSig || '';
+    const personalizePriceSig = opts.personalizePriceSig || '';
+    const ownerOfSig = opts.ownerOfSig || '';
+    const balanceOfSig = opts.balanceOfSig || '';
+    const tokenOfOwnerByIndexSig = opts.tokenOfOwnerByIndexSig || '';
+    const ensReverseSig = opts.ensReverseSig || '';
+    const multicallAggregate3Sig = opts.multicallAggregate3Sig || '';
+    const debugRpc = (window as any).__E2E_RPC_DEBUG__ === true;
+
+    if (salePriceSig && data.startsWith(salePriceSig)) {
+      return { success: true, returnData: pad32(state.salePriceWei || '0x0') };
+    }
+    if (personalizePriceSig && data.startsWith(personalizePriceSig)) {
+      return { success: true, returnData: pad32(state.personalizePriceWei || '0x0') };
+    }
+    if (ownerOfSig && data.startsWith(ownerOfSig)) {
+      const argHex = data.slice(-64);
+      const squareId = Number.parseInt(argHex, 16);
+      const overrideOwner = Number.isFinite(squareId) ? ownerOverrides.get(squareId) : null;
+      const owner = overrideOwner ?? opts.ownerAddress ?? '0x0000000000000000000000000000000000000000';
+      const padded = padAddress(owner) || pad32('0x0');
+      if (debugRpc) {
+        console.log('[E2E RPC] ownerOf', { squareId, owner });
+      }
+      return { success: true, returnData: padded };
+    }
+    if (balanceOfSig && data.startsWith(balanceOfSig)) {
+      const addr = readAddressArg(data, 0);
+      const matchesOwner = ownerAddress ? addr === ownerAddress : Boolean(addr);
+      const count = matchesOwner ? ownedSquares.length : 0;
+      if (debugRpc) {
+        console.log('[E2E RPC] balanceOf', {
+          addr,
+          ownerAddress,
+          matchesOwner,
+          count,
+        });
+      }
+      return { success: true, returnData: pad32(count) };
+    }
+    if (tokenOfOwnerByIndexSig && data.startsWith(tokenOfOwnerByIndexSig)) {
+      const addr = readAddressArg(data, 0);
+      const index = readUintArg(data, 1);
+      const matchesOwner = ownerAddress ? addr === ownerAddress : Boolean(addr);
+      const tokenId =
+        matchesOwner && index !== null && index >= 0 && index < ownedSquares.length
+          ? ownedSquares[index]
+          : 0;
+      if (debugRpc) {
+        console.log('[E2E RPC] tokenOfOwnerByIndex', {
+          addr,
+          ownerAddress,
+          index,
+          matchesOwner,
+          tokenId,
+        });
+      }
+      return { success: true, returnData: pad32(tokenId) };
+    }
+    if (ensReverseSig && data.startsWith(ensReverseSig)) {
+      return { success: false, returnData: '0x' };
+    }
+    if (multicallAggregate3Sig && data.startsWith(multicallAggregate3Sig)) {
+      return { success: true, returnData: encodeAggregate3Empty() };
+    }
+    return { success: true, returnData: '0x' };
+  };
+
+  const decodeAggregate3Calls = (data: string) => {
+    if (typeof data !== 'string' || !data.startsWith('0x') || data.length < 10) return [];
+    const args = data.slice(10);
+    const readWordAtByte = (byteOffset: number) => {
+      const start = byteOffset * 2;
+      return args.slice(start, start + 64).padEnd(64, '0');
+    };
+
+    const arrayOffset = Number(BigInt(`0x${readWordAtByte(0)}`));
+    if (!Number.isFinite(arrayOffset) || arrayOffset < 0) return [];
+    const length = Number(BigInt(`0x${readWordAtByte(arrayOffset)}`));
+    if (!Number.isFinite(length) || length <= 0) return [];
+
+    const calls: Array<{ target: string; allowFailure: boolean; callData: string }> = [];
+    for (let i = 0; i < length; i += 1) {
+      const offsetWord = readWordAtByte(arrayOffset + 32 + i * 32);
+      const tupleOffset = Number(BigInt(`0x${offsetWord}`));
+      if (!Number.isFinite(tupleOffset) || tupleOffset < 0) continue;
+      // Offsets are relative to the array data *after* the length word.
+      const tupleStart = arrayOffset + 32 + tupleOffset;
+
+      const targetWord = readWordAtByte(tupleStart);
+      const allowWord = readWordAtByte(tupleStart + 32);
+      const dataOffsetWord = readWordAtByte(tupleStart + 64);
+
+      const target = `0x${targetWord.slice(24)}`;
+      const allowFailure = allowWord.endsWith('1');
+      const dataOffset = Number(BigInt(`0x${dataOffsetWord}`));
+      if (!Number.isFinite(dataOffset) || dataOffset < 0) continue;
+
+      const callDataStart = tupleStart + dataOffset;
+      const lengthWord = readWordAtByte(callDataStart);
+      const callDataLength = Number(BigInt(`0x${lengthWord}`));
+      if (!Number.isFinite(callDataLength) || callDataLength < 0) continue;
+
+      const dataStart = callDataStart + 32;
+      const hexLen = Math.max(0, callDataLength * 2);
+      const callDataHex = args.slice(dataStart * 2, dataStart * 2 + hexLen);
+      const callData = `0x${callDataHex}`;
+
+      calls.push({ target, allowFailure, callData });
+    }
+
+    return calls;
+  };
 
   const wrapEthereum = (eth: any) => {
     if (!eth || (eth as any).__e2eWrapped) return eth;
@@ -156,6 +321,7 @@ export function mockRpcInitScript(opts: {
   }
 
   const isLocalRpc = (url: string): boolean => {
+    if (state.interceptAllRpc) return true;
     try {
       const parsed = new URL(url);
       const host = parsed.hostname.toLowerCase();
@@ -201,21 +367,29 @@ export function mockRpcInitScript(opts: {
       return originalFetch(input, init);
     }
 
-    if (Array.isArray(payload)) {
-      return originalFetch(input, init);
+  const handlePayload = (entry: any) => {
+    const { id, method, params } = entry || {};
+    if (!method) return null;
+    const debugRpc = (window as any).__E2E_RPC_DEBUG__ === true;
+    if (debugRpc) {
+      if (method === 'eth_call') {
+        const data = params?.[0]?.data;
+        const sig = typeof data === 'string' ? data.slice(0, 10) : 'unknown';
+        const to = params?.[0]?.to || '';
+        console.log('[E2E RPC] eth_call', { sig, to });
+      } else {
+        console.log('[E2E RPC]', method);
+      }
     }
 
-    const { id, method, params } = payload || {};
-    if (!method) return originalFetch(input, init);
-
-    switch (method) {
+      switch (method) {
       case 'eth_chainId':
-        return jsonResponse(id, toHex(state.chainId));
+        return makeJsonResponse(id, toHex(state.chainId));
       case 'eth_blockNumber':
         state.blockNumber += 1;
-        return jsonResponse(id, toHex(state.blockNumber));
+        return makeJsonResponse(id, toHex(state.blockNumber));
       case 'eth_getBlockByNumber':
-        return jsonResponse(id, {
+        return makeJsonResponse(id, {
           number: toHex(state.blockNumber),
           hash: '0x' + '01'.repeat(32),
           timestamp: toHex(Date.now()),
@@ -225,64 +399,73 @@ export function mockRpcInitScript(opts: {
           transactions: [],
         });
       case 'eth_gasPrice':
-        return jsonResponse(id, '0x3b9aca00');
+        return makeJsonResponse(id, '0x3b9aca00');
+      case 'eth_maxPriorityFeePerGas':
+        return makeJsonResponse(id, '0x3b9aca00');
+      case 'eth_feeHistory':
+        return makeJsonResponse(id, {
+          oldestBlock: toHex(state.blockNumber),
+          baseFeePerGas: ['0x1'],
+          gasUsedRatio: [0],
+          reward: [['0x0']],
+        });
+      case 'eth_getTransactionCount':
+        return makeJsonResponse(id, '0x1');
+      case 'eth_getCode':
+        return makeJsonResponse(id, '0x');
       case 'eth_estimateGas':
-        return jsonResponse(id, '0x5208');
+        return makeJsonResponse(id, '0x5208');
       case 'eth_getBalance':
-        return jsonResponse(id, '0x0');
+        return makeJsonResponse(id, state.balanceWei || '0x0');
       case 'eth_call': {
         const callData = params?.[0]?.data;
         const data = typeof callData === 'string' ? callData.toLowerCase() : '';
-        const salePriceSig = opts.salePriceSig || '';
-        const personalizePriceSig = opts.personalizePriceSig || '';
-        const ownerOfSig = opts.ownerOfSig || '';
-        const balanceOfSig = opts.balanceOfSig || '';
-        const tokenOfOwnerByIndexSig = opts.tokenOfOwnerByIndexSig || '';
-        const ensReverseSig = opts.ensReverseSig || '';
         const multicallAggregate3Sig = opts.multicallAggregate3Sig || '';
 
-        if (salePriceSig && data.startsWith(salePriceSig)) {
-          return jsonResponse(id, pad32(state.salePriceWei || '0x0'));
-        }
-        if (personalizePriceSig && data.startsWith(personalizePriceSig)) {
-          return jsonResponse(id, pad32(state.personalizePriceWei || '0x0'));
-        }
-        if (ownerOfSig && data.startsWith(ownerOfSig)) {
-          const argHex = data.slice(-64);
-          const squareId = Number.parseInt(argHex, 16);
-          const overrideOwner = Number.isFinite(squareId) ? ownerOverrides.get(squareId) : null;
-          const owner = overrideOwner ?? opts.ownerAddress ?? '0x0000000000000000000000000000000000000000';
-          const padded = padAddress(owner) || pad32('0x0');
-          return jsonResponse(id, padded);
-        }
-        if (balanceOfSig && data.startsWith(balanceOfSig)) {
-          const addr = readAddressArg(data, 0);
-          const matchesOwner = ownerAddress ? addr === ownerAddress : Boolean(addr);
-          const count = matchesOwner ? ownedSquares.length : 0;
-          return jsonResponse(id, pad32(count));
-        }
-        if (tokenOfOwnerByIndexSig && data.startsWith(tokenOfOwnerByIndexSig)) {
-          const addr = readAddressArg(data, 0);
-          const index = readUintArg(data, 1);
-          const matchesOwner = ownerAddress ? addr === ownerAddress : Boolean(addr);
-          const tokenId =
-            matchesOwner && index !== null && index >= 0 && index < ownedSquares.length
-              ? ownedSquares[index]
-              : 0;
-          return jsonResponse(id, pad32(tokenId));
-        }
-        if (ensReverseSig && data.startsWith(ensReverseSig)) {
-          return jsonError(id, 'ENS not available on test network');
-        }
         if (multicallAggregate3Sig && data.startsWith(multicallAggregate3Sig)) {
-          return jsonResponse(id, encodeAggregate3Empty());
+          const calls = decodeAggregate3Calls(data);
+          if ((window as any).__E2E_RPC_DEBUG__ === true) {
+            const sigs = calls.slice(0, 5).map((call) => call.callData?.slice(0, 10));
+            const first = calls[0];
+            console.log('[E2E RPC] multicall decoded', {
+              count: calls.length,
+              sigs: sigs.join(','),
+              firstTarget: first?.target,
+              firstCallDataSig: first?.callData?.slice(0, 10),
+              firstCallDataLen: first?.callData ? first.callData.length : 0,
+            });
+          }
+          if (!calls.length) {
+            return makeJsonResponse(id, encodeAggregate3Empty());
+          }
+          const results = calls.map((call) => resolveCallData(call.callData));
+          const encoded = encodeAggregate3Results(results);
+          if ((window as any).__E2E_RPC_DEBUG__ === true) {
+            const firstSig = calls[0]?.callData?.slice(0, 10);
+            // For ownership calls, log full encoded response to verify encoding
+            if (firstSig === '0x6352211e' || firstSig === '0x70a08231' || firstSig === '0x2f745c59') {
+              console.log('[E2E RPC] ownership multicall FULL', {
+                sig: firstSig,
+                results: results.map((r) => ({ success: r.success, returnData: r.returnData })),
+                encoded: encoded,
+              });
+            } else {
+              console.log('[E2E RPC] multicall response', {
+                resultCount: results.length,
+                encodedLen: encoded.length,
+              });
+            }
+          }
+          return makeJsonResponse(id, encoded);
         }
-        return jsonResponse(id, '0x');
+
+        const resolved = resolveCallData(data);
+        return makeJsonResponse(id, resolved.returnData);
       }
       case 'eth_getTransactionReceipt': {
         const hash = params?.[0];
-        if (!hash) return jsonResponse(id, null);
-        return jsonResponse(id, {
+        if (!hash) return makeJsonResponse(id, null);
+        return makeJsonResponse(id, {
           transactionHash: hash,
           transactionIndex: '0x0',
           blockHash: '0x' + '01'.repeat(32),
@@ -301,8 +484,8 @@ export function mockRpcInitScript(opts: {
       }
       case 'eth_getTransactionByHash': {
         const hash = params?.[0];
-        if (!hash) return jsonResponse(id, null);
-        return jsonResponse(id, {
+        if (!hash) return makeJsonResponse(id, null);
+        return makeJsonResponse(id, {
           hash,
           nonce: '0x1',
           blockHash: '0x' + '01'.repeat(32),
@@ -317,10 +500,40 @@ export function mockRpcInitScript(opts: {
         });
       }
       default:
-        return jsonError(id, `Mock RPC does not support ${method}`);
+        return makeJsonError(id, `Mock RPC does not support ${method}`);
+      }
+    };
+
+    if (Array.isArray(payload)) {
+      const results = payload.map((entry) => {
+        const response = handlePayload(entry);
+        if (!response) {
+          return { jsonrpc: '2.0', id: entry?.id ?? null, error: { code: -32600, message: 'Invalid Request' } };
+        }
+        return response;
+      });
+
+      return new Response(JSON.stringify(results), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
     }
+
+    const response = handlePayload(payload);
+    if (response) {
+      return new Response(JSON.stringify(response), {
+        status: 200,
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    return originalFetch(input, init);
   };
 
-  (window as any).__E2E_MOCK_RPC__ = state;
+  (window as any).__E2E_MOCK_RPC__ = {
+    ...state,
+    ownedSquares: [...ownedSquares],
+    ownerAddress: ownerAddress ?? opts.ownerAddress ?? null,
+  };
   (window as any).__E2E_SKIP_AVAILABILITY_CHECK = true;
 }

@@ -1,5 +1,6 @@
 export const DEFAULT_SALE_PRICE_WEI = '0x6f05b59d3b20000'; // 0.5 ETH
 export const DEFAULT_PERSONALIZE_PRICE_WEI = '0x38d7ea4c68000'; // 0.001 ETH
+export const DEFAULT_BALANCE_WEI = '0x3635c9adc5dea00000'; // 1000 ETH
 
 export const SALE_PRICE_SIG = '0xf51f96dd';
 export const PERSONALIZE_PRICE_SIG = '0xee48f7ef';

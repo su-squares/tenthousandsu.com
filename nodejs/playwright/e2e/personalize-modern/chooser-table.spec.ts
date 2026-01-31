@@ -1,6 +1,7 @@
 import { test, expect } from '@playwright/test';
 import { setupTest } from '../../wallet/index.js';
 import { installMockRpc } from '../mocks/rpc/index.js';
+import { installMockBillboard } from '../mocks/billboard/index.js';
 import { maybeConnectWallet } from '../helpers/wallet-flow.js';
 import {
   getRed10x10Path,
@@ -43,12 +44,16 @@ test.describe('Personalize Modern - Chooser Table', () => {
     test.skip(squareIds.length === 0, 'PERSONALIZE_SQUARE_ID missing/empty');
 
     const useMockRpc = Boolean(e2eEnv?.mockRpc);
+    const useMockBillboard = Boolean(e2eEnv?.mockBillboard);
     if (useMockRpc) {
       await installMockRpc(page, {
         chainId: e2eEnv.chainId,
         ownerAddress: e2eEnv.address,
         ownedSquares: squareIds,
       });
+    }
+    if (useMockRpc && useMockBillboard) {
+      await installMockBillboard(page, e2eEnv.mockBillboardConfig);
     }
 
     const walletConfig = { ...walletConfigFromEnv };

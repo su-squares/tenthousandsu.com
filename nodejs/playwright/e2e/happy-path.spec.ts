@@ -1,8 +1,9 @@
 import { test, expect } from '@playwright/test';
 import { setupTest } from '../wallet/index.js';
 import { installMockRpc } from './mocks/rpc/index.js';
+import { installMockBillboard } from './mocks/billboard/index.js';
 import { resolveSquareNumber, completeMint } from './helpers/buy-flow.js';
-import { routeHomepageBillboardMocks, HOMEPAGE_SELECTORS } from './helpers/homepage-billboard.js';
+import { HOMEPAGE_SELECTORS } from './helpers/homepage-billboard.js';
 import { getRed10x10Path, waitForPersonalizeModernReady } from './helpers/personalize-modern.js';
 import { expectTxStatus } from './helpers/tx-flow.js';
 import { maybeConnectWallet } from './helpers/wallet-flow.js';
@@ -33,11 +34,15 @@ test.describe('Happy path flow', () => {
     logE2eEnvOnce();
 
     const useMockRpc = Boolean(e2eEnv?.mockRpc);
+    const useMockBillboard = Boolean(e2eEnv?.mockBillboard);
     if (useMockRpc) {
       await installMockRpc(page, {
         chainId: e2eEnv.chainId,
         ownerAddress: e2eEnv.address,
       });
+    }
+    if (useMockRpc && useMockBillboard) {
+      await installMockBillboard(page, e2eEnv.mockBillboardConfig);
     }
 
     const walletConfig = { ...walletConfigFromEnv };
@@ -53,17 +58,6 @@ test.describe('Happy path flow', () => {
     });
 
     const preferredSquareId = e2eEnv?.buySquareId || 1;
-
-    if (useMockRpc) {
-      const emptyPersonalizations = Array.from({ length: 10000 }, () => null);
-      const emptyExtra = Array.from({ length: 10000 }, () => null);
-      await routeHomepageBillboardMocks(page, {
-        personalizationsJson: JSON.stringify(emptyPersonalizations),
-        extraJson: JSON.stringify(emptyExtra),
-        blockedSquaresJson: JSON.stringify({ blocked: [] }),
-        blockedDomainsJson: JSON.stringify([]),
-      });
-    }
 
     await page.goto('/', { waitUntil: 'domcontentloaded' });
     await page

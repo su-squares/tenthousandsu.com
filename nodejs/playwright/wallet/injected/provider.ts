@@ -6,6 +6,38 @@
 
   type Listener = (...args: any[]) => void;
   const toHex = (n: number) => '0x' + Number(n).toString(16);
+  const normalizeAddress = (value: unknown): string | null => {
+    if (typeof value !== 'string') return null;
+    const hex = value.toLowerCase().replace(/^0x/, '');
+    if (!/^[0-9a-f]{40}$/.test(hex)) return null;
+    return `0x${hex}`;
+  };
+  const pad32 = (value: unknown): string => {
+    let hex: string;
+    if (typeof value === 'string' && value.startsWith('0x')) {
+      hex = value.slice(2);
+    } else {
+      try {
+        hex = BigInt(value as string | number | bigint).toString(16);
+      } catch {
+        hex = '0';
+      }
+    }
+    return '0x' + hex.padStart(64, '0');
+  };
+  const readAddressArg = (data: string, argIndex: number): string | null => {
+    const start = 10 + argIndex * 64;
+    const hex = data.slice(start, start + 64);
+    if (hex.length !== 64) return null;
+    return normalizeAddress(`0x${hex.slice(24)}`);
+  };
+  const readUintArg = (data: string, argIndex: number): number | null => {
+    const start = 10 + argIndex * 64;
+    const hex = data.slice(start, start + 64);
+    if (hex.length !== 64) return null;
+    const value = Number.parseInt(hex, 16);
+    return Number.isFinite(value) ? value : null;
+  };
 
   // Track NFT state (MOCK only)
   let nftTokenId = 0;
@@ -287,6 +319,47 @@
           const callData = params?.[0];
           if (realMode) return await bridge.rpc('eth_call', params || []);
           const methodSig = callData?.data?.substring(0, 10);
+          const mockRpc = (window as any).__E2E_MOCK_RPC__ as {
+            ownedSquares?: number[];
+            ownerAddress?: string | null;
+          } | undefined;
+          // Debug: log direct eth_call (not via multicall)
+          if ((window as any).__E2E_RPC_DEBUG__ === true) {
+            console.log('[E2E Provider] eth_call direct', { methodSig, to: callData?.to });
+          }
+          if (mockRpc && typeof methodSig === 'string') {
+            const data = String(callData?.data || '').toLowerCase();
+            if (methodSig === '0x70a08231') {
+              const addr = readAddressArg(data, 0);
+              const owner = normalizeAddress(mockRpc.ownerAddress);
+              const matchesOwner = owner ? addr === owner : Boolean(addr);
+              const count = matchesOwner ? (mockRpc.ownedSquares?.length || 0) : 0;
+              if ((window as any).__E2E_RPC_DEBUG__ === true) {
+                console.log('[E2E Provider] balanceOf', { addr, owner, matchesOwner, count });
+              }
+              return pad32(count);
+            }
+            if (methodSig === '0x2f745c59') {
+              const addr = readAddressArg(data, 0);
+              const index = readUintArg(data, 1);
+              const owner = normalizeAddress(mockRpc.ownerAddress);
+              const matchesOwner = owner ? addr === owner : Boolean(addr);
+              const owned = Array.isArray(mockRpc.ownedSquares) ? mockRpc.ownedSquares : [];
+              const tokenId =
+                matchesOwner && index !== null && index >= 0 && index < owned.length ? owned[index] : 0;
+              if ((window as any).__E2E_RPC_DEBUG__ === true) {
+                console.log('[E2E Provider] tokenOfOwnerByIndex', { addr, index, owner, matchesOwner, tokenId });
+              }
+              return pad32(tokenId);
+            }
+            if (methodSig === '0x6352211e') {
+              const owner = normalizeAddress(mockRpc.ownerAddress || cfg.address);
+              if ((window as any).__E2E_RPC_DEBUG__ === true) {
+                console.log('[E2E Provider] ownerOf', { owner });
+              }
+              if (owner) return pad32(owner);
+            }
+          }
           if (methodSig === '0x70a08231') return userHasNFT ? '0x1' : '0x0'; // balanceOf
           if (methodSig === '0x6352211e') return '0x' + (cfg.address as string).substring(2).padStart(64, '0'); // ownerOf
           if (methodSig === '0x18160ddd') return ('0x' + nftTokenId.toString(16)).padStart(66, '0'); // totalSupply

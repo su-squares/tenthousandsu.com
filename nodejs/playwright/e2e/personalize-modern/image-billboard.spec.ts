@@ -1,6 +1,7 @@
 import { test } from '@playwright/test';
 import { setupTest } from '../../wallet/index.js';
 import { installMockRpc } from '../mocks/rpc/index.js';
+import { installMockBillboard } from '../mocks/billboard/index.js';
 import {
   getRed40x40Path,
   visitPersonalizeModernPage,
@@ -40,11 +41,16 @@ test.describe('Personalize Modern - Image Billboard', () => {
     logE2eEnvOnce();
 
     const useMockRpc = Boolean(e2eEnv?.mockRpc);
+    const useMockBillboard = Boolean(e2eEnv?.mockBillboard);
     if (useMockRpc) {
       await installMockRpc(page, {
         chainId: e2eEnv.chainId,
         ownerAddress: e2eEnv.address,
+        ownedSquares: EXPECTED_SQUARES,
       });
+    }
+    if (useMockRpc && useMockBillboard) {
+      await installMockBillboard(page, e2eEnv.mockBillboardConfig);
     }
 
     const walletConfig = { ...walletConfigFromEnv };

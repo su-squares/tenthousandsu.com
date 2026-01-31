@@ -61,6 +61,68 @@ function expandTokenRange(input: string, envName?: string): number[] {
   return ids;
 }
 
+function normalizeSquareIdList(values: number[], envName?: string): number[] {
+  const normalized = Array.from(new Set(values.map((value) => Number(value))))
+    .filter((value) => Number.isInteger(value) && value >= 1 && value <= 10000);
+
+  if (envName && normalized.length === 0 && values.length > 0) {
+    console.warn(`[e2e env] ${envName} produced no valid square ids after normalization.`);
+  }
+
+  return normalized;
+}
+
+function ensureNoOverlap(lists: Array<{ name: string; ids: number[] }>) {
+  const seen = new Map<number, string>();
+
+  for (const list of lists) {
+    for (const id of list.ids) {
+      const existing = seen.get(id);
+      if (existing) {
+        throw new Error(
+          `[e2e env] Square id ${id} is present in both ${existing} and ${list.name}. Remove the overlap.`
+        );
+      }
+      seen.set(id, list.name);
+    }
+  }
+}
+
+function parseDomainList(value: unknown, envName?: string): string[] {
+  if (value === undefined || value === null || value === '') return [];
+
+  const raw = String(value);
+  const parts = raw
+    .split(',')
+    .map((part) => part.trim())
+    .filter(Boolean);
+
+  const domains: string[] = [];
+  const invalid: string[] = [];
+
+  for (const part of parts) {
+    try {
+      const hasScheme = part.includes('://');
+      const url = new URL(hasScheme ? part : `http://${part}`);
+      const hostname = url.hostname?.toLowerCase().trim();
+      if (!hostname) {
+        invalid.push(part);
+        continue;
+      }
+      domains.push(hostname);
+    } catch (_error) {
+      invalid.push(part);
+    }
+  }
+
+  if (invalid.length) {
+    const hint = envName ? ` in ${envName}` : '';
+    throw new Error(`Invalid domain entries${hint}: ${invalid.join(', ')}`);
+  }
+
+  return Array.from(new Set(domains));
+}
+
 // --- ESM-safe __dirname / __filename ---
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -162,13 +224,14 @@ const ChainIdSchema = z
 
 const UrlSchema = z.string().url().optional();
 
-const TokenRangeSchema = z
-  .string()
-  .optional()
-  .transform((value) => {
-    if (value === undefined || value === null || value === '') return [];
-    return expandTokenRange(String(value), 'PERSONALIZE_SQUARE_ID');
-  });
+const TokenRangeSchema = (envName: string) =>
+  z
+    .string()
+    .optional()
+    .transform((value) => {
+      if (value === undefined || value === null || value === '') return [];
+      return expandTokenRange(String(value), envName);
+    });
 
 const BoolSchema = z
   .union([z.string(), z.boolean(), z.number()])
@@ -214,8 +277,17 @@ const RawSchema = z.object({
   LEGACY_PERSONALIZE_BATCH_SQUARE_ID: SquareIdSchema,
   LEGACY_UNPERSONALIZE_SQUARE_ID: SquareIdSchema,
   LEGACY_UNPERSONALIZE_FAIL_SQUARE_ID: SquareIdSchema,
-  PERSONALIZE_SQUARE_ID: TokenRangeSchema,
+  PERSONALIZE_SQUARE_ID: TokenRangeSchema('PERSONALIZE_SQUARE_ID'),
   E2E_MOCK_RPC: BoolSchema.default(false),
+  E2E_MOCK_BILLBOARD: BoolSchema.default(false),
+  E2E_OWNED_AND_PERSONALIZED_IDS: TokenRangeSchema('E2E_OWNED_AND_PERSONALIZED_IDS'),
+  E2E_OWNED_NOT_PERSONALIZED_IDS: TokenRangeSchema('E2E_OWNED_NOT_PERSONALIZED_IDS'),
+  E2E_OWNED_BY_SOMEONE_ELSE_IDS: TokenRangeSchema('E2E_OWNED_BY_SOMEONE_ELSE_IDS'),
+  E2E_BLOCKED_SQUARE_IDS: TokenRangeSchema('E2E_BLOCKED_SQUARE_IDS'),
+  E2E_BLOCKED_DOMAINS: z
+    .string()
+    .optional()
+    .transform((value) => parseDomainList(value, 'E2E_BLOCKED_DOMAINS')),
 });
 
 // ---- Parse & Normalize ----
@@ -234,6 +306,12 @@ const raw = RawSchema.parse({
   LEGACY_UNPERSONALIZE_FAIL_SQUARE_ID: process.env.LEGACY_UNPERSONALIZE_FAIL_SQUARE_ID,
   PERSONALIZE_SQUARE_ID: process.env.PERSONALIZE_SQUARE_ID,
   E2E_MOCK_RPC: process.env.E2E_MOCK_RPC,
+  E2E_MOCK_BILLBOARD: process.env.E2E_MOCK_BILLBOARD,
+  E2E_OWNED_AND_PERSONALIZED_IDS: process.env.E2E_OWNED_AND_PERSONALIZED_IDS,
+  E2E_OWNED_NOT_PERSONALIZED_IDS: process.env.E2E_OWNED_NOT_PERSONALIZED_IDS,
+  E2E_OWNED_BY_SOMEONE_ELSE_IDS: process.env.E2E_OWNED_BY_SOMEONE_ELSE_IDS,
+  E2E_BLOCKED_SQUARE_IDS: process.env.E2E_BLOCKED_SQUARE_IDS,
+  E2E_BLOCKED_DOMAINS: process.env.E2E_BLOCKED_DOMAINS,
 });
 
 const networkMap: Record<NetworkInput, Network> = {
@@ -257,6 +335,10 @@ if (normalizedNetwork === 'sunet' && (chainId === undefined || chainId === null)
 
 if (!chainId || !Number.isFinite(chainId)) {
   throw new Error('[e2e env] Unable to determine a valid CHAIN_ID');
+}
+
+if (raw.E2E_MOCK_BILLBOARD && !raw.E2E_MOCK_RPC) {
+  console.warn('[e2e env] E2E_MOCK_BILLBOARD is true but E2E_MOCK_RPC is false; billboard mocking is disabled.');
 }
 
 // Derive address from private key using viem (same as test-setup.ts)
@@ -286,8 +368,45 @@ export const e2eEnv = {
   legacyUnpersonalizeFailSquareId: raw.LEGACY_UNPERSONALIZE_FAIL_SQUARE_ID,
   personalizeSquareIds: raw.PERSONALIZE_SQUARE_ID,
   mockRpc: raw.E2E_MOCK_RPC,
+  mockBillboard: raw.E2E_MOCK_BILLBOARD && raw.E2E_MOCK_RPC,
+  mockBillboardConfig: {
+    ownedAndPersonalizedIds: normalizeSquareIdList(
+      raw.E2E_OWNED_AND_PERSONALIZED_IDS,
+      'E2E_OWNED_AND_PERSONALIZED_IDS'
+    ),
+    ownedNotPersonalizedIds: normalizeSquareIdList(
+      raw.E2E_OWNED_NOT_PERSONALIZED_IDS,
+      'E2E_OWNED_NOT_PERSONALIZED_IDS'
+    ),
+    ownedBySomeoneElseIds: normalizeSquareIdList(
+      raw.E2E_OWNED_BY_SOMEONE_ELSE_IDS,
+      'E2E_OWNED_BY_SOMEONE_ELSE_IDS'
+    ),
+    blockedSquareIds: normalizeSquareIdList(
+      raw.E2E_BLOCKED_SQUARE_IDS,
+      'E2E_BLOCKED_SQUARE_IDS'
+    ),
+    blockedDomains: raw.E2E_BLOCKED_DOMAINS,
+  },
   loadedFrom: loadedPath,
 } as const;
+
+if (e2eEnv.mockBillboard) {
+  ensureNoOverlap([
+    {
+      name: 'E2E_OWNED_AND_PERSONALIZED_IDS',
+      ids: e2eEnv.mockBillboardConfig.ownedAndPersonalizedIds,
+    },
+    {
+      name: 'E2E_OWNED_NOT_PERSONALIZED_IDS',
+      ids: e2eEnv.mockBillboardConfig.ownedNotPersonalizedIds,
+    },
+    {
+      name: 'E2E_OWNED_BY_SOMEONE_ELSE_IDS',
+      ids: e2eEnv.mockBillboardConfig.ownedBySomeoneElseIds,
+    },
+  ]);
+}
 
 export const walletConfigFromEnv = {
   address: e2eEnv.address,
@@ -303,7 +422,7 @@ let logged = false;
 export function logE2eEnvOnce() {
   if (logged) return;
   console.log(
-    `[e2e env] network=${e2eEnv.network} chainId=${e2eEnv.chainId} wallet=${e2eEnv.walletName} address=${e2eEnv.address} txDelayMs=${e2eEnv.txDelayMs} mockRpc=${e2eEnv.mockRpc} buySquareId=${e2eEnv.buySquareId} legacyPersonalizeSquareId=${e2eEnv.legacyPersonalizeSquareId} legacyPersonalizeBatchSquareId=${e2eEnv.legacyPersonalizeBatchSquareId} legacyUnpersonalizeSquareId=${e2eEnv.legacyUnpersonalizeSquareId} legacyUnpersonalizeFailSquareId=${e2eEnv.legacyUnpersonalizeFailSquareId} personalizeSquareIds=${e2eEnv.personalizeSquareIds.length}${
+    `[e2e env] network=${e2eEnv.network} chainId=${e2eEnv.chainId} wallet=${e2eEnv.walletName} address=${e2eEnv.address} txDelayMs=${e2eEnv.txDelayMs} mockRpc=${e2eEnv.mockRpc} mockBillboard=${e2eEnv.mockBillboard} buySquareId=${e2eEnv.buySquareId} legacyPersonalizeSquareId=${e2eEnv.legacyPersonalizeSquareId} legacyPersonalizeBatchSquareId=${e2eEnv.legacyPersonalizeBatchSquareId} legacyUnpersonalizeSquareId=${e2eEnv.legacyUnpersonalizeSquareId} legacyUnpersonalizeFailSquareId=${e2eEnv.legacyUnpersonalizeFailSquareId} personalizeSquareIds=${e2eEnv.personalizeSquareIds.length} mockBillboardOwned=${e2eEnv.mockBillboardConfig.ownedAndPersonalizedIds.length + e2eEnv.mockBillboardConfig.ownedNotPersonalizedIds.length} mockBillboardOther=${e2eEnv.mockBillboardConfig.ownedBySomeoneElseIds.length} mockBillboardBlockedSquares=${e2eEnv.mockBillboardConfig.blockedSquareIds.length} mockBillboardBlockedDomains=${e2eEnv.mockBillboardConfig.blockedDomains.length}${
       e2eEnv.loadedFrom ? ` (loaded ${e2eEnv.loadedFrom})` : ''
     }`
   );

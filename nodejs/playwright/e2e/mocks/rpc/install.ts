@@ -10,6 +10,7 @@ import {
   PURCHASE_SIGS,
   SALE_PRICE_SIG,
   TOKEN_OF_OWNER_BY_INDEX_SIG,
+  DEFAULT_BALANCE_WEI,
 } from './constants.js';
 import type { MockRpcOptions } from './types.js';
 import { mockRpcInitScript } from './init-script.js';
@@ -19,6 +20,7 @@ export async function installMockRpc(page: Page, options: MockRpcOptions) {
     chainId: options.chainId,
     salePriceWei: options.salePriceWei || DEFAULT_SALE_PRICE_WEI,
     personalizePriceWei: options.personalizePriceWei || DEFAULT_PERSONALIZE_PRICE_WEI,
+    balanceWei: options.balanceWei || DEFAULT_BALANCE_WEI,
     failDuplicatePurchase: options.failDuplicatePurchase !== false,
     salePriceSig: SALE_PRICE_SIG,
     personalizePriceSig: PERSONALIZE_PRICE_SIG,
@@ -31,6 +33,7 @@ export async function installMockRpc(page: Page, options: MockRpcOptions) {
     ownerAddress: options.ownerAddress,
     ownerOverrides: options.ownerOverrides,
     ownedSquares: options.ownedSquares,
+    interceptAllRpc: options.interceptAllRpc !== false,
   };
 
   await page.addInitScript(mockRpcInitScript, config);

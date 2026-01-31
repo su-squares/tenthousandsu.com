@@ -1,8 +1,10 @@
 import { test, expect } from '@playwright/test';
 import { setupTest } from '../../wallet/index.js';
 import { installMockRpc } from '../mocks/rpc/index.js';
+import { installMockBillboard } from '../mocks/billboard/index.js';
 import { expectTxStatus } from '../helpers/tx-flow.js';
 import { maybeConnectWallet } from '../helpers/wallet-flow.js';
+import { activateSquare } from '../helpers/homepage-billboard.js';
 import {
   getRed10x10Path,
   visitPersonalizeModernPage,
@@ -46,12 +48,16 @@ test.describe('Personalize Modern - Billboard Table', () => {
     test.skip(squareIds.length === 0, 'PERSONALIZE_SQUARE_ID missing/empty');
 
     const useMockRpc = Boolean(e2eEnv?.mockRpc);
+    const useMockBillboard = Boolean(e2eEnv?.mockBillboard);
     if (useMockRpc) {
       await installMockRpc(page, {
         chainId: e2eEnv.chainId,
         ownerAddress: e2eEnv.address,
         ownedSquares: squareIds,
       });
+    }
+    if (useMockRpc && useMockBillboard) {
+      await installMockBillboard(page, e2eEnv.mockBillboardConfig);
     }
 
     const walletConfig = { ...walletConfigFromEnv };
@@ -92,9 +98,9 @@ test.describe('Personalize Modern - Billboard Table', () => {
     );
 
     for (const squareId of squareIds) {
-      await page
-        .locator(`.personalize-billboard__cell[data-square="${squareId}"]`)
-        .click();
+      await activateSquare(page, squareId, {
+        gridSelector: '.personalize-billboard__grid',
+      });
     }
 
     const updateButton = page.locator('#billboard-update');

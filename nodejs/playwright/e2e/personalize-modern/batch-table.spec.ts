@@ -1,6 +1,7 @@
 import { test } from '@playwright/test';
 import { setupTest } from '../../wallet/index.js';
 import { installMockRpc } from '../mocks/rpc/index.js';
+import { installMockBillboard } from '../mocks/billboard/index.js';
 import {
   getRed10x10Path,
   uploadCsvBatch,
@@ -45,11 +46,16 @@ test.describe('Personalize Modern - Batch Table', () => {
     test.skip(squareIds.length === 0, 'PERSONALIZE_SQUARE_ID missing/empty');
 
     const useMockRpc = Boolean(e2eEnv?.mockRpc);
+    const useMockBillboard = Boolean(e2eEnv?.mockBillboard);
     if (useMockRpc) {
       await installMockRpc(page, {
         chainId: e2eEnv.chainId,
         ownerAddress: e2eEnv.address,
+        ownedSquares: squareIds,
       });
+    }
+    if (useMockRpc && useMockBillboard) {
+      await installMockBillboard(page, e2eEnv.mockBillboardConfig);
     }
 
     const walletConfig = { ...walletConfigFromEnv };
