@@ -7,7 +7,7 @@
 
 import { createBillboard, GRID_DIMENSION } from "../billboard-core.js";
 import { isMintInternalLink, shouldHideUriLabel } from "./link-label-utils.js";
-import { extractScheme, isBlockedScheme } from "../../js/link-utils.js";
+import { extractScheme, isBlockedScheme, normalizeHref as normalizeHrefSafe } from "../../js/link-utils.js";
 import { assetPath } from "../../js/asset-base.js";
 import { scheduleBillboardRuntimeFallback } from "../runtime-fallback.js";
 
@@ -35,7 +35,7 @@ export function initHomepageBillboard(options) {
     linkAnchor,
     resetButton,
     baseurl = "",
-    normalizeHref = (href) => href,
+    normalizeHref = normalizeHrefSafe,
   } = options;
 
   if (!mapWrapper || !image || !positionDiv || !tooltipDiv) {

@@ -14,7 +14,7 @@ import { createContainedLeavingModal } from "../../modals/leaving-modal/leaving-
 import { createContainedBlockedModal } from "../../modals/blocked-modal/blocked-modal-contained.js";
 import { shouldHideUriLabel } from "./link-label-utils.js";
 import { assetPath } from "../../js/asset-base.js";
-import { extractScheme, isBlockedScheme } from "../../js/link-utils.js";
+import { extractScheme, isBlockedScheme, normalizeHref as normalizeHrefSafe } from "../../js/link-utils.js";
 import { scheduleBillboardRuntimeFallback } from "../runtime-fallback.js";
 import {
   DEFAULT_CONFIG,
@@ -60,7 +60,7 @@ export function initEmbedBillboard(options) {
     header,
     headerTitle,
     baseurl = "",
-    normalizeHref = (href) => href,
+    normalizeHref = normalizeHrefSafe,
     onReady,
   } = options;
 

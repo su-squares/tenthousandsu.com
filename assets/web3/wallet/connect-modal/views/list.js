@@ -31,6 +31,14 @@ function connectorUid(connector) {
   return connector.id;
 }
 
+function isUnsafeIconUrl(url) {
+  if (!url || typeof url !== "string") return true;
+  const match = url.trim().match(/^([a-zA-Z][a-zA-Z0-9+.-]*):/);
+  if (!match) return false;
+  const scheme = match[1].toLowerCase();
+  return scheme === "javascript" || scheme === "data" || scheme === "vbscript";
+}
+
 /**
  * Render the wallet list view.
  * @param {HTMLElement} target
@@ -42,51 +50,85 @@ function connectorUid(connector) {
 export function renderListView(target, { connectors, onSelect, onOpenInfo }) {
   if (!target) return;
   if (!connectors || connectors.length === 0) {
-    target.innerHTML = `
-      <div class="wallet-modal__header">
-        <h2>No wallets found</h2>
-      </div>
-      <p class="wallet-helper">No wallet connectors are available in this browser.</p>
-    `;
+    target.textContent = "";
+    const header = document.createElement("div");
+    header.className = "wallet-modal__header";
+    const title = document.createElement("h2");
+    title.textContent = "No wallets found";
+    header.appendChild(title);
+    const helper = document.createElement("p");
+    helper.className = "wallet-helper";
+    helper.textContent = "No wallet connectors are available in this browser.";
+    target.appendChild(header);
+    target.appendChild(helper);
     return;
   }
 
-  const items = connectors
-    .map((connector) => {
-      const icon = connectorIcon(connector);
-      const label = connectorName(connector);
-      const uid = connectorUid(connector);
-      return `
-        <button type="button" data-connector-uid="${uid}">
-          ${
-            icon
-              ? `<img src="${icon}" alt="" class="wallet-btn-icon">`
-              : '<span class="wallet-btn-icon-placeholder"></span>'
-          }
-          <span>${label}</span>
-        </button>
-      `;
-    })
-    .join("");
-
   const baseurl = window.SITE_BASEURL || '';
-  target.innerHTML = `
-    <div class="wallet-modal__logo">
-      <img src="${window.location.origin}${baseurl}/assets/images/logo-su-squares.png" alt="Su Squares">
-    </div>
-    <div class="wallet-modal__header">
-      <h2 id="wallet-connect-title">Connect your wallet</h2>
-    </div>
-    <div class="wallet-list" aria-labelledby="wallet-connect-title">
-      ${items}
-    </div>
-    <div class="wallet-helper">
-      <p id="wallet-connect-helper">Use a browser wallet or WalletConnect on mobile.</p>
-      <button type="button" class="wallet-helper-link" data-info-modal aria-controls="wallet-info-modal">
-        Don't have a wallet yet?
-      </button>
-    </div>
-  `;
+  target.textContent = "";
+
+  const logo = document.createElement("div");
+  logo.className = "wallet-modal__logo";
+  const logoImg = document.createElement("img");
+  logoImg.src = `${window.location.origin}${baseurl}/assets/images/logo-su-squares.png`;
+  logoImg.alt = "Su Squares";
+  logo.appendChild(logoImg);
+
+  const header = document.createElement("div");
+  header.className = "wallet-modal__header";
+  const title = document.createElement("h2");
+  title.id = "wallet-connect-title";
+  title.textContent = "Connect your wallet";
+  header.appendChild(title);
+
+  const list = document.createElement("div");
+  list.className = "wallet-list";
+  list.setAttribute("aria-labelledby", "wallet-connect-title");
+  connectors.forEach((connector) => {
+    const icon = connectorIcon(connector);
+    const label = connectorName(connector);
+    const uid = connectorUid(connector);
+    const button = document.createElement("button");
+    button.type = "button";
+    button.dataset.connectorUid = uid;
+
+    if (icon && !isUnsafeIconUrl(icon)) {
+      const iconImg = document.createElement("img");
+      iconImg.src = icon;
+      iconImg.alt = "";
+      iconImg.className = "wallet-btn-icon";
+      button.appendChild(iconImg);
+    } else {
+      const placeholder = document.createElement("span");
+      placeholder.className = "wallet-btn-icon-placeholder";
+      button.appendChild(placeholder);
+    }
+
+    const labelSpan = document.createElement("span");
+    labelSpan.textContent = label;
+    button.appendChild(labelSpan);
+
+    list.appendChild(button);
+  });
+
+  const helper = document.createElement("div");
+  helper.className = "wallet-helper";
+  const helperText = document.createElement("p");
+  helperText.id = "wallet-connect-helper";
+  helperText.textContent = "Use a browser wallet or WalletConnect on mobile.";
+  const infoButton = document.createElement("button");
+  infoButton.type = "button";
+  infoButton.className = "wallet-helper-link";
+  infoButton.dataset.infoModal = "";
+  infoButton.setAttribute("aria-controls", "wallet-info-modal");
+  infoButton.textContent = "Don't have a wallet yet?";
+  helper.appendChild(helperText);
+  helper.appendChild(infoButton);
+
+  target.appendChild(logo);
+  target.appendChild(header);
+  target.appendChild(list);
+  target.appendChild(helper);
 
   target.querySelectorAll("[data-connector-uid]").forEach((btn) => {
     btn.addEventListener("click", () => {

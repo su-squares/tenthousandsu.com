@@ -1,5 +1,20 @@
 import { getRefreshButtonHTML, attachRefreshHandler } from "../wallet/balance-refresh-button.js";
 import { formatBalance, formatHash, buildBarState } from "./formatting.js";
+import { normalizeHref } from "../../js/link-utils.js";
+
+function escapeHtml(value) {
+  if (value === null || value === undefined) return "";
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function escapeAttribute(value) {
+  return escapeHtml(value);
+}
 
 /**
  * @typedef {import("./state.js").TxState} TxState
@@ -31,6 +46,11 @@ export function renderTxView(target, state, handlers, options = {}) {
   const showBar = state.status !== "idle";
   const barState = buildBarState(state.status);
   const barLabel = getBarLabel(state.status);
+  const safeTitle = escapeHtml(state.title || "Transaction status");
+  const safeMessage = escapeHtml(state.message || "");
+  const safeHelpText = escapeHtml(
+    state.helpText || "Need to retry? You can restart the transaction or clear this panel."
+  );
 
   const walletButtonVisible = state.showWalletButton && state.status !== "idle" && state.status !== "success";
   const cancelButtonVisible = state.status !== "idle";
@@ -42,7 +62,7 @@ export function renderTxView(target, state, handlers, options = {}) {
   target.innerHTML = `
     <div class="su-tx-card ${options.variant === "modal" ? "su-tx-card--modal" : "su-tx-card--fixture"}">
       <div class="su-tx-card__header">
-        <h3 class="su-tx-card__title">${state.title || "Transaction status"}</h3>
+        <h3 class="su-tx-card__title">${safeTitle}</h3>
         ${options.showClose
       ? '<button type="button" class="su-tx-btn su-tx-btn--ghost" data-tx-close>Close</button>'
       : ""
@@ -55,11 +75,11 @@ export function renderTxView(target, state, handlers, options = {}) {
 
       ${showBar
       ? `
-        <div class="su-tx-card__section su-tx-card__section--status" data-testid="tx-status" data-status="${state.status}">
+        <div class="su-tx-card__section su-tx-card__section--status" data-testid="tx-status" data-status="${escapeAttribute(state.status)}">
           <div class="su-tx-bar su-tx-bar--${barState}">
             <span>${barLabel}</span>
           </div>
-          ${state.message ? `<div class="su-tx-message">${state.message}</div>` : ""}
+          ${state.message ? `<div class="su-tx-message">${safeMessage}</div>` : ""}
         </div>
       `
       : ""
@@ -79,7 +99,7 @@ export function renderTxView(target, state, handlers, options = {}) {
       </div>
 
       ${state.status !== "idle"
-      ? `<p class="su-tx-help">${state.helpText || "Need to retry? You can restart the transaction or clear this panel."}</p>`
+      ? `<p class="su-tx-help">${safeHelpText}</p>`
       : ""
     }
     </div>
@@ -144,22 +164,24 @@ function renderPricing(state) {
   };
 
   if (state.mode === "mint" || state.mode === "both") {
+    const mintPrice = escapeHtml(state.pricing.mintPriceEth);
     blocks.push(`
       <div class="su-tx-card__section su-tx-price">
         <div class="su-tx-price__item">
           <span class="su-tx-price__label">Mint price:</span>
-          <span>${state.pricing.mintPriceEth} ETH per mint</span>
+          <span>${mintPrice} ETH per mint</span>
         </div>
       </div>
     `);
   }
 
   if (state.mode === "personalize" || state.mode === "both") {
+    const personalizePrice = escapeHtml(state.pricing.personalizePriceEth);
     blocks.push(`
       <div class="su-tx-card__section su-tx-price">
         <div class="su-tx-price__item">
           <span class="su-tx-price__label">Personalize:</span>
-          <span>${state.pricing.personalizePriceEth} ETH each</span>
+          <span>${personalizePrice} ETH each</span>
         </div>
       </div>
     `);
@@ -171,22 +193,26 @@ function renderPricing(state) {
       : 0;
     const personalizePrice = state.pricing.personalizePriceEth;
     const total = formatEthAmount(personalizeCount * personalizePrice);
+    const safeCount = escapeHtml(personalizeCount);
+    const safePrice = escapeHtml(personalizePrice);
+    const safeTotal = escapeHtml(total);
     blocks.push(`
       <div class="su-tx-card__section su-tx-price">
         <div class="su-tx-price__item">
           <span class="su-tx-price__label">Total:</span>
-          <span>${personalizeCount} * ${personalizePrice} = ${total} ETH</span>
+          <span>${safeCount} * ${safePrice} = ${safeTotal} ETH</span>
         </div>
       </div>
     `);
   }
 
   if (state.mode === "unpersonalize") {
+    const personalizePrice = escapeHtml(state.pricing.personalizePriceEth);
     blocks.push(`
       <div class="su-tx-card__section su-tx-price">
         <div class="su-tx-price__item">
           <span class="su-tx-price__label">Unpersonalize:</span>
-          <span>${state.pricing.personalizePriceEth} ETH</span>
+          <span>${personalizePrice} ETH</span>
         </div>
       </div>
     `);
@@ -204,16 +230,18 @@ function renderBalance(state) {
   if (state.status !== "idle" && state.status !== "processing" && state.status !== "pending") return "";
   if (!state.balanceContext) return "";
 
+  const balanceText = state.balanceLoading
+    ? "Loading..."
+    : state.balance
+      ? `${formatBalance(state.balance.formatted)} ${state.balance.symbol || "ETH"}`
+      : "—";
+  const safeBalanceText = escapeHtml(balanceText);
+
   return `
     <div class="su-tx-card__section su-tx-balance">
       <div class="su-tx-balance__item">
         <span class="su-tx-balance__label">Your balance:</span>
-        <span class="su-tx-balance__value">${state.balanceLoading
-    ? "Loading..."
-    : state.balance
-      ? `${formatBalance(state.balance.formatted)} ${state.balance.symbol || "ETH"}`
-      : "—"
-  }</span>
+        <span class="su-tx-balance__value">${safeBalanceText}</span>
         ${getRefreshButtonHTML({ loading: state.balanceLoading })}
       </div>
     </div>
@@ -233,6 +261,13 @@ function renderTransactions(pending, confirmed, status) {
     ? { label: "Failed", className: "su-tx-list__badge--error" }
     : { label: "Pending", className: "su-tx-list__badge--pending" };
 
+  const renderTxLink = (tx) => {
+    const label = escapeHtml(formatHash(tx.hash));
+    const safeUrl = tx.url ? normalizeHref(tx.url) : "";
+    if (!safeUrl) return label;
+    return `<a href="${escapeAttribute(safeUrl)}" target="_blank" rel="noreferrer">${label}</a>`;
+  };
+
   return `
     <div class="su-tx-card__section">
       <div class="su-tx-card__note">Transactions</div>
@@ -242,7 +277,7 @@ function renderTransactions(pending, confirmed, status) {
         (tx) => `
             <li class="su-tx-list__item">
               <span class="su-tx-list__badge ${pendingBadge.className}">${pendingBadge.label}</span>
-              ${tx.url ? `<a href="${tx.url}" target="_blank" rel="noreferrer">${formatHash(tx.hash)}</a>` : formatHash(tx.hash)}
+              ${renderTxLink(tx)}
             </li>`
       )
       .join("")}
@@ -251,7 +286,7 @@ function renderTransactions(pending, confirmed, status) {
         (tx) => `
             <li class="su-tx-list__item">
               <span class="su-tx-list__badge su-tx-list__badge--success">Confirmed</span>
-              ${tx.url ? `<a href="${tx.url}" target="_blank" rel="noreferrer">${formatHash(tx.hash)}</a>` : formatHash(tx.hash)}
+              ${renderTxLink(tx)}
             </li>`
       )
       .join("")}

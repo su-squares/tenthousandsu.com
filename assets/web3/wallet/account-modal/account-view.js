@@ -27,6 +27,20 @@ function getChainIcon(activeNetwork, presets) {
   };
 }
 
+function escapeHtml(value) {
+  if (value === null || value === undefined) return "";
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function escapeAttribute(value) {
+  return escapeHtml(value);
+}
+
 /**
  * Render the normal account view.
  * @param {HTMLElement} target
@@ -66,8 +80,8 @@ export function renderAccountView(target, data, options) {
     </div>
     <div class="wallet-status wallet-fade" id="wallet-account-status">
       <div class="wallet-status__details">
-        <div class="${ensLoading ? "wallet-placeholder" : ""}">${addressDisplay || "Not connected"}</div>
-        <div class="wallet-small">${account?.address || ""}</div>
+        <div class="${ensLoading ? "wallet-placeholder" : ""}">${escapeHtml(addressDisplay || "Not connected")}</div>
+        <div class="wallet-small">${escapeHtml(account?.address || "")}</div>
       </div>
       <div class="wallet-status__aside">
         <button class="wallet-btn wallet-btn--ghost wallet-btn--inline" type="button" data-copy>Copy</button>
@@ -77,18 +91,18 @@ export function renderAccountView(target, data, options) {
       <div class="wallet-status__details wallet-status__details--chain">
         <div class="wallet-chain">
           <div class="wallet-chain__icon">
-            <img src="${chainIcon.src}" alt="${chainIcon.alt}" style="height: 24px; width: auto;">
+            <img src="${escapeAttribute(chainIcon.src)}" alt="${escapeAttribute(chainIcon.alt)}" style="height: 24px; width: auto;">
           </div>
           <div>
-            <div>${activeNetwork.label}</div>
-            <div class="wallet-small">Chain ID: ${activeNetwork.chainId}</div>
+            <div>${escapeHtml(activeNetwork.label)}</div>
+            <div class="wallet-small">Chain ID: ${escapeHtml(activeNetwork.chainId)}</div>
           </div>
         </div>
       </div>
       <div class="wallet-status__aside wallet-balance-wrapper">
         ${balanceLoading
       ? `<div class="wallet-balance wallet-placeholder">Fetching balance...</div>`
-      : `<div class="wallet-balance">${balance ? formatBalanceForDisplay(balance) : ""
+      : `<div class="wallet-balance">${balance ? escapeHtml(formatBalanceForDisplay(balance)) : ""
       }</div>`
     }
         ${onRefresh ? getRefreshButtonHTML({ loading: balanceLoading }) : ""}

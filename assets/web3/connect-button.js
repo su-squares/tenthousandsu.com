@@ -30,12 +30,20 @@ if (connectWalletButton) {
   const setButtonLabel = (label, { isEns = false, animateEns = false } = {}) => {
     if (!connectWalletButton) return;
     const animatedClass = isEns && animateEns ? "su-nav-connect-label--fade" : "";
+    connectWalletButton.textContent = "";
     if (!label) {
-      connectWalletButton.innerHTML = "Connect<br>Wallet";
+      connectWalletButton.append(document.createTextNode("Connect"));
+      connectWalletButton.append(document.createElement("br"));
+      connectWalletButton.append(document.createTextNode("Wallet"));
       lastLabelWasEns = false;
       return;
     }
-    connectWalletButton.innerHTML = `Connected:<br><span class="su-nav-connect-label ${animatedClass}">${label}</span>`;
+    connectWalletButton.append(document.createTextNode("Connected:"));
+    connectWalletButton.append(document.createElement("br"));
+    const labelSpan = document.createElement("span");
+    labelSpan.className = `su-nav-connect-label${animatedClass ? ` ${animatedClass}` : ""}`;
+    labelSpan.textContent = label;
+    connectWalletButton.append(labelSpan);
     lastLabelWasEns = isEns;
   };
 

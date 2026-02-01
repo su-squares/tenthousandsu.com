@@ -238,6 +238,50 @@ export function normalizeHref(href) {
   return `https://${trimmed}`;
 }
 
+/**
+ * Render a safe link or plain text into a container element.
+ * @param {HTMLElement} container
+ * @param {string} hrefRaw
+ * @param {Object} [options]
+ * @param {(href:string) => string} [options.normalize=normalizeHref]
+ * @param {string} [options.anchorId]
+ * @param {string} [options.target="_blank"]
+ * @param {string} [options.rel="noopener"]
+ * @returns {HTMLAnchorElement|null}
+ */
+export function renderSafeLink(container, hrefRaw, options = {}) {
+  if (!container) return null;
+
+  const {
+    normalize = normalizeHref,
+    anchorId,
+    target = "_blank",
+    rel = "noopener",
+  } = options;
+
+  const label = typeof hrefRaw === "string" ? hrefRaw : "";
+  const normalized =
+    typeof normalize === "function" ? normalize(label) : "";
+
+  container.textContent = "";
+
+  if (normalized) {
+    const anchor = document.createElement("a");
+    if (anchorId) {
+      anchor.id = anchorId;
+    }
+    anchor.href = normalized;
+    anchor.target = target;
+    anchor.rel = rel;
+    anchor.textContent = label;
+    container.appendChild(anchor);
+    return anchor;
+  }
+
+  container.textContent = label;
+  return null;
+}
+
 // Expose as globals for IIFE modules (modal-core.js, etc.)
 if (typeof window !== "undefined") {
   window.SuLinkUtils = {
@@ -248,5 +292,6 @@ if (typeof window !== "undefined") {
     isSafeInternalPath,
     classifyUri,
     normalizeHref,
+    renderSafeLink,
   };
 }

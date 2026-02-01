@@ -10,10 +10,14 @@ export function renderErrorView(target, { message, onBack }) {
     <div class="wallet-modal__header">
       <h2 id="wallet-error-title">Error</h2>
     </div>
-    <p class="wallet-helper" id="wallet-error-message" role="alert">${message || "Something went wrong."}</p>
+    <p class="wallet-helper" id="wallet-error-message" role="alert"></p>
     <div class="wallet-actions">
       <button class="wallet-btn" type="button" data-back>Try again</button>
     </div>
   `;
+  const messageNode = target.querySelector("#wallet-error-message");
+  if (messageNode) {
+    messageNode.textContent = message || "Something went wrong.";
+  }
   target.querySelector("[data-back]")?.addEventListener("click", onBack);
 }

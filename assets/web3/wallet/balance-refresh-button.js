@@ -17,7 +17,7 @@ export function getRefreshButtonHTML(options = {}) {
     <button
       type="button"
       class="balance-refresh${spinClass}"
-      aria-label="${ariaLabel}"
+      aria-label="${escapeAttribute(ariaLabel)}"
       data-balance-refresh
       ${loading ? "disabled" : ""}
     >
@@ -166,8 +166,8 @@ export function renderBalanceDisplay(options = {}) {
     `.trim();
     }
 
-    const formatted = balance?.formatted ?? "-";
-    const displaySymbol = balance?.symbol ?? symbol;
+    const formatted = escapeHtml(balance?.formatted ?? "-");
+    const displaySymbol = escapeHtml(balance?.symbol ?? symbol);
 
     return `
     <div class="balance-display">
@@ -175,4 +175,18 @@ export function renderBalanceDisplay(options = {}) {
       ${getRefreshButtonHTML({ loading })}
     </div>
   `.trim();
+}
+
+function escapeHtml(value) {
+    if (value === null || value === undefined) return "";
+    return String(value)
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/\"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
+
+function escapeAttribute(value) {
+    return escapeHtml(value);
 }
