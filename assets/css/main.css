@@ -2,6 +2,7 @@
 :root {
   --color-primary: #2d3c96;
   --color-accent: #ffd700;
+  --color-danger: #8b1f1f;
   --bg-gradient: linear-gradient(to bottom right, #2d3c96, #d53392);
   --button-bg: #4c2b70;
   --button-bg-hover: #412259;

@@ -6,6 +6,16 @@
   justify-content: center;
 }
 
+.personalize-modern-page .personalize-table__toolbar #reset-all {
+  background: var(--color-danger);
+  border-color: var(--color-accent);
+}
+
+.personalize-modern-page .personalize-table__toolbar #reset-all:hover {
+  background: var(--color-danger);
+  filter: brightness(1.1);
+}
+
 .personalize-modern-page .personalize-table__wrapper {
   display: grid;
   grid-template-columns: auto 1fr;
