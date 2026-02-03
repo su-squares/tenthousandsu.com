@@ -29,12 +29,10 @@ jobs:
           path: "update-script"
 
       - name: Wire up update-script
-        env:
-          UPDATE_SCRIPT_CONFIG_JSON: ${{ secrets.UPDATE_SCRIPT_CONFIG_JSON }}
         run: |
           mv build update-script/build
           mv erc721 update-script/build/metadata
-          echo "PROVIDER_URL=$(echo $UPDATE_SCRIPT_CONFIG_JSON | jq -r '.providerUrl')" > update-script/.env
+          echo "PROVIDER_URL=${{ secrets.PROVIDER_URL }}" > update-script/.env
 
       - name: Enable Corepack
         run: corepack enable
