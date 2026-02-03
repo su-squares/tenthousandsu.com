@@ -34,7 +34,7 @@ jobs:
         run: |
           mv build update-script/build
           mv erc721 update-script/build/metadata
-          echo $UPDATE_SCRIPT_CONFIG_JSON > update-script/config.json
+          echo "PROVIDER_URL=$(echo $UPDATE_SCRIPT_CONFIG_JSON | jq -r '.providerUrl')" > update-script/.env
 
       - name: Enable Corepack
         run: corepack enable

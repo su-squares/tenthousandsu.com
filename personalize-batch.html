@@ -10,7 +10,8 @@
 
 <body>
   <header>
-    <a id="logo" href="/"><img src="assets/logo-su-squares.svg" style="width:348px;height:57px;object-fit: cover;" alt="Su Squares logo"></a>
+    <a id="logo" href="/"><img src="assets/logo-su-squares.svg" style="width:348px;height:57px;object-fit: cover;"
+        alt="Su Squares logo"></a>
     <button id="connect-wallet" class="btn">Connect wallet</button>
   </header>
 
@@ -18,10 +19,13 @@
     <h1>Batch personalize</h1>
     <p>
       <em>If you have any questions, please mail <a
-          href="mailto:Su@TenThousandSu.com?subject=Personalize+underlay+batch">Su@TenThousandSu.com</a>. The price to personalize is 0.001 Ether per Square.</em>
+          href="mailto:Su@TenThousandSu.com?subject=Personalize+underlay+batch">Su@TenThousandSu.com</a>. The price to
+        personalize is 0.001 Ether per Square.</em>
     </p>
     <p>
-      Use this page to personalize Su Squares you own on TenThousandSu.com. If your Square was previously personalized using the old, more expensive method you will need to <a href="https://tools.tenthousandsu.com/unpersonalize.html">unpersonalize</a> it first.
+      Use this page to personalize Su Squares you own on TenThousandSu.com. If your Square was previously personalized
+      using the old, more expensive method you will need to <a
+        href="https://tools.tenthousandsu.com/unpersonalize.html">unpersonalize</a> it first.
     </p>
 
     <h2>Select top-left Square</h2>
@@ -38,7 +42,8 @@
     <p><span id="title-count">0</span> of 64 bytes</p>
 
     <h2>Enter URL</h2>
-    <p>Enter a URL for your Squares. Later you can change the URL of each Square individually. Typically this will start with <code>https://</code>.</p>
+    <p>Enter a URL for your Squares. Later you can change the URL of each Square individually. Typically this will start
+      with <code>https://</code>.</p>
     <p>
       <input id="url" type="text" maxlength="96">
     </p>
@@ -47,7 +52,8 @@
     <h2>Upload image</h2>
     <p>Design your image carefully.</p>
     <p>Do not use animation or transparency. PNG and some other formats can be used here.</p>
-    <p>Each Square is 10&times;10 pixels. For example, if the area you want to personalize is 3 Squares wide and 2 Squares tall, your image must be 30&times;20 pixels.</p>
+    <p>Each Square is 10&times;10 pixels. For example, if the area you want to personalize is 3 Squares wide and 2
+      Squares tall, your image must be 30&times;20 pixels.</p>
     <p>
       <input id="image" type="file" accept="image/png, image/jpeg, image/gif">
     </p>
@@ -85,7 +91,8 @@
 
   <footer>
     <small>
-      No cookies. No analytics. To the extent possible under law, Su Entriken has waived all copyright and related or neighboring rights to the TenThousandSu.com website. This work is published from the United States.
+      No cookies. No analytics. To the extent possible under law, Su Entriken has waived all copyright and related or
+      neighboring rights to the TenThousandSu.com website. This work is published from the United States.
     </small>
   </footer>
 
@@ -111,10 +118,10 @@
         "inputs": [
           {
             "components": [
-              {"internalType": "uint256", "name": "squareId", "type": "uint256"},
-              {"internalType": "bytes", "name": "rgbData", "type": "bytes"},
-              {"internalType": "string", "name": "title", "type": "string"},
-              {"internalType": "string", "name": "href", "type": "string"}
+              { "internalType": "uint256", "name": "squareId", "type": "uint256" },
+              { "internalType": "bytes", "name": "rgbData", "type": "bytes" },
+              { "internalType": "string", "name": "title", "type": "string" },
+              { "internalType": "string", "name": "href", "type": "string" }
             ],
             "internalType": "struct SuSquaresUnderlay.Personalization[]", "name": "personalizations", "type": "tuple[]"
           }
@@ -134,7 +141,7 @@
     let personalizationArgs;
 
     // Validate changes to #square-number //////////////////////////////////////////////////////////////////////////////
-    topLeftSquareNumberInput.addEventListener("input", (event)=>{
+    topLeftSquareNumberInput.addEventListener("input", (event) => {
       topLeftSquareNumber = null;
       const value = parseInt(event.target.value);
       if (isNaN(value) || value < 1 || value > 10000) {
@@ -144,7 +151,7 @@
     });
 
     // Validate changes to #title //////////////////////////////////////////////////////////////////////////////////////
-    titleInput.addEventListener("input", (event)=>{
+    titleInput.addEventListener("input", (event) => {
       title = null;
       const length = new TextEncoder().encode(event.target.value).length; // UTF-8 byte length
       titleCountSpan.innerText = length;
@@ -158,7 +165,7 @@
     });
 
     // Validate changes to #url ////////////////////////////////////////////////////////////////////////////////////////
-    urlInput.addEventListener("input", (event)=>{
+    urlInput.addEventListener("input", (event) => {
       url = null;
       const length = new TextEncoder().encode(event.target.value).length; // UTF-8 byte length
       urlCountSpan.innerText = length;
@@ -172,7 +179,7 @@
     });
 
     // Validate changes to #image //////////////////////////////////////////////////////////////////////////////////////
-    imageInput.addEventListener("change", (event)=>{
+    imageInput.addEventListener("change", (event) => {
       imageWidth = null;
       imageHeight = null;
       imagePixelData = null;
@@ -216,9 +223,9 @@
         for (let i = 0; i < contextImageData.data.length; i += 4) {
           const [red, green, blue, alpha] = contextImageData.data.slice(i, i + 4);
           // Mix color to a white background (255) if there is transparency
-          const mixedRed = Math.floor((red * alpha + 255 * (255-alpha)) / 255);
-          const mixedGreen = Math.floor((green * alpha + 255 * (255-alpha)) / 255);
-          const mixedBlue = Math.floor((blue * alpha + 255 * (255-alpha)) / 255);
+          const mixedRed = Math.floor((red * alpha + 255 * (255 - alpha)) / 255);
+          const mixedGreen = Math.floor((green * alpha + 255 * (255 - alpha)) / 255);
+          const mixedBlue = Math.floor((blue * alpha + 255 * (255 - alpha)) / 255);
           if (alpha != 255) alphaWarning = true;
           imagePixelData.push(mixedRed, mixedGreen, mixedBlue);
         }
@@ -233,7 +240,7 @@
     });
 
     // Validate changes to #preflight //////////////////////////////////////////////////////////////////////////////////
-    preflightOutputTextArea.addEventListener("input", (event)=>{
+    preflightOutputTextArea.addEventListener("input", (event) => {
       personalizationArgs = null;
       preflightStatusSpan.innerText = "Contents are not valid.";
       // check that each line has a valid square number, title, url, and pixel data
@@ -388,7 +395,7 @@
       if (!personalizationArgs) {
         return alert("ERROR: Please perform preflight, or manually edit the preflight box and pass validation, then try again.");
       }
-      const doSendTransaction = async ()=>{
+      const doSendTransaction = async () => {
         receiptsDiv.innerHTML = "<p>Sending transaction, waiting for confirmation&hellip;</p>";
         let hash;
         try {
@@ -396,7 +403,7 @@
             address: underlayContractAddress,
             abi: underlayContractABI,
             functionName: "personalizeSquareUnderlayBatch",
-            args: [ personalizationArgs ],
+            args: [personalizationArgs],
             value: BigInt(personalizationArgs.length) * 1000000000000000n, // 0.001 Ether per Square
           });
           console.log('hash', hash);

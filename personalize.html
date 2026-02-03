@@ -10,7 +10,8 @@
 
 <body>
   <header>
-    <a id="logo" href="/"><img src="assets/logo-su-squares.svg" style="width:348px;height:57px;object-fit: cover;" alt="Su Squares logo"></a>
+    <a id="logo" href="/"><img src="assets/logo-su-squares.svg" style="width:348px;height:57px;object-fit: cover;"
+        alt="Su Squares logo"></a>
     <button id="connect-wallet" class="btn">Connect wallet</button>
   </header>
 
@@ -18,10 +19,14 @@
     <h1>Personalize</h1>
     <p>
       <em>If you have any questions, please mail <a
-          href="mailto:Su@TenThousandSu.com?subject=Personalize+underlay+batch">Su@TenThousandSu.com</a>. The price to personalize is 0.001 Ether.</em>
+          href="mailto:Su@TenThousandSu.com?subject=Personalize+underlay+batch">Su@TenThousandSu.com</a>. The price to
+        personalize is 0.001 Ether.</em>
     </p>
     <p>
-      Use this page to personalize a Su Square you own on TenThousandSu.com. To personalize many squares, try the <a href="personalize-batch">batch tool</a>. If your Square was previously personalized using the old, more expensive method you will need to <a href="https://tools.tenthousandsu.com/unpersonalize.html">unpersonalize</a> it first.
+      Use this page to personalize a Su Square you own on TenThousandSu.com. To personalize many squares, try the <a
+        href="personalize-batch">batch tool</a>. If your Square was previously personalized using the old, more
+      expensive method you will need to <a href="https://tools.tenthousandsu.com/unpersonalize.html">unpersonalize</a>
+      it first.
     </p>
 
     <h2>Select a Square</h2>
@@ -69,7 +74,8 @@
 
   <footer>
     <small>
-      No cookies. No analytics. To the extent possible under law, Su Entriken has waived all copyright and related or neighboring rights to the TenThousandSu.com website. This work is published from the United States.
+      No cookies. No analytics. To the extent possible under law, Su Entriken has waived all copyright and related or
+      neighboring rights to the TenThousandSu.com website. This work is published from the United States.
     </small>
   </footer>
 
@@ -90,10 +96,10 @@
     const underlayContractABI = [
       {
         "inputs": [
-          {"internalType": "uint256", "name": "squareId", "type": "uint256"},
-          {"internalType": "bytes", "name": "rgbData", "type": "bytes"},
-          {"internalType": "string", "name": "title", "type": "string"},
-          {"internalType": "string", "name": "href", "type": "string"}
+          { "internalType": "uint256", "name": "squareId", "type": "uint256" },
+          { "internalType": "bytes", "name": "rgbData", "type": "bytes" },
+          { "internalType": "string", "name": "title", "type": "string" },
+          { "internalType": "string", "name": "href", "type": "string" }
         ],
         "name": "personalizeSquareUnderlay",
         "outputs": [],
@@ -108,7 +114,7 @@
 
     // Validate changes to #square-number //////////////////////////////////////////////////////////////////////////////
     // todo: look up and show warnings if Square is personalized on main contract (which occludes)
-    squareNumberInput.addEventListener("input", (event)=>{
+    squareNumberInput.addEventListener("input", (event) => {
       squareNumber = null;
       const value = parseInt(event.target.value);
       if (isNaN(value) || value < 1 || value > 10000) {
@@ -118,7 +124,7 @@
     });
 
     // Validate changes to #title //////////////////////////////////////////////////////////////////////////////////////
-    titleInput.addEventListener("input", (event)=>{
+    titleInput.addEventListener("input", (event) => {
       title = null;
       const length = new TextEncoder().encode(event.target.value).length; // UTF-8 byte length
       titleCountSpan.innerText = length;
@@ -132,7 +138,7 @@
     });
 
     // Validate changes to #url ////////////////////////////////////////////////////////////////////////////////////////
-    urlInput.addEventListener("input", (event)=>{
+    urlInput.addEventListener("input", (event) => {
       url = null;
       const length = new TextEncoder().encode(event.target.value).length; // UTF-8 byte length
       urlCountSpan.innerText = length;
@@ -146,7 +152,7 @@
     });
 
     // Validate changes to #image //////////////////////////////////////////////////////////////////////////////////////
-    imageInput.addEventListener("change", (event)=>{
+    imageInput.addEventListener("change", (event) => {
       imagePixelsHex = null;
       imageStatusSpan.innerText = "Loading image…";
       imagePreviewCanvas.width = 0;
@@ -176,11 +182,11 @@
         let alphaWarning = false;
         imagePixelsHex = "0x";
         for (let i = 0; i < contextImageData.data.length; i += 4) {
-          const [red, green, blue, alpha] = contextImageData.data.slice(i, i+4);
+          const [red, green, blue, alpha] = contextImageData.data.slice(i, i + 4);
           // Mix color to a white background (255) if there is transparency
-          const mixedRed = Math.floor((red * alpha + 255 * (255-alpha)) / 255);
-          const mixedGreen = Math.floor((green * alpha + 255 * (255-alpha)) / 255);
-          const mixedBlue = Math.floor((blue * alpha + 255 * (255-alpha)) / 255);
+          const mixedRed = Math.floor((red * alpha + 255 * (255 - alpha)) / 255);
+          const mixedGreen = Math.floor((green * alpha + 255 * (255 - alpha)) / 255);
+          const mixedBlue = Math.floor((blue * alpha + 255 * (255 - alpha)) / 255);
           if (alpha != 255) alphaWarning = true;
           imagePixelsHex += mixedRed.toString(16).padStart(2, "0");
           imagePixelsHex += mixedGreen.toString(16).padStart(2, "0");
@@ -202,7 +208,7 @@
       squareNumberInput.value = urlParams.get("square");
       squareNumberInput.dispatchEvent(new Event("input"));
     }
-    
+
     // Web3Modal setup /////////////////////////////////////////////////////////////////////////////////////////////////
     // Using @web3modal/cdn which provides a bundled version for browser usage
     // Hack from https://github.com/WalletConnect/web3modal-examples/issues/46
@@ -245,7 +251,7 @@
     });
 
     // Handle personalize button ///////////////////////////////////////////////////////////////////////////////////////
-    personalizeButton.addEventListener("click", async ()=>{
+    personalizeButton.addEventListener("click", async () => {
       if (!squareNumber) {
         return alert("Please enter a Square number.");
       }
@@ -258,7 +264,7 @@
       if (!imagePixelsHex) {
         return alert("Please select an image.");
       }
-      const doSendTransaction = async ()=>{
+      const doSendTransaction = async () => {
         receiptsDiv.innerHTML = "<p>Sending transaction, waiting for confirmation&hellip;</p>";
         let hash;
         try {
@@ -266,7 +272,7 @@
             address: underlayContractAddress,
             abi: underlayContractABI,
             functionName: "personalizeSquareUnderlay",
-            args: [ BigInt(squareNumber), imagePixelsHex, title, url ],
+            args: [BigInt(squareNumber), imagePixelsHex, title, url],
             value: BigInt("1000000000000000"), // 0.001 Ether
           });
           console.log('hash', hash);

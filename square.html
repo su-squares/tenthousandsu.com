@@ -51,7 +51,7 @@
 
     <h2>Location</h2>
     <div style="position:relative;height:1000px; zoom: 0.5">
-      <img id="theImage" src="build/wholeSquare.png" alt="All Su Squares" style="height:1000px; width:1000px">
+      <img id="theImage" src="build/wholeSquare.webp" alt="All Su Squares" style="height:1000px; width:1000px">
       <img id="arrow" src="assets/dr.png" alt="Location" style="height:100px; width:100px; position:absolute">
     </div>
 
@@ -102,7 +102,7 @@
       const row = Math.floor((squareNumber - 1) / 100); // 0 indexed
       const col = (squareNumber - 1) % 100; // 0 indexed
       const elImage = document.getElementById('image');
-      elImage.style.backgroundImage = 'url("build/wholeSquare.png")';
+      elImage.style.backgroundImage = 'url("build/wholeSquare.webp")';
       elImage.style.backgroundPosition = `-${col * 10}px -${row * 10}px`;
       elImage.style.height = '10px';
       elImage.style.width = '10px';
@@ -154,7 +154,7 @@
       // Add wholeSquare to canvas
       const context = canvas.getContext('2d');
       const image = new Image();
-      image.src = 'build/wholeSquare.png';
+      image.src = 'build/wholeSquare.webp';
       image.onload = function () {
         context.drawImage(image, col * 10, row * 10, 10, 10, 0, 0, 10, 10);
         // Get pixels

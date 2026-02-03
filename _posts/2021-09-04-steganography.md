@@ -92,13 +92,13 @@ strings fav.rgb
 Let's find out! First, download the main image with all the Squares.
 
 ```sh
-wget https://tenthousandsu.com/build/wholeSquare.png
+wget https://tenthousandsu.com/build/wholeSquare.webp
 ```
 
 Use one command to split that out into 10,000 constituent images:
 
 ```sh
-convert wholeSquare.png -crop 10x10 square.png
+convert wholeSquare.webp -crop 10x10 square.png
 ```
 
 :information_source: Note that ImageMagick starts numbering at zero, so the image square-0.png corresponds to Su Square 1.
