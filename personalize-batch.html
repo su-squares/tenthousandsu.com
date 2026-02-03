@@ -343,40 +343,44 @@
     });
 
     // Web3Modal setup /////////////////////////////////////////////////////////////////////////////////////////////////
-    // warning: Web3Modal does not use SRI, error reported at https://github.com/WalletConnect/web3modal/issues/1305
-    // documentation from https://docs.walletconnect.com/2.0/web3modal/html/wagmi/installation
-    // hack from https://github.com/WalletConnect/web3modal-examples/issues/46
+    // Using @web3modal/cdn which provides a bundled version for browser usage
+    // Hack from https://github.com/WalletConnect/web3modal-examples/issues/46
     window.process = { env: { NODE_ENV: "development" } };
-    import {
-      EthereumClient,
-      w3mConnectors,
-      w3mProvider,
-      WagmiCore, // same as from @wagmi/core
-      WagmiCoreChains, // same as from @wagmi/core/chains
-    } from 'https://unpkg.com/@web3modal/ethereum@2.7.1'
-    import { Web3Modal } from 'https://unpkg.com/@web3modal/html@2.7.1'
-    const { configureChains, createConfig, writeContract, waitForTransaction } = WagmiCore;
-    const { mainnet } = WagmiCoreChains;
+    const { Web3modal, WagmiCore, Chains } = await import(
+      "https://cdn.jsdelivr.net/npm/@web3modal/cdn@5.1.11/dist/wagmi.js"
+    );
+    const { createWeb3Modal, defaultWagmiConfig } = Web3modal;
+    const { mainnet } = Chains;
+    const { reconnect, getAccount, watchAccount, writeContract, waitForTransactionReceipt } = WagmiCore;
     const walletConnectProjectId = '2aca272d18deb10ff748260da5f78bfd';
     const chains = [mainnet];
-    const { publicClient } = configureChains(chains, [w3mProvider({ projectId: walletConnectProjectId })]);
-    const wagmiConfig = createConfig({
-      autoConnect: true,
-      connectors: w3mConnectors({ projectId: walletConnectProjectId, chains }),
-      publicClient
+    const wagmiConfig = defaultWagmiConfig({
+      chains,
+      projectId: walletConnectProjectId,
+      metadata: {
+        name: 'Su Squares',
+        description: 'Own a piece of the Ethereum blockchain',
+        url: 'https://tenthousandsu.com',
+        icons: ['https://tenthousandsu.com/assets/logo-su-squares.svg']
+      }
     });
-    const ethereumClient = new EthereumClient(wagmiConfig, chains);
-    // todo: remove WalletConnect as the huge default option
-    const web3modal = new Web3Modal({ projectId: walletConnectProjectId }, ethereumClient);
+    reconnect(wagmiConfig);
+    const web3modal = createWeb3Modal({
+      wagmiConfig,
+      projectId: walletConnectProjectId,
+      chains
+    });
 
     // Handle connect wallet button and its animation //////////////////////////////////////////////////////////////////
-    ethereumClient.watchAccount((account) => {
-      connectWalletButton.innerText = account.isConnected
-        ? "Connected: " + account.address.slice(0, 6) + "\u2026" + account.address.slice(-4)
-        : "Connect wallet";
+    watchAccount(wagmiConfig, {
+      onChange: (account) => {
+        connectWalletButton.innerText = account.isConnected
+          ? "Connected: " + account.address.slice(0, 6) + "\u2026" + account.address.slice(-4)
+          : "Connect wallet";
+      }
     });
     document.getElementById('connect-wallet').addEventListener('click', () => {
-      web3modal.openModal()
+      web3modal.open();
     });
 
     // Handle personalize button ///////////////////////////////////////////////////////////////////////////////////////
@@ -386,38 +390,38 @@
       }
       const doSendTransaction = async ()=>{
         receiptsDiv.innerHTML = "<p>Sending transaction, waiting for confirmation&hellip;</p>";
-        let result;
+        let hash;
         try {
-          result = await writeContract({
+          hash = await writeContract(wagmiConfig, {
             address: underlayContractAddress,
             abi: underlayContractABI,
             functionName: "personalizeSquareUnderlayBatch",
             args: [ personalizationArgs ],
             value: BigInt(personalizationArgs.length) * 1000000000000000n, // 0.001 Ether per Square
           });
-          const transaction = await waitForTransaction({ hash: result.hash });
-          receiptsDiv.innerHTML = `<h3>Transaction confirmed</h3><p>Transaction ID: <a target="_blank" href="https://etherscan.io/tx/${transaction.transactionHash}">${transaction.transactionHash}</a>. Your image will show on the Su Squares homepage, which <a target="_blank" href="https://github.com/su-squares/tenthousandsu.com/actions/workflows/load-from-blockchain.yml">refreshes hourly</a>.`;
+          console.log('hash', hash);
+          const receipt = await waitForTransactionReceipt(wagmiConfig, { hash });
+          console.log('receipt', receipt);
+          receiptsDiv.innerHTML = `<h3>Transaction confirmed</h3><p>Transaction ID: <a target="_blank" href="https://etherscan.io/tx/${receipt.transactionHash}">${receipt.transactionHash}</a>. Your image will show on the Su Squares homepage, which <a target="_blank" href="https://github.com/su-squares/tenthousandsu.com/actions/workflows/load-from-blockchain.yml">refreshes hourly</a>.`;
         } catch (error) {
           console.log(error);
           return alert(error.message);
         }
       };
       // If the wallet is not connected, connect it
-      if (!ethereumClient.getAccount().isConnected) {
+      const account = getAccount(wagmiConfig);
+      if (!account.isConnected) {
         // Arm on connecting wallet, if connected then fire the transaction
-        const accountConnectionUnsubscriber = ethereumClient.watchAccount((account) => {
-          if (account.isConnected) {
-            doSendTransaction();
+        const unwatch = watchAccount(wagmiConfig, {
+          onChange: (newAccount) => {
+            if (newAccount.isConnected) {
+              unwatch();
+              doSendTransaction();
+            }
           }
         });
-        // Disarm if modal is closed
-        const modalUnsubscriber = web3modal.subscribeModal((modalState) => {
-          if (!modalState.open) {
-            accountConnectionUnsubscriber();
-            modalUnsubscriber();
-          }
-        });
-        await web3modal.openModal();
+        // Open modal to connect
+        web3modal.open();
       } else {
         // The wallet is connected, fire the transaction
         doSendTransaction();
