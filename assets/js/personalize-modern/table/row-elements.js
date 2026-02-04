@@ -239,7 +239,7 @@ export function buildRowElements({
 
   const fileInput = document.createElement("input");
   fileInput.type = "file";
-  fileInput.accept = "image/png, image/jpeg, image/gif";
+  fileInput.accept = "image/png, image/jpeg, image/gif, image/webp";
   fileInput.className = "personalize-table__file-input";
 
   uploadButton.addEventListener("click", () => fileInput.click());
