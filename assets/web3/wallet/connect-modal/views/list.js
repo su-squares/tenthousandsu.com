@@ -33,10 +33,16 @@ function connectorUid(connector) {
 
 function isUnsafeIconUrl(url) {
   if (!url || typeof url !== "string") return true;
-  const match = url.trim().match(/^([a-zA-Z][a-zA-Z0-9+.-]*):/);
+  const trimmed = url.trim();
+  const match = trimmed.match(/^([a-zA-Z][a-zA-Z0-9+.-]*):/);
   if (!match) return false;
   const scheme = match[1].toLowerCase();
-  return scheme === "javascript" || scheme === "data" || scheme === "vbscript";
+  if (scheme === "javascript" || scheme === "vbscript") return true;
+  if (scheme === "data") {
+    // Allow data image URIs (EIP-6963 icons are commonly data: URLs).
+    return !/^data:image\/(png|jpe?g|webp|gif|svg\+xml)(;[^,]*)?,/i.test(trimmed);
+  }
+  return false;
 }
 
 /**
