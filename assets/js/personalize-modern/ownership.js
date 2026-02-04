@@ -56,20 +56,19 @@ export async function ensureOwnershipLoaded(options = {}) {
     return state.ownedSquares;
   }
 
-  if (!forceRefresh && state.ownershipStatus === "loading" && ownershipPromise) {
+  if (!forceRefresh && ownershipPromise) {
     store.setOwnershipRequestContext(source);
     return ownershipPromise;
   }
-
-  store.setOwnershipRequestContext(source);
-  store.setOwnershipStatus("loading");
-  store.setOwnershipProgress(0, null);
 
   const updateProgress = createProgressUpdater(store);
 
   const runFetch = async (clients) => {
     const account = clients?.getAccount?.();
     if (!account?.address) return null;
+    store.setOwnershipRequestContext(source);
+    store.setOwnershipStatus("loading");
+    store.setOwnershipProgress(0, null);
     return fetchOwnedSquares(account.address, clients, {
       onProgress: updateProgress,
       forceRefresh,
@@ -90,8 +89,10 @@ export async function ensureOwnershipLoaded(options = {}) {
 
     const owned = await runFetch(clients);
     if (!owned) {
-      store.setOwnershipStatus("idle");
-      store.setOwnershipProgress(0, null);
+      if (store.getState().ownershipStatus === "loading") {
+        store.setOwnershipStatus("idle");
+        store.setOwnershipProgress(0, null);
+      }
       return null;
     }
 
