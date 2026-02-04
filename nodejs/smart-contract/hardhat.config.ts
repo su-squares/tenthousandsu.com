@@ -72,10 +72,7 @@ const config: HardhatUserConfig = {
     },
   },
   etherscan: {
-    apiKey: {
-      sepolia: process.env.ETHERSCAN_API_KEY || "",
-      sunet: sunetEnv?.BLOCKSCOUT_API_KEY || "blockscout-api-key",
-    },
+    apiKey: process.env.ETHERSCAN_API_KEY || "",
     customChains: [
       {
         network: "sunet",
