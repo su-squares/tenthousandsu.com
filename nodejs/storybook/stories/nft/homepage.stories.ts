@@ -141,7 +141,7 @@ function initMapInteractions(root: HTMLElement, data: { personalizations: Square
   const wrapperEl = wrapper;
   const anchorEl = anchor;
 
-  const boardUrl = resolveAssetUrl("/build/wholeSquare.png");
+  const boardUrl = resolveAssetUrl("/build/wholeSquare.webp");
   mapImageEl.src = boardUrl;
   if (statusEl) {
     statusEl.textContent = "Hover or tap to inspect squares.";
@@ -288,7 +288,7 @@ function buildFeedItems(entries: Array<{ square: number; row: number; col: numbe
   if (!listEl) return;
   listEl.querySelectorAll<HTMLElement>("[data-feed-placeholder]").forEach((node) => node.remove());
 
-  const boardUrl = resolveAssetUrl("/build/wholeSquare.png");
+  const boardUrl = resolveAssetUrl("/build/wholeSquare.webp");
   if (!entries.length) {
     const emptyState = document.createElement("p");
     emptyState.style.margin = "0";

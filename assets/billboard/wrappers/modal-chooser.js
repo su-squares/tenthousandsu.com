@@ -211,7 +211,7 @@ export function attachBillboardChooser({
       enableGrid: true,
       enableKeyboard: true,
       allowBlockedSelection: true,
-      imageSrc: assetPath("wholeSquare.png"),
+      imageSrc: assetPath("wholeSquare.webp"),
       imageAlt: "All Su Squares",
       gridTestId: "billboard-modal-grid",
       filter: (squareNumber, ctx) => filter(squareNumber, ctx),
@@ -247,7 +247,7 @@ export function attachBillboardChooser({
     scheduleBillboardRuntimeFallback({
       onChange: () => {
         if (billboard?.elements?.image) {
-          billboard.elements.image.src = assetPath("wholeSquare.png");
+          billboard.elements.image.src = assetPath("wholeSquare.webp");
         }
       },
     });

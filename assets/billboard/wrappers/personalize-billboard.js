@@ -68,7 +68,7 @@ export function initPersonalizeBillboard(options) {
     enablePanZoom: true,
     enableCoreBlocklists: false,
     allowBlockedSelection: true,
-    imageSrc: assetPath("wholeSquare.png"),
+    imageSrc: assetPath("wholeSquare.webp"),
     imageAlt: "Su Squares billboard",
     gridClassName: "personalize-billboard__grid",
     cellClassName: "personalize-billboard__cell",
@@ -480,7 +480,7 @@ export function initPersonalizeBillboard(options) {
   const stopRuntimeFallback = scheduleBillboardRuntimeFallback({
     onChange: () => {
       if (billboard?.elements?.image) {
-        billboard.elements.image.src = assetPath("wholeSquare.png");
+        billboard.elements.image.src = assetPath("wholeSquare.webp");
       }
     },
   });

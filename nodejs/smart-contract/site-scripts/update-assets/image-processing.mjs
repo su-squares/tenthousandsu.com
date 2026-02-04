@@ -37,7 +37,7 @@ async function loadBaseBoard({ emptyBoardPath, builtBoardPath }) {
 
 function createImagePipeline({ repoRoot, buildDir, metadataDir }) {
   const EMPTY_BOARD = path.join(repoRoot, "assets", "empty-board.png");
-  const BUILT_BOARD = path.join(buildDir, "wholeSquare.png");
+  const BUILT_BOARD = path.join(buildDir, "wholeSquare.webp");
   const fontBase64 = safeRead(path.join(repoRoot, "assets", "Inter-bold-subset.txt")) || "";
   const composites = [];
 

@@ -2,7 +2,7 @@
 /**
  * Chain-aware asset builder for Su Squares.
  * Outputs:
- * - build[-<network>]/{loadedTo.json,squarePersonalizations.json,underlayPersonalizations.json,squareExtra.json,wholeSquare.png}
+ * - build[-<network>]/{loadedTo.json,squarePersonalizations.json,underlayPersonalizations.json,squareExtra.json,wholeSquare.webp}
  * - erc721[-<network>]/{#####.json,#####.svg}
  */
 import fs from "fs";

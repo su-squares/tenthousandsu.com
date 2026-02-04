@@ -333,7 +333,7 @@ export function initHomepageBillboard(options) {
   scheduleBillboardRuntimeFallback({
     onChange: () => {
       if (image) {
-        image.src = assetPath("wholeSquare.png");
+        image.src = assetPath("wholeSquare.webp");
       }
     },
   });

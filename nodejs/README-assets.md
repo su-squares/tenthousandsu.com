@@ -33,7 +33,7 @@ pnpm run assets:update:sunet      # or assets:update:sepolia
 ```
 
 Outputs:
-- `build-sunet/` or `build-sepolia/` (JSON + `wholeSquare.png`)
+- `build-sunet/` or `build-sepolia/` (JSON + `wholeSquare.webp`)
 - `erc721-sunet/` or `erc721-sepolia/` (metadata + SVGs; gitignored)
 
 ### 5) Serve the site

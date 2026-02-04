@@ -146,7 +146,7 @@ export function initEmbedBillboard(options) {
 
   const image = document.createElement("img");
   image.className = "embed-billboard__image";
-  image.src = assetPath("wholeSquare.png");
+  image.src = assetPath("wholeSquare.webp");
   image.alt = "Su Squares Billboard";
   image.draggable = false;
 
@@ -504,7 +504,7 @@ export function initEmbedBillboard(options) {
 
   const stopRuntimeFallback = scheduleBillboardRuntimeFallback({
     onChange: () => {
-      image.src = assetPath("wholeSquare.png");
+      image.src = assetPath("wholeSquare.webp");
       loadData();
     },
   });
