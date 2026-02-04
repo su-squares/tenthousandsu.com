@@ -47,6 +47,12 @@ Fallback (one-time sync):
 pnpm run update:assets:<network>
 ```
 
+> [!NOTE]
+> Only if you redeployed after previously running `update:assets` or `listen:*` and you now plan to use the dapp:
+> reset cached assets first, then rebuild.
+> Example: `pnpm run delete:<network>` then `pnpm run update:assets:<network>`.
+> If you deployed once and went straight to the dapp, you can ignore this note.
+
 ## 3) Generate Runtime Config
 
 This writes `assets/web3/config/runtime.generated.js` from `.env.site`.

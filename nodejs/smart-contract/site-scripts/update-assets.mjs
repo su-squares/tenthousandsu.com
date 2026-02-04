@@ -54,6 +54,24 @@ function buildPaths(network) {
   };
 }
 
+function makeChunkLogger(label, fromBlock, toBlock) {
+  const totalBlocks = Math.max(1, toBlock - fromBlock + 1);
+  let lastPct = -1;
+  const useInline = Boolean(process.stdout.isTTY);
+  return ({ from, to, step }) => {
+    const pct = Math.min(100, Math.floor(((to - fromBlock + 1) / totalBlocks) * 100));
+    if (pct === lastPct) return;
+    lastPct = pct;
+    const line = `${label}: ${pct}% (blocks ${from}-${to}, step ${step})`;
+    if (useInline) {
+      process.stdout.write(`\r${line}`);
+      if (pct === 100) process.stdout.write("\n");
+    } else {
+      console.log(chalk.gray(line));
+    }
+  };
+}
+
 async function main() {
   const { network, blocksToProcess } = parseArgs();
   const paths = buildPaths(network);
@@ -107,18 +125,21 @@ async function main() {
   const sold = await queryFilterChunked(suSquaresConnected, filterSold, state.loadedTo + 1, endBlock, {
     initialStep: Number.isFinite(INITIAL_STEP) ? INITIAL_STEP : 2000,
     minStep: Number.isFinite(MIN_STEP) ? MIN_STEP : 25,
+    onChunk: makeChunkLogger("Sold scan", state.loadedTo + 1, endBlock),
   });
 
   const filterPersonalized = suSquaresConnected.filters.Personalized();
   const personalized = await queryFilterChunked(suSquaresConnected, filterPersonalized, state.loadedTo + 1, endBlock, {
     initialStep: Number.isFinite(INITIAL_STEP) ? INITIAL_STEP : 2000,
     minStep: Number.isFinite(MIN_STEP) ? MIN_STEP : 25,
+    onChunk: makeChunkLogger("Main personalized scan", state.loadedTo + 1, endBlock),
   });
 
   const filterUnderlay = underlayConnected.filters.PersonalizedUnderlay();
   const personalizedUnderlay = await queryFilterChunked(underlayConnected, filterUnderlay, state.loadedTo + 1, endBlock, {
     initialStep: Number.isFinite(INITIAL_STEP) ? INITIAL_STEP : 2000,
     minStep: Number.isFinite(MIN_STEP) ? MIN_STEP : 25,
+    onChunk: makeChunkLogger("Underlay personalized scan", state.loadedTo + 1, endBlock),
   });
 
   if (personalized.length > 100) {
