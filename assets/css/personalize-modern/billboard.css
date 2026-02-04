@@ -207,6 +207,14 @@
 .personalize-modern-page .personalize-billboard .personalize-billboard__reset-all {
   background: var(--color-danger);
   border-color: var(--color-accent);
+  white-space: nowrap;
+}
+
+.personalize-modern-page .personalize-billboard .personalize-billboard__upload {
+  white-space: normal;
+  width: 6.5em;
+  text-align: center;
+  line-height: 1.1;
 }
 
 .personalize-modern-page .personalize-billboard .personalize-billboard__reset-all:hover {
@@ -217,6 +225,7 @@
 .personalize-modern-page .personalize-billboard__update.is-invisible {
   opacity: 0;
   pointer-events: none;
+  display: none;
 }
 
 .personalize-modern-page .personalize-billboard__view {
@@ -619,5 +628,10 @@
   .personalize-modern-page .personalize-billboard__mode-row {
     order: 5;
     margin-top: 0;
+  }
+  .personalize-modern-page .personalize-billboard__controls {
+    flex-wrap: wrap;
+    gap: 0.6rem 0.75rem;
+    justify-content: center;
   }
 }
