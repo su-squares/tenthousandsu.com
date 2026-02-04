@@ -49,7 +49,7 @@ If they want specific parts, present the activities list below and ask which one
 ## 1) Homepage billboard tour (`/`)
 
 - This is the full 10,000-square billboard (hover for tooltips, click to open links).
-- Empty squares are mintable; minted squares show their tooltip title.
+- Empty squares are mintable; minted Squares show their tooltip title.
 - If you already personalized squares, they should appear here.
 - Secondary note: some squares and links are blocklisted and will show a blocked tooltip or modal.
 
@@ -68,7 +68,7 @@ If they want specific parts, present the activities list below and ask which one
 ## 4) Personalize flow
 
 - Recommended: `/personalize-modern` (billboard + table workflow).
-  - Use "Show my Squares" to load holdings, select squares on the billboard, and fill the table.
+  - Use "Show my Squares" to load holdings, select Squares on the billboard, and fill the table.
   - Use the Instructions accordion for CSV and image batch tools.
 - Legacy (historical): `/personalize` (single) and `/personalize-batch` (rectangular batch).
 
@@ -80,7 +80,7 @@ If they want specific parts, present the activities list below and ask which one
 ## 6) Square lookup (`/square`)
 
 - Use the "Square look up" section on the homepage or the narrow version on `/square`.
-- Enter an ID or use "Choose from list" / "Choose from billboard", then click "Look up".
+- Enter an ID or use "Choose from list" / "Choose from Billboard", then click "Look up".
 - The square details page shows:
   - Minted and personalized block numbers
   - Title and link

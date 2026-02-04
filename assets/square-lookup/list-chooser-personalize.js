@@ -30,7 +30,7 @@ export function attachListChooserPersonalize(options) {
   const onConfirm = options.onConfirm || (() => {});
   const onOpen = options.onOpen || (() => {});
   const onClose = options.onClose || (() => {});
-  const title = options.title || "Select squares then press okay";
+  const title = options.title || "Select Squares then press okay";
   const description = options.description || "";
 
   trigger.setAttribute("aria-haspopup", "dialog");

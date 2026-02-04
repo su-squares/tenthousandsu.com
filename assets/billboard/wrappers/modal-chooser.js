@@ -94,7 +94,7 @@ function resolveTooltipProfile(mode) {
  * @param {HTMLInputElement} [options.input] - Element to receive the chosen number
  * @param {(id: number, ctx: Object) => boolean} [options.filter] - Filter function
  * @param {(id: number) => void} [options.onSelect] - Callback when a square is chosen
- * @param {string} [options.title="Choose square from billboard"] - Title text for the modal
+ * @param {string} [options.title="Choose Square from Billboard"] - Title text for the modal
  * @param {boolean} [options.updateInput=true] - Whether to write selection into input
  * @returns {{ open: () => Promise<void>, close: () => void }}
  */
@@ -103,7 +103,7 @@ export function attachBillboardChooser({
   input,
   filter = () => true,
   onSelect = () => {},
-  title = "Choose square from billboard",
+  title = "Choose Square from Billboard",
   updateInput = true,
   tooltipMode = "lookup",
 }) {

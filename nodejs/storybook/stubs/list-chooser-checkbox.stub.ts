@@ -237,7 +237,7 @@ export function attachCheckboxListChooserWithStubData(options: AttachCheckboxLis
   }
 
   currentOnSelectionChange = options.onSelectionChange ?? (() => {});
-  currentTitle = options.title ?? "Select squares then press okay";
+  currentTitle = options.title ?? "Select Squares then press okay";
   currentDescription = options.description ?? "";
 
   currentFilter =

@@ -40,7 +40,7 @@ export function initPersonalizeChooser({
 
   return attachListChooserPersonalize({
     trigger,
-    title: "Select squares then press okay",
+    title: "Select Squares then press okay",
     description: "Choose the Squares you want to personalize.",
     getSquares,
     getSelectedIds,

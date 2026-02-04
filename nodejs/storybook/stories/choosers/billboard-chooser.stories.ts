@@ -136,7 +136,7 @@ export const LiveBillboardChooser: Story = {
         input,
         trigger,
         filter,
-        title: "Choose square from billboard",
+        title: "Choose Square from billboard",
         // eslint-disable-next-line no-console
         onSelect: (id) => console.log("Selected square from live billboard:", id),
       });
@@ -182,7 +182,7 @@ export const AlwaysOpenBillboardChooser: Story = {
     alwaysOpenBillboardChooserHandle = attachBillboardChooser({
       trigger,
       filter: buildBillboardFilter(args.filterMode),
-      title: "Choose square from billboard",
+      title: "Choose Square from billboard",
       // eslint-disable-next-line no-console
       onSelect: (id) => console.log("Selected square from always-open billboard chooser:", id),
     });

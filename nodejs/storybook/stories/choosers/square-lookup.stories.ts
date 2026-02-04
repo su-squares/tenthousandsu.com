@@ -42,12 +42,12 @@ export const SquareLookup: Story = {
   render: (args) => `
     <article class="square-lookup${args.variant === "narrow" ? " square-lookup--narrow" : ""}" id="pick-a-square-lookup">
       <h2 style="color: var(--color-accent, #ffd700);">Square look up</h2>
-      <p style="color: var(--color-accent, #ffd700);">Enter an already minted square to look up information about it.</p>
+      <p style="color: var(--color-accent, #ffd700);">Enter an already minted Square to look up information about it.</p>
       <div class="square-lookup__controls">
         <input id="${INPUT_ID}" type="number" min="1" max="10000" inputmode="numeric" placeholder="e.g. 8503">
         <div class="square-lookup__actions">
           <button id="${LIST_BUTTON_ID}" type="button">Choose from list</button>
-          <button id="${BILLBOARD_BUTTON_ID}" type="button">Choose from billboard</button>
+          <button id="${BILLBOARD_BUTTON_ID}" type="button">Choose from Billboard</button>
         </div>
       </div>
       <button id="${SUBMIT_BUTTON_ID}" type="button" class="btn btn-lg square-lookup__submit">Look up</button>
@@ -85,7 +85,7 @@ export const SquareLookup: Story = {
         console.log("Selected square from billboard:", id);
       },
       updateInput: true,
-      title: "Choose square from billboard"
+      title: "Choose Square from billboard"
     });
 
     input.addEventListener("input", () => {

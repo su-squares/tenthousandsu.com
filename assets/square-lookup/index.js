@@ -103,7 +103,7 @@ if (input && chooseButton && submitButton) {
           goToSquare(id);
         },
         updateInput: false,
-        title: "Choose square from billboard",
+        title: "Choose Square from Billboard",
         tooltipMode: "lookup",
       });
       return billboardChooserHandle;
