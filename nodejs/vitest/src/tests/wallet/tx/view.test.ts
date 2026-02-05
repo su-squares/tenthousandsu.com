@@ -160,6 +160,20 @@ describe('tx/view.js', () => {
     expect(pendingLink?.textContent).toBe('0x123456...abcdef');
   });
 
+  it('should not render anchor for blocked scheme URLs', () => {
+    const state = createMockTxState({
+      status: 'pending',
+      pending: [{ hash: '0x1234567890abcdef', url: 'javascript:alert(1)' }]
+    });
+
+    renderTxView(container, state, {});
+
+    const pendingLink = queryBySelector<HTMLAnchorElement>(container, '.su-tx-list__item a');
+    expect(pendingLink).toBeNull();
+    const pendingItem = queryBySelector(container, '.su-tx-list__item');
+    expect(pendingItem?.textContent).toContain('0x123456...abcdef');
+  });
+
   it('should render wallet and cancel buttons and invoke handlers', () => {
     const onOpenWallet = vi.fn();
     const onCancel = vi.fn();

@@ -159,6 +159,24 @@ describe('account-modal/account-view.js', () => {
 
       expect(target.innerHTML).toContain('Not connected');
     });
+
+    it('escapes ENS name and network label', () => {
+      const target = createMockTarget();
+      const data = createMockData({ ensName: '<img src=x onerror=alert(1)>' });
+      const options = createMockOptions({
+        activeNetwork: { chainId: 1, label: '<svg onload=alert(1)></svg>' },
+      });
+
+      renderAccountView(target, data, options);
+
+      const ensNode = target.querySelector('.wallet-status__details > div');
+      const labelNode = target.querySelector('.wallet-chain > div:not(.wallet-chain__icon) > div');
+
+      expect(ensNode?.textContent).toBe('<img src=x onerror=alert(1)>');
+      expect(ensNode?.querySelector('img')).toBeNull();
+      expect(labelNode?.textContent).toBe('<svg onload=alert(1)></svg>');
+      expect(labelNode?.querySelector('svg')).toBeNull();
+    });
   });
 
   describe('balance display', () => {

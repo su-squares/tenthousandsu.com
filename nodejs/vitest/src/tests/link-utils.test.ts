@@ -4,6 +4,7 @@ import {
   isHttpScheme,
   classifyUri,
   normalizeHref,
+  renderSafeLink,
   isSafeInternalPath,
   URI_CLASSIFICATION
 } from '../../../../assets/js/link-utils.js';
@@ -410,6 +411,28 @@ describe('link-utils', () => {
     it('should trim whitespace', () => {
       expect(normalizeHref('  example.com  ')).toBe('https://example.com');
       expect(normalizeHref('  /path  ')).toBe('/path');
+    });
+  });
+
+  describe('renderSafeLink', () => {
+    it('renders text-only when URL is blocked', () => {
+      const container = document.createElement('div');
+
+      renderSafeLink(container, 'javascript:alert(1)');
+
+      expect(container.querySelector('a')).toBeNull();
+      expect(container.textContent).toBe('javascript:alert(1)');
+    });
+
+    it('renders anchor when URL is safe', () => {
+      const container = document.createElement('div');
+
+      renderSafeLink(container, 'example.com');
+
+      const anchor = container.querySelector('a');
+      expect(anchor).toBeTruthy();
+      expect(anchor?.getAttribute('href')).toBe('https://example.com');
+      expect(anchor?.textContent).toBe('example.com');
     });
   });
 });
