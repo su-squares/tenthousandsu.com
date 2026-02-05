@@ -20,6 +20,7 @@ import { normalizePricing } from "./formatting.js";
  * @property {"idle"|"processing"|"pending"|"success"|"error"} status
  * @property {string} title
  * @property {string} message
+ * @property {boolean} messageTrusted - If true, message contains trusted HTML that should not be escaped
  * @property {string} helpText
  * @property {Array<{hash:string,url?:string}>} pending
  * @property {Array<{hash:string,url?:string}>} confirmed
@@ -49,6 +50,7 @@ export function createInitialState(options = {}) {
     status: "idle",
     title: options.title || "Transaction status",
     message: options.message || "",
+    messageTrusted: false,
     helpText: "",
     pending: [],
     confirmed: [],

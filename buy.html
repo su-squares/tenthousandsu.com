@@ -297,7 +297,8 @@ image: "{{ site.baseurl }}/assets/images/su-OG.png"
           txUi.markSuccess(
             transaction.transactionHash,
             txUrl,
-            `Transaction confirmed. Next, go to the <a href="${personalizeHref}" target="_blank" rel="noreferrer" style="text-decoration: underline;">personalize page</a> to personalize your Square.`
+            `Transaction confirmed. Next, go to the <a href="${personalizeHref}" target="_blank" rel="noreferrer" style="text-decoration: underline;">personalize page</a> to personalize your Square.`,
+            { trusted: true }
           );
         } catch (error) {
           console.log(error);

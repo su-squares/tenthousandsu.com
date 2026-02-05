@@ -199,4 +199,35 @@ describe('tx/view.js', () => {
     refreshButton?.click();
     expect(onRefreshBalance).toHaveBeenCalledTimes(1);
   });
+
+  it('should escape HTML in message when messageTrusted is false', () => {
+    const state = createMockTxState({
+      status: 'success',
+      message: '<a href="http://evil.com">click me</a>',
+      messageTrusted: false
+    });
+
+    renderTxView(container, state, {});
+
+    const message = queryBySelector(container, '.su-tx-message');
+    // When escaped, textContent should show the literal <a href=...> text
+    expect(message?.textContent).toContain('<a href=');
+    expect(message?.querySelector('a')).toBeNull();
+  });
+
+  it('should render HTML in message when messageTrusted is true', () => {
+    const state = createMockTxState({
+      status: 'success',
+      message: '<a href="https://example.com">click me</a>',
+      messageTrusted: true
+    });
+
+    renderTxView(container, state, {});
+
+    const message = queryBySelector(container, '.su-tx-message');
+    const link = message?.querySelector('a');
+    expect(link).toBeTruthy();
+    expect(link?.getAttribute('href')).toBe('https://example.com');
+    expect(link?.textContent).toBe('click me');
+  });
 });

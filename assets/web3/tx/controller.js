@@ -46,7 +46,7 @@ import { createBalanceManager } from "./balance-manager.js";
  * @property {(context: TxState["balanceContext"] | null | undefined) => Promise<void>} setBalanceContext
  * @property {(message?: string) => void} startProcessing
  * @property {(hash?: string, url?: string) => void} addPending
- * @property {(hash?: string, url?: string, message?: string) => Promise<void>} markSuccess
+ * @property {(hash?: string, url?: string, message?: string, options?: { trusted?: boolean }) => Promise<void>} markSuccess
  * @property {(message?: string, hash?: string, url?: string) => void} markError
  * @property {(message?: string) => void} reset
  * @property {() => void} destroy
@@ -172,10 +172,11 @@ export function createTxController(target, options = {}) {
         }
       });
     },
-    async markSuccess(hash, url, message) {
+    async markSuccess(hash, url, message, options = {}) {
       commitState((draft) => {
         draft.status = "success";
         draft.message = message || "Transaction confirmed.";
+        draft.messageTrusted = Boolean(options.trusted);
         draft.pending = draft.pending.filter((tx) => tx.hash !== hash);
         if (hash) {
           const exists = draft.confirmed.some((tx) => tx.hash === hash);
@@ -203,6 +204,7 @@ export function createTxController(target, options = {}) {
       commitState((draft) => {
         draft.status = "idle";
         draft.message = message || "";
+        draft.messageTrusted = false;
         draft.helpText = "";
         draft.pending = [];
         draft.confirmed = [];

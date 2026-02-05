@@ -47,7 +47,9 @@ export function renderTxView(target, state, handlers, options = {}) {
   const barState = buildBarState(state.status);
   const barLabel = getBarLabel(state.status);
   const safeTitle = escapeHtml(state.title || "Transaction status");
-  const safeMessage = escapeHtml(state.message || "");
+  const safeMessage = state.messageTrusted
+    ? (state.message || "")
+    : escapeHtml(state.message || "");
   const safeHelpText = escapeHtml(
     state.helpText || "Need to retry? You can restart the transaction or clear this panel."
   );

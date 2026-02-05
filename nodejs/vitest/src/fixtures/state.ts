@@ -2,6 +2,7 @@ export interface TxState {
   status: 'idle' | 'processing' | 'pending' | 'success' | 'error';
   title: string;
   message: string;
+  messageTrusted: boolean;
   helpText: string;
   pending: Array<{ hash: string; url?: string }>;
   confirmed: Array<{ hash: string; url?: string }>;
@@ -28,6 +29,7 @@ export function createMockTxState(overrides: Partial<TxState> = {}): TxState {
     status: 'idle',
     title: 'Transaction status',
     message: '',
+    messageTrusted: false,
     helpText: '',
     pending: [],
     confirmed: [],
