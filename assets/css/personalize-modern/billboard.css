@@ -341,7 +341,8 @@
 .personalize-modern-page .personalize-billboard__locator-btn {
   position: absolute;
   right: 0.5rem;
-  bottom: -50px;
+  bottom: 0;
+  transform: translateY(120%);
   display: inline-flex;
   align-items: center;
   gap: 0.4rem;
