@@ -245,6 +245,14 @@
   color: var(--color-accent);
   cursor: pointer;
   font-size: 0.9rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1s ease;
+}
+
+.map-reset-btn.is-visible {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .map-reset-btn:hover {

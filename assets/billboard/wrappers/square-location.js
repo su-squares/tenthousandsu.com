@@ -37,7 +37,11 @@ export function initSquareLocation(options) {
   let blockedOverlaysRendered = false;
 
   // Initialize pan-zoom
-  const panZoom = createPanZoom(canvas);
+  const panZoom = createPanZoom(canvas, {
+    onZoomChange: (isZoomed) => {
+      if (resetButton) resetButton.classList.toggle("is-visible", isZoomed);
+    },
+  });
 
   /**
    * Render blocked square overlays
@@ -71,9 +75,8 @@ export function initSquareLocation(options) {
   // Load and render blocked overlays
   renderBlockedOverlays();
 
-  // Show reset button if touch device
+  // Wire reset button if touch device
   if (panZoom && panZoom.isActive && resetButton) {
-    resetButton.style.display = "block";
     resetButton.addEventListener("click", () => panZoom.reset());
   }
 

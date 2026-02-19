@@ -206,11 +206,15 @@ export function attachBillboardChooser({
     billboardContainer.className = "billboard";
 
     // Create billboard
+    let resetBtnRef = null;
     billboard = createBillboard(billboardContainer, {
       mode: "interactive",
       enableGrid: true,
       enableKeyboard: true,
       allowBlockedSelection: true,
+      onZoomChange: (isZoomed) => {
+        if (resetBtnRef) resetBtnRef.classList.toggle("is-visible", isZoomed);
+      },
       imageSrc: assetPath("wholeSquare.webp"),
       imageAlt: "All Su Squares",
       gridTestId: "billboard-modal-grid",
@@ -261,6 +265,7 @@ export function attachBillboardChooser({
       });
       // Force display since we're in modal context
       resetBtn.style.display = "block";
+      resetBtnRef = resetBtn;
     }
 
     // Assemble modal

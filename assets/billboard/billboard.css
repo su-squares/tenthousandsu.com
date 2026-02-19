@@ -140,6 +140,14 @@
   color: var(--color-accent, #ffd700);
   cursor: pointer;
   font-size: 0.9rem;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 1s ease;
+}
+
+.billboard__reset-btn.is-visible {
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .billboard__reset-btn:hover {

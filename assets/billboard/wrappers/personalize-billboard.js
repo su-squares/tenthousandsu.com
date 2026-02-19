@@ -40,6 +40,7 @@ export function initPersonalizeBillboard(options) {
     container,
     baseurl = "",
     onSquareActivate = () => {},
+    onZoomChange,
   } = options;
 
   if (!container) return null;
@@ -66,6 +67,7 @@ export function initPersonalizeBillboard(options) {
     enableGrid: true,
     enableKeyboard: true,
     enablePanZoom: true,
+    onZoomChange,
     enableCoreBlocklists: false,
     allowBlockedSelection: true,
     imageSrc: assetPath("wholeSquare.webp"),

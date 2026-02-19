@@ -142,6 +142,9 @@ export function initHomepageBillboard(options) {
     enablePanZoom: true,
     enableCoreBlocklists: true,
     allowBlockedSelection: true,
+    onZoomChange: (isZoomed) => {
+      if (resetButton) resetButton.classList.toggle("is-visible", isZoomed);
+    },
 
     // Use homepage grid classes
     gridClassName: "map-grid",

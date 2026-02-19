@@ -10,7 +10,7 @@
  * @returns {Object} Pan-zoom controller with screenToCanvas(), reset(), destroy()
  */
 export function createPanZoom(wrapper, options = {}) {
-  const { minScale = 1, maxScale = 6 } = options;
+  const { minScale = 1, maxScale = 6, onZoomChange } = options;
 
   // Check for touch support - only activate on touch devices
   const isTouchDevice = "ontouchstart" in window || navigator.maxTouchPoints > 0;
@@ -39,6 +39,16 @@ export function createPanZoom(wrapper, options = {}) {
   let didPan = false;
   let hasEverPinched = false; // Track if user has pinched at least once
 
+  // Track whether transform is non-default, notify consumer on transitions
+  let wasZoomed = false;
+  function notifyZoomChange() {
+    const isZoomed = scale !== 1 || translateX !== 0 || translateY !== 0;
+    if (isZoomed !== wasZoomed) {
+      wasZoomed = isZoomed;
+      if (onZoomChange) onZoomChange(isZoomed);
+    }
+  }
+
   // Get dimensions dynamically - wrapper may not be visible at creation time (e.g., in modals)
   function getOriginalWidth() {
     return wrapper.offsetWidth || wrapper.clientWidth || 0;
@@ -66,6 +76,7 @@ export function createPanZoom(wrapper, options = {}) {
 
   function applyTransform() {
     wrapper.style.transform = `translate(${translateX}px, ${translateY}px) scale(${scale})`;
+    notifyZoomChange();
   }
 
   function constrainBounds() {
@@ -189,6 +200,7 @@ export function createPanZoom(wrapper, options = {}) {
     didPan = false;
     hasEverPinched = false; // Re-lock panning until next pinch
     wrapper.style.transform = "";
+    notifyZoomChange();
   }
 
   /**

@@ -115,6 +115,9 @@ export function initPersonalizeBillboardUi({
   const controller = initPersonalizeBillboard({
     container: mount,
     baseurl: window.SITE_BASEURL || "",
+    onZoomChange: (isZoomed) => {
+      if (resetButton) resetButton.classList.toggle("is-visible", isZoomed);
+    },
     onSquareActivate: (squareNumber) => {
       if (!isValidSquareId(squareNumber) || placementActive) return;
       if (!isEditing) {

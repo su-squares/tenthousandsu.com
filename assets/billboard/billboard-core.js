@@ -109,6 +109,7 @@ export function createBillboard(container, options = {}) {
     onSquareSelect,
     onSquareActivate,
     onClearSelection,
+    onZoomChange,
 
     filter = () => true,
     getPersonalization = () => null,
@@ -238,7 +239,7 @@ export function createBillboard(container, options = {}) {
   // Pan-zoom
   let panZoom = null;
   if (enablePanZoom) {
-    panZoom = createPanZoom(wrapper);
+    panZoom = createPanZoom(wrapper, { onZoomChange });
   }
 
   // Mount wrapper if we created it

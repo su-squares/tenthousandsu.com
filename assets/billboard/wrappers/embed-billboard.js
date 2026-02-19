@@ -244,6 +244,7 @@ export function initEmbedBillboard(options) {
   /**
    * Create the billboard
    */
+  let resetButtonRef = null;
   const billboard = createBillboard(billboardWrapper, {
     mode: "interactive",
     enableGrid: true,
@@ -251,6 +252,9 @@ export function initEmbedBillboard(options) {
     enablePanZoom: panzoomEnabled,
     enableCoreBlocklists: true,
     allowBlockedSelection: true,
+    onZoomChange: (isZoomed) => {
+      if (resetButtonRef) resetButtonRef.classList.toggle("is-visible", isZoomed);
+    },
 
     // Embed-specific classes
     gridClassName: "embed-billboard__grid",
@@ -480,6 +484,7 @@ export function initEmbedBillboard(options) {
     resetButton.addEventListener("click", () => billboard.reset());
     resetButton.style.color = resetButtonColor;
     resetButton.style.borderColor = resetButtonColor;
+    resetButtonRef = resetButton;
     if (parent) {
       parent.appendChild(resetButton);
     } else {
