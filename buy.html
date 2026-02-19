@@ -1,5 +1,8 @@
 ---
 layout: null
+title: Buy a Square and claim a spot on the homepage
+description: "Purchase Su Squares NFTs on Ethereum that you can personalize to appear on the TenThousandSu.com homepage billboard."
+permalink: /buy
 image: "{{ site.baseurl }}/assets/images/su-OG.png"
 ---
 <!doctype html>
@@ -11,8 +14,6 @@ image: "{{ site.baseurl }}/assets/images/su-OG.png"
   <meta name="viewport" content="width=device-width, initial-scale=1">
   {% include pwa-meta-tags.html %}
   {% seo %}
-  <title>Buy a Square and claim a spot on the homepage</title>
-  <link rel="canonical" href="https://tenthousandsu.com/buy" />
   <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/main.css">
   <link rel="stylesheet" href="{{ site.baseurl }}/assets/billboard/billboard.css">
   <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/buy.css">
@@ -22,7 +23,7 @@ image: "{{ site.baseurl }}/assets/images/su-OG.png"
   {% include alert-modal-head.html %}
   {% include offline-modal-head.html %}
   {% include jsonld-nav.html %}
-  {% include jsonld/pages/buy.html %}
+  {% include jsonld/webpage.html %}
 </head>
 
 <body>

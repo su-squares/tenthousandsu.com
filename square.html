@@ -1,5 +1,8 @@
 ---
 layout: null
+title: See information about a Square
+description: "Look up individual Su Squares by number and view their latest on-chain personalization data as it appears on the TenThousandSu.com homepage billboard."
+permalink: /square
 image: "{{ site.baseurl }}/assets/images/su-OG.png"
 ---
 <!doctype html>
@@ -11,8 +14,6 @@ image: "{{ site.baseurl }}/assets/images/su-OG.png"
   <meta name="viewport" content="width=device-width, initial-scale=1">
   {% include pwa-meta-tags.html %}
   {% seo %}
-  <title>See information about a Square</title>
-  <meta name="description" content="The first ERC-721 NFT. Cute squares you own and personalize.">
   <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/main.css">
   <link rel="stylesheet" href="{{ site.baseurl }}/assets/billboard/billboard.css">
   <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/square.css">
@@ -27,7 +28,7 @@ image: "{{ site.baseurl }}/assets/images/su-OG.png"
   {% include alert-modal-head.html %}
   {% include offline-modal-head.html %}
   {% include jsonld-nav.html %}
-  {% include jsonld/pages/square.html %}
+  {% include jsonld/webpage.html %}
 </head>
 
 <body class="square-body">

@@ -1,5 +1,8 @@
 ---
 layout: null
+title: Personalize a batch of your Squares for the homepage
+description: "Batch personalize multiple Su Squares you own at once so their titles, links, and images update together on the TenThousandSu.com homepage billboard."
+permalink: /personalize-batch
 image: "{{ site.baseurl }}/assets/images/su-OG.png"
 ---
 <!doctype html>
@@ -11,8 +14,6 @@ image: "{{ site.baseurl }}/assets/images/su-OG.png"
   <meta name="viewport" content="width=device-width, initial-scale=1">
   {% include pwa-meta-tags.html %}
   {% seo %}
-  <title>Personalize a batch of your Squares for the homepage</title>
-  <link rel="canonical" href="https://tenthousandsu.com/personalize-batch" />
   <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/main.css">
   <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/personalize.css">
   <link rel="stylesheet" href="{{ site.baseurl }}/assets/web3/tx/styles.css">
@@ -20,7 +21,7 @@ image: "{{ site.baseurl }}/assets/images/su-OG.png"
   {% include alert-modal-head.html %}
   {% include offline-modal-head.html %}
   {% include jsonld-nav.html %}
-  {% include jsonld/pages/personalize-batch.html %}
+  {% include jsonld/webpage.html %}
 
 </head>
 

@@ -2,17 +2,17 @@
 {
   "@context": "https://schema.org",
   "@type": "TechArticle",
-  "headline": "Introducing the underlay",
-  "name": "Introducing the underlay",
-  "description": "Explains the Su Squares underlay personalization contract, how it reduces gas and fee costs compared to the original contract, and how both contracts interact.",
+  "headline": "{{ page.title | escape }}",
+  "name": "{{ page.title | escape }}",
+  "description": "{{ page.description | escape }}",
   "inLanguage": "en",
+  "url": "{{ site.url }}{{ site.baseurl }}{{ page.url }}",
   "mainEntityOfPage": {
     "@type": "WebPage",
     "@id": "{{ site.url }}{{ site.baseurl }}{{ page.url }}"
   },
-  "url": "{{ site.url }}{{ site.baseurl }}{{ page.url }}",
-  "image": "{{ site.url }}{{ site.baseurl }}/assets/images/su-OG.png",
-  "datePublished": "2021-10-18",
+  "image": "{{ site.url }}{{ page.image }}",
+  "datePublished": "{{ page.date | date: '%Y-%m-%d' }}",
   "author": {
     "@type": "Person",
     "name": "William Entriken",
@@ -20,12 +20,12 @@
   },
   "publisher": {
     "@type": "Organization",
-    "name": "Su Squares",
+    "name": "{{ site.title | escape }}",
     "url": "{{ site.url }}{{ site.baseurl }}/"
   },
   "isPartOf": {
     "@type": "WebSite",
-    "name": "{{ site.title }}",
+    "name": "{{ site.title | escape }}",
     "url": "{{ site.url }}{{ site.baseurl }}/"
   },
   "about": {

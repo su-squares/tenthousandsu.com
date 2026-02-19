@@ -2,20 +2,20 @@
 {
   "@context": "https://schema.org",
   "@type": "Event",
-  "name": "Su Squares Launch Week",
-  "description": "Details the 2018 launch week special offer where collectors could mint Su Squares NFTs and receive a free adjacent Square. The event marked the initial public offering of Su Squares.",
+  "name": "{{ page.title | escape }}",
+  "description": "{{ page.description | escape }}",
   "inLanguage": "en",
   "startDate": "2018-08-06T00:00:00+00:00",
   "endDate": "2018-08-13T23:59:00+00:00",
   "eventAttendanceMode": "http://schema.org/OnlineEventAttendanceMode",
-  "image": "{{ site.url }}{{ site.baseurl }}/assets/images/su-OG.png",
+  "image": "{{ site.url }}{{ page.image }}",
   "location": {
     "@type": "VirtualLocation",
     "url": "{{ site.url }}{{ site.baseurl }}/buy"
   },
   "organizer": {
     "@type": "Organization",
-    "name": "Su Squares",
+    "name": "{{ site.title | escape }}",
     "url": "{{ site.url }}{{ site.baseurl }}/"
   },
   "performer": {

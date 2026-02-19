@@ -2,13 +2,16 @@
 {
   "@context": "https://schema.org",
   "@type": "Article",
-  "headline": "Project history",
-  "description": "Chronicles the origins and milestones of the Su Squares NFT project, including its relationship to the ERC-721 standard.",
+  "headline": "{{ page.title | escape }}",
+  "description": "{{ page.description | escape }}",
   "inLanguage": "en",
+  "url": "{{ site.url }}{{ site.baseurl }}{{ page.url }}",
   "mainEntityOfPage": {
     "@type": "WebPage",
     "@id": "{{ site.url }}{{ site.baseurl }}{{ page.url }}"
   },
+  "image": "{{ site.url }}{{ page.image }}",
+  "datePublished": "{{ page.date | date: '%Y-%m-%d' }}",
   "author": [
     {
       "@type": "Person",
@@ -18,11 +21,9 @@
   ],
   "publisher": {
     "@type": "Organization",
-    "name": "Su Squares",
+    "name": "{{ site.title | escape }}",
     "url": "{{ site.url }}{{ site.baseurl }}/"
   },
-  "image": "{{ site.url }}{{ site.baseurl }}/assets/images/su-OG.png",
-  "datePublished": "2021-09-17",
   "about": {
     "@type": "Thing",
     "name": "Su Squares",

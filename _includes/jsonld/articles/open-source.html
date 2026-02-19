@@ -2,30 +2,30 @@
 {
   "@context": "https://schema.org",
   "@type": "TechArticle",
-  "headline": "Su Squares open sourced",
-  "name": "Su Squares open sourced",
-  "description": "Announces that the Su Squares smart contract, website, and supporting tooling are now fully open source after reaching the milestone of 1,000 Squares sold.",
+  "headline": "{{ page.title | escape }}",
+  "name": "{{ page.title | escape }}",
+  "description": "{{ page.description | escape }}",
   "inLanguage": "en",
   "url": "{{ site.url }}{{ site.baseurl }}{{ page.url }}",
   "mainEntityOfPage": {
     "@type": "WebPage",
     "@id": "{{ site.url }}{{ site.baseurl }}{{ page.url }}"
   },
-  "image": "{{ site.url }}{{ site.baseurl }}/assets/images/su-OG.png",
-  "datePublished": "2021-08-29",
+  "image": "{{ site.url }}{{ page.image }}",
+  "datePublished": "{{ page.date | date: '%Y-%m-%d' }}",
   "author": {
     "@type": "Organization",
-    "name": "Su Squares",
+    "name": "{{ site.title | escape }}",
     "url": "{{ site.url }}{{ site.baseurl }}/"
   },
   "publisher": {
     "@type": "Organization",
-    "name": "Su Squares",
+    "name": "{{ site.title | escape }}",
     "url": "{{ site.url }}{{ site.baseurl }}/"
   },
   "isPartOf": {
     "@type": "WebSite",
-    "name": "{{ site.title }}",
+    "name": "{{ site.title | escape }}",
     "url": "{{ site.url }}{{ site.baseurl }}/"
   },
   "about": {
