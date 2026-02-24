@@ -1,0 +1,9 @@
+{%- comment -%}
+Global JSON-LD schemas included on most pages.
+{%- endcomment -%}
+
+{%- include jsonld/global/nav.html -%}
+
+{%- if page.url != "/" -%}
+  {%- include jsonld/global/breadcrumbs.html -%}
+{%- endif -%}

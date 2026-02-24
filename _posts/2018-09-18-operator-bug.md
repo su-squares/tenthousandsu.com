@@ -2,6 +2,8 @@
 layout: article
 permalink: /articles/2018-09-18-operator-bug
 title: Operator bug
+image: "{{ site.baseurl }}/assets/images/su-OG.png"
+description: "Recounts the OpenSea discovery of an operator bug and its security impact on Su Squares."
 ---
 
 # OpenSea identifies operator bug with Su Squares
@@ -29,3 +31,5 @@ Yes, we are working now to document and resolve the problem. The new version wil
 ## What happens to my squares?
 
 Your squares will be accessible again once the new smart contract is deployed. The squares will be accessible to owners of the squares at the time of this announcement. In the meantime, the existing personalizations will be shown on the [homepage](https://tenthousandsu.com/).
+
+{% include jsonld/articles/operator-bug.html %}

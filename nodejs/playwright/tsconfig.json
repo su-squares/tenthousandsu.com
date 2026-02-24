@@ -1,0 +1,4 @@
+{
+  "extends": "./tsconfig.base.json",
+  "include": ["env.ts", "wallet/**/*.ts", "e2e/**/*.ts", "playwright.config.ts"]
+}

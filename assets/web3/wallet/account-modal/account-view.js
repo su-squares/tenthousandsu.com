@@ -1,0 +1,166 @@
+import { isMobileDevice, openWalletChooser } from "../wc-constants.js";
+import { truncateAddress } from "../../client/wagmi.js";
+import {
+  getRefreshButtonHTML,
+  ensureRefreshButtonStyles,
+  attachRefreshHandler,
+} from "../balance-refresh-button.js";
+import { formatBalanceForDisplay } from "../../services/format-balance.js";
+
+function getChainIcon(activeNetwork, presets) {
+  const baseurl = window.SITE_BASEURL || '';
+  if (activeNetwork.chainId === presets.mainnet) {
+    return {
+      src: `${window.location.origin}${baseurl}/assets/images/ethereum_logo.png`,
+      alt: "Ethereum logo",
+    };
+  }
+  if (activeNetwork.chainId === presets.sepolia) {
+    return {
+      src: `${window.location.origin}${baseurl}/assets/images/sepolia-logo.png`,
+      alt: "Sepolia logo",
+    };
+  }
+  return {
+    src: `${window.location.origin}${baseurl}/assets/images/logomark-su-squares.png`,
+    alt: `${activeNetwork.label} logo`,
+  };
+}
+
+function escapeHtml(value) {
+  if (value === null || value === undefined) return "";
+  return String(value)
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/\"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+function escapeAttribute(value) {
+  return escapeHtml(value);
+}
+
+/**
+ * Render the normal account view.
+ * @param {HTMLElement} target
+ * @param {{ account: any, ensName: string|null, balance: any }} data
+ * @param {{ activeNetwork: any, presets: { mainnet: number, sepolia: number }, wagmiClient: any, onDisconnect: Function, onRefresh?: Function, loadingEns?: boolean, loadingBalance?: boolean }} options
+ */
+export function renderAccountView(target, data, options) {
+  if (!target) return;
+  const { account, ensName, balance } = data;
+  const {
+    activeNetwork,
+    presets,
+    wagmiClient,
+    onDisconnect,
+    onRefresh,
+    loadingEns = false,
+    loadingBalance = false,
+  } = options;
+
+  // Ensure refresh button styles are injected
+  ensureRefreshButtonStyles();
+
+  const chainIcon = getChainIcon(activeNetwork, presets);
+  const ensLoading = loadingEns && !!account?.address && !ensName;
+  const balanceLoading = loadingBalance && !!account?.address && !balance;
+
+  // Show "Open mobile wallet" button on mobile when connected via WalletConnect
+  const isWalletConnect = account?.connector?.id === "walletConnect";
+  const showOpenWalletButton = isMobileDevice() && isWalletConnect;
+
+  const primaryFallback = account?.address ? truncateAddress(account.address) : "Not connected";
+  const addressDisplay = ensName || (ensLoading ? "Fetching ENS..." : primaryFallback);
+
+  target.innerHTML = `
+    <div class="wallet-modal__header">
+      <h2 id="wallet-account-title">Wallet</h2>
+    </div>
+    <div class="wallet-status wallet-fade" id="wallet-account-status">
+      <div class="wallet-status__details">
+        <div class="${ensLoading ? "wallet-placeholder" : ""}">${escapeHtml(addressDisplay || "Not connected")}</div>
+        <div class="wallet-small">${escapeHtml(account?.address || "")}</div>
+      </div>
+      <div class="wallet-status__aside">
+        <button class="wallet-btn wallet-btn--ghost wallet-btn--inline" type="button" data-copy>Copy</button>
+      </div>
+    </div>
+    <div class="wallet-status wallet-fade">
+      <div class="wallet-status__details wallet-status__details--chain">
+        <div class="wallet-chain">
+          <div class="wallet-chain__icon">
+            <img src="${escapeAttribute(chainIcon.src)}" alt="${escapeAttribute(chainIcon.alt)}" style="height: 24px; width: auto;">
+          </div>
+          <div>
+            <div>${escapeHtml(activeNetwork.label)}</div>
+            <div class="wallet-small">Chain ID: ${escapeHtml(activeNetwork.chainId)}</div>
+          </div>
+        </div>
+      </div>
+      <div class="wallet-status__aside wallet-balance-wrapper">
+        ${balanceLoading
+      ? `<div class="wallet-balance wallet-placeholder">Fetching balance...</div>`
+      : `<div class="wallet-balance">${balance ? escapeHtml(formatBalanceForDisplay(balance)) : ""
+      }</div>`
+    }
+        ${onRefresh ? getRefreshButtonHTML({ loading: balanceLoading }) : ""}
+      </div>
+    </div>
+    <div class="wallet-actions" style="margin-top: 1rem;">
+      ${showOpenWalletButton
+      ? `<button class="wallet-btn" type="button" data-open-wallet>Open mobile wallet</button>`
+      : ""
+    }
+      <button class="wallet-btn wallet-btn--ghost" type="button" data-disconnect data-testid="disconnect-wallet-button">
+        Disconnect Wallet
+        <svg viewBox="0 0 36 24" fill="none" style="width: 24px; height: 16px; margin-left: 0.5rem; vertical-align: middle;">
+          <path
+            d="M18 3H5C3.89543 3 3 3.89543 3 5V19C3 20.1046 3.89543 21 5 21H18"
+            stroke="var(--color-accent)"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+          <line
+            x1="14"
+            y1="12"
+            x2="28"
+            y2="12"
+            stroke="var(--color-accent)"
+            strokeWidth="2"
+            strokeLinecap="round"
+          />
+          <polygon
+            points="28 8, 35 12, 28 16"
+            fill="var(--color-accent)"
+          />
+        </svg>
+      </button>
+    </div>
+  `;
+
+  target.querySelector("[data-copy]")?.addEventListener("click", () => {
+    if (account?.address) navigator.clipboard.writeText(account.address);
+  });
+
+  target.querySelector("[data-disconnect]")?.addEventListener("click", async () => {
+    try {
+      await wagmiClient?.disconnect();
+    } catch (error) {
+      console.warn("Disconnect failed", error);
+    }
+    onDisconnect?.();
+  });
+
+  target.querySelector("[data-open-wallet]")?.addEventListener("click", () => {
+    // Opens OS app chooser with placeholder URI (no real session data)
+    openWalletChooser();
+  });
+
+  // Attach refresh button handler if onRefresh is provided
+  if (onRefresh) {
+    attachRefreshHandler(target, onRefresh);
+  }
+}

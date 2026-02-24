@@ -2,6 +2,8 @@
 layout: article
 permalink: /articles/2021-09-04-steganography
 title: Storing text/data in your square
+image: "{{ site.baseurl }}/assets/images/su-OG.png"
+description: "Guides readers through converting messages into 10A-10 pixel images for hiding and revealing data on their Squares."
 ---
 
 # Storing text/data in your square 
@@ -121,3 +123,5 @@ strings square-*.rgb
 2. Using the above techniques, with modification, splice a message into the the end of an image.
 3. Create a 10×10 PNG image that includes a web page that generates a random maze, see https://x.com/botond_balazs/status/637960240055615488.
 4. Golf that JavaScript better than @fulldecent golfed it.
+
+{% include jsonld/articles/steganography.html %}

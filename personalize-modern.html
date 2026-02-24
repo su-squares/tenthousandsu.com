@@ -1,0 +1,564 @@
+---
+layout: null
+image: "{{ site.baseurl }}/assets/images/su-OG.png"
+---
+<!doctype html>
+<html lang="en" class="personalize-page personalize-modern-page">
+
+<head>
+  <script>window.SITE_BASEURL = "{{ site.baseurl }}";</script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% include pwa-meta-tags.html %}
+  {% seo %}
+  <title>Personalize your Squares</title>
+  <link rel="canonical" href="https://tenthousandsu.com/personalize-modern" />
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/main.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/personalize.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/personalize-modern/base.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/personalize-modern/billboard.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/personalize-modern/batch.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/personalize-modern/table.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/billboard/billboard.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/square-lookup/styles.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/web3/tx/styles.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/accordions/bigaccordion/bigaccordion.css">
+  {% include nav-menu-head.html %}
+  {% include alert-modal-head.html %}
+  {% include offline-modal-head.html %}
+  {% include jsonld-nav.html %}
+</head>
+
+<body>
+  {% include nav-header.html desktop_button_one_label="Mint" desktop_button_one_href="/buy" %}
+
+  <article class="lead">
+    <h1>Personalize</h1>
+    <p>
+      <em>If you have any questions, please mail <a
+          href="mailto:Su@TenThousandSu.com?subject=Personalize+underlay+modern">Su@TenThousandSu.com</a>. The price to
+        personalize is <span id="personalize-price-display">0.001 ETH</span> per Square.</em>
+    </p>
+    <p>
+      Use this page to personalize one or more Squares you own on TenThousandSu.com. Select Squares you own in the billboard to add them to the table to personalize them.
+      Don't own any Squares? <a href="{{ site.baseurl }}/buy">Buy some</a>
+    </p>
+
+    <!-- Instructions Accordion -->
+    <div class="bigaccordion" data-bigaccordion id="instructions-accordion">
+      <button
+        type="button"
+        class="bigaccordion__trigger"
+        id="instructions-trigger"
+        aria-expanded="false"
+        aria-controls="instructions-panel"
+      >
+        <span class="bigaccordion__title">Instructions</span>
+        <span class="bigaccordion__icon" aria-hidden="true">+</span>
+      </button>
+      <div
+        class="bigaccordion__panel"
+        id="instructions-panel"
+        role="region"
+        aria-labelledby="instructions-trigger"
+        hidden
+      >
+        <div class="bigaccordion__content">
+          <div class="bigaccordion__inner">
+            <h4>The Personalization Table</h4>
+            <p>The table is where you set the personalized content for your Squares. Each Square you want to personalize gets its own row with four fields:</p>
+            <ul>
+              <li><strong>Square #:</strong> The token ID (1-10000)</li>
+              <li><strong>Title:</strong> Text shown when hovering over the Square</li>
+              <li><strong>URI:</strong> Where the Square links to when clicked (URL, <code>mailto:</code>, <code>sms:</code>, <code>eth:</code>, etc.)</li>
+              <li><strong>Image:</strong> A 10x10 pixel image for the Square</li>
+            </ul>
+
+            <h4>Ways to Add Squares to the Table</h4>
+            <p>There are several methods for adding and editing rows in the table:</p>
+
+            <h5>Manual Entry</h5>
+            <p>Click the <strong>"+"</strong> button below the table to add a new row, then type in the values directly.</p>
+
+            <h5>Billboard Selection</h5>
+            <p>Click <strong>"Show my Squares"</strong> to highlight your owned Squares on the billboard. Then click any Square you own to add it to the table. Click again to remove it.</p>
+            <p>To locate a Square on the billboard, click the <img src="{{ site.baseurl }}/assets/images/dr.png" alt="arrow icon" style="height:1em;vertical-align:middle"> icon next to any row to show an arrow pointing to it. Click again to hide, or use the "Hide" button below the billboard.</p>
+
+            <h5>Choose Squares</h5>
+            <p>Click <strong>"Choose Squares"</strong> to open a checklist of all your owned Squares. Check to add or uncheck to remove from the table.</p>
+
+            <h5>CSV Batch</h5>
+            <p>For bulk text editing, use the CSV dropdown:</p>
+            <ol>
+              <li><strong>Download CSV:</strong> Get a template with your current table data</li>
+              <li>Edit in any spreadsheet app (Excel, Google Sheets, etc.)</li>
+              <li><strong>Upload CSV:</strong> Import your edited data</li>
+            </ol>
+            <p>CSV columns: <code>square</code>, <code>title</code>, <code>uri</code>. Images must be added separately.</p>
+
+            <h5>Image Batch</h5>
+            <p>To upload multiple images at once:</p>
+            <ol>
+              <li>Create a folder with 10x10 pixel images named by Square number (e.g., <code>1.png</code>, <code>42.png</code>)</li>
+              <li>Use the Image Batch dropdown and click <strong>"Upload Folder"</strong></li>
+            </ol>
+
+            <h5>Upload Image for Placement</h5>
+            <p>Click <strong>"Upload Image"</strong> to place a larger image on the billboard. Drag and resize it to cover multiple Squares, and it will be automatically chopped into 10x10 pieces for each Square it covers.</p>
+
+            <h4>Submit</h4>
+            <p>Once satisfied with your table, click <strong>"Personalize"</strong> to submit the transaction. The fee is <strong><span id="personalize-price-display-2">0.001 ETH</span> per Square</strong>.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <p>
+      If you would like to use the legacy methods of personalizing, here are links to use the original-styled <a href="{{ site.baseurl }}/personalize">single</a> or <a href="{{ site.baseurl }}/personalize-batch">batch</a> personalization tools.
+    </p>
+
+    <p>
+      If your Square was previously personalized using the old, more expensive method you will need to <a href="#" id="open-unpersonalize-modal">unpersonalize</a> it first.
+    </p>
+
+    <section class="personalize-billboard-map" id="personalize-billboard-map">
+      <div class="personalize-billboard__map">
+        <h3>Billboard Map</h3>
+        <label class="personalize-billboard__glow-toggle" id="glow-toggle-label">
+          <input type="checkbox" id="glow-toggle">
+          <span class="personalize-billboard__toggle-box" aria-hidden="true"></span>
+          <span class="personalize-billboard__toggle-text">Turn off glow</span>
+        </label>
+        <div class="personalize-billboard__map-list">
+          <div class="personalize-billboard__map-item">
+            <span class="personalize-billboard__map-swatch" data-color="owned-unpersonalized"></span>
+            Owned, not personalized
+          </div>
+          <div class="personalize-billboard__map-item">
+            <span class="personalize-billboard__map-swatch" data-color="owned-personalized"></span>
+            Owned, personalized
+          </div>
+          <div class="personalize-billboard__map-item">
+            <span class="personalize-billboard__map-swatch" data-color="selected"></span>
+            Selected
+          </div>
+          <div class="personalize-billboard__map-item">
+            <span class="personalize-billboard__map-swatch" data-color="error"></span>
+            Error
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="personalize-billboard" id="personalize-billboard-section">
+      <div class="personalize-billboard__controls">
+        <div class="personalize-billboard__controls-left">
+          <button type="button" class="btn personalize-billboard__show-owned" id="billboard-show-owned">
+            Show my Squares
+          </button>
+          <button type="button" class="btn personalize-billboard__update is-invisible" id="billboard-update" hidden disabled>
+            Update
+          </button>
+        </div>
+        <div class="personalize-billboard__controls-center">
+          <button type="button" class="btn personalize-billboard__reset-all" id="billboard-reset-all">
+            Reset all
+          </button>
+        </div>
+        <div class="personalize-billboard__controls-right">
+          <button type="button" class="btn personalize-billboard__cancel" id="billboard-cancel" hidden>
+            Cancel
+          </button>
+          <button type="button" class="btn personalize-billboard__upload" id="billboard-upload">
+            Upload Image
+          </button>
+        </div>
+      </div>
+      <div class="personalize-billboard__placement-panel" id="personalize-placement-controls" hidden>
+        <div class="personalize-billboard__placement-coords">
+          <div>Top-left: <span id="placement-top-left">—</span></div>
+          <div>Top-right: <span id="placement-top-right">—</span></div>
+          <div>Bottom-left: <span id="placement-bottom-left">—</span></div>
+          <div>Bottom-right: <span id="placement-bottom-right">—</span></div>
+        </div>
+        <div class="personalize-billboard__placement-resize">
+          <span>Resize:</span>
+          <button type="button" class="personalize-billboard__resize-btn" id="placement-resize-minus" aria-label="Shrink image">
+            -
+          </button>
+          <button type="button" class="personalize-billboard__resize-btn" id="placement-resize-plus" aria-label="Enlarge image">
+            +
+          </button>
+        </div>
+        <div class="personalize-billboard__placement-actions">
+          <button type="button" class="btn" id="placement-accept" disabled>Accept</button>
+          <button type="button" class="btn" id="placement-cancel">Cancel</button>
+        </div>
+      </div>
+      <input type="file" id="placement-image-input" accept="image/*" hidden>
+      <div class="personalize-billboard__view">
+        <div class="map-container">
+          <div class="map-wrapper">
+            <div id="personalize-billboard"></div>
+            <div class="personalize-billboard__loading" id="placement-loading" hidden>
+              <div class="personalize-billboard__loading-text" aria-live="polite">
+                Adding images to table<span class="personalize-billboard__loading-dots" aria-hidden="true">...</span>
+              </div>
+            </div>
+            <div class="personalize-billboard__loading" id="ownership-loading" hidden>
+              <div class="personalize-billboard__loading-text" aria-live="polite">
+                Fetching Squares<span class="personalize-billboard__loading-dots" aria-hidden="true">...</span>
+                <span class="personalize-billboard__loading-count" id="ownership-loading-count"></span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button type="button" class="personalize-billboard__locator-btn" id="billboard-locator-hide" hidden>
+          <img src="{{ site.baseurl }}/assets/images/dr.png" alt="" aria-hidden="true">
+          Hide
+        </button>
+      </div>
+      <button type="button" class="billboard__reset-btn personalize-billboard__reset" id="personalize-billboard-reset">
+        Reset zoom
+      </button>
+      <div class="personalize-billboard__mode-row">
+        <div class="personalize-billboard__mode" role="group" aria-label="Billboard mode">
+          <button type="button" class="personalize-billboard__mode-btn is-active" data-mode="owned" aria-pressed="true">
+            Owned
+          </button>
+          <button type="button" class="personalize-billboard__mode-btn" data-mode="preview" aria-pressed="false">
+            Preview
+          </button>
+        </div>
+        <label class="personalize-billboard__toggle" id="preview-tooltips-toggle-label">
+          <input type="checkbox" id="preview-tooltips-toggle">
+          <span class="personalize-billboard__toggle-box" aria-hidden="true"></span>
+          <span class="personalize-billboard__toggle-text">Preview Tooltips</span>
+        </label>
+      </div>
+      <p class="billboard__mobile-hint personalize-billboard__hint">Pinch to zoom, drag to pan, double tap.</p>
+    </section>
+
+    <section class="personalize-table-section">
+      <div class="personalize-table__toolbar billboard-embed__actions">
+        <button id="open-square-chooser" type="button" class="btn">Choose Squares</button>
+        <div class="billboard-embed__dropdown" id="csv-batch-dropdown">
+          <button type="button" class="billboard-embed__trigger" id="csv-batch-trigger">
+            CSV Batch <span class="billboard-embed__chevron" aria-hidden="true">▾</span>
+          </button>
+          <div class="billboard-embed__menu" id="csv-batch-menu">
+            <button type="button" class="billboard-embed__option" id="csv-batch-instructions">Instructions</button>
+            <button type="button" class="billboard-embed__option" id="csv-batch-download">Download CSV</button>
+            <label class="billboard-embed__option personalize-batch__file">
+              Upload CSV
+              <input id="csv-batch-upload" type="file" accept=".csv,.tsv,text/csv,text/tab-separated-values" hidden>
+            </label>
+          </div>
+        </div>
+        <div class="billboard-embed__dropdown" id="image-batch-dropdown">
+          <button type="button" class="billboard-embed__trigger" id="image-batch-trigger">
+            Image Batch <span class="billboard-embed__chevron" aria-hidden="true">▾</span>
+          </button>
+          <div class="billboard-embed__menu" id="image-batch-menu">
+            <button type="button" class="billboard-embed__option" id="image-batch-instructions">Instructions</button>
+            <label class="billboard-embed__option personalize-batch__file">
+              Upload Folder
+              <input id="image-batch-upload" type="file" accept="image/*" webkitdirectory directory multiple hidden>
+            </label>
+          </div>
+        </div>
+        <button id="reset-all" type="button" class="btn">Reset all</button>
+      </div>
+
+      <div class="personalize-table__wrapper">
+        <div class="personalize-table__gutter" aria-hidden="true">
+          <div class="personalize-table__gutter-header"></div>
+          <div class="personalize-table__gutter-body" id="personalize-table-gutter"></div>
+        </div>
+        <table class="personalize-table__grid" id="personalize-table">
+          <colgroup>
+            <col style="width: 125px">
+            <col>
+            <col>
+            <col>
+          </colgroup>
+          <thead>
+            <tr>
+              <th>Square #</th>
+              <th>Title</th>
+              <th>URI</th>
+              <th>Image</th>
+            </tr>
+          </thead>
+          <tbody id="personalize-table-body"></tbody>
+        </table>
+      </div>
+
+      <div class="personalize-table__add-row">
+        <button id="add-row" type="button" class="personalize-table__add-btn" aria-label="Add row">+</button>
+      </div>
+    </section>
+
+    <h2>Personalize</h2>
+    <p>Click this button to personalize your Squares.</p>
+    <div class="wallet-actions">
+      <button id="open-wallet-app" type="button" class="btn">Open mobile wallet</button>
+      <button id="personalize" class="btn btn-lg">Personalize</button>
+    </div>
+
+    <div id="tx-fixture"></div>
+
+    <!-- Unpersonalize Modal (lazy loaded) -->
+    <div id="unpersonalize-modal" class="su-modal-overlay" aria-hidden="true">
+      <div class="su-modal">
+        <div class="su-modal__header">
+          <h3 class="su-modal__title">Unpersonalize Square</h3>
+          <button type="button" class="su-modal__close" aria-label="Close">&times;</button>
+        </div>
+        <div class="su-modal__body">
+          <p class="su-modal__desc">Remove personalization from the main contract so you can use the cheaper underlay
+            contract.</p>
+          <div class="su-modal__field">
+            <label for="unpersonalize-token-id" class="su-modal__label">Token ID</label>
+            <input id="unpersonalize-token-id" class="su-modal__input" type="number" min="1" max="10000" required
+              placeholder="e.g. 7421">
+          </div>
+          <div id="unpersonalize-status" class="su-modal__status"></div>
+          <div id="unpersonalize-tx-fixture"></div>
+          <div class="su-modal__actions">
+            <button id="unpersonalize-submit" class="btn btn-primary" disabled>Unpersonalize</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <footer>
+    <small>
+      No cookies. No analytics. To the extent possible under law, Su Entriken has waived all copyright and related or
+      neighboring rights to the TenThousandSu.com website. This work is published from the United States.
+    </small>
+  </footer>
+
+  <script>
+    (function() {
+      var cfg = window.suWeb3 || window.SU_WEB3 || {};
+      var pricing = cfg.pricing;
+      if (pricing && typeof pricing.personalizePriceEth === "number" && pricing.personalizePriceEth !== 0.001) {
+        var el1 = document.getElementById("personalize-price-display");
+        var el2 = document.getElementById("personalize-price-display-2");
+        if (el1) el1.textContent = pricing.personalizePriceEth + " ETH";
+        if (el2) el2.textContent = pricing.personalizePriceEth + " ETH";
+      }
+    })();
+  </script>
+
+  <script type="module" src="{{ site.baseurl }}/assets/js/personalize-modern/index.js"></script>
+  <script type="module">
+    import { initBigAccordions } from "{{ site.baseurl }}/assets/accordions/bigaccordion/index.js";
+    initBigAccordions();
+  </script>
+  <script type="module">
+    // Unpersonalize Modal - Lazy Loaded /////////////////////////////////////////////////////////////////////////
+    import {
+      ensureConnected,
+      ensureCorrectNetwork,
+      isMobileDevice,
+      openWalletChooser,
+    } from "{{ site.baseurl }}/assets/web3/foundation.js";
+    import { createTxFixture } from "{{ site.baseurl }}/assets/web3/tx/index.js";
+    import { getTxErrorMessage } from "{{ site.baseurl }}/assets/web3/tx/errors.js";
+    import { getWeb3Config } from "{{ site.baseurl }}/assets/web3/config.js";
+
+    const unpersonalizeModalTrigger = document.getElementById("open-unpersonalize-modal");
+    const unpersonalizeModal = document.getElementById("unpersonalize-modal");
+    const unpersonalizeTokenInput = document.getElementById("unpersonalize-token-id");
+    const unpersonalizeStatus = document.getElementById("unpersonalize-status");
+    const unpersonalizeSubmit = document.getElementById("unpersonalize-submit");
+    const unpersonalizeTxFixtureDiv = document.getElementById("unpersonalize-tx-fixture");
+    const unpersonalizeCloseBtn = unpersonalizeModal?.querySelector(".su-modal__close");
+
+    let unpersonalizeModuleLoaded = false;
+    let unpersonalizeService = null;
+    let unpersonalizeTxUi = null;
+
+    function showUnpersonalizeModal() {
+      if (!unpersonalizeModal) return;
+      unpersonalizeModal.classList.add("is-visible");
+      unpersonalizeModal.setAttribute("aria-hidden", "false");
+    }
+
+    function hideUnpersonalizeModal() {
+      if (!unpersonalizeModal) return;
+      unpersonalizeModal.classList.remove("is-visible");
+      unpersonalizeModal.setAttribute("aria-hidden", "true");
+      if (unpersonalizeTxUi) {
+        unpersonalizeTxUi.reset();
+      }
+      if (unpersonalizeStatus) {
+        unpersonalizeStatus.textContent = "";
+        unpersonalizeStatus.className = "su-modal__status";
+      }
+    }
+
+    async function loadUnpersonalizeModule() {
+      if (unpersonalizeModuleLoaded) return;
+      try {
+        const serviceModule = await import("{{ site.baseurl }}/assets/web3/services/unpersonalize.js");
+        unpersonalizeService = serviceModule;
+        const { pricing } = getWeb3Config();
+        unpersonalizeTxUi = createTxFixture({
+          target: unpersonalizeTxFixtureDiv,
+          pricing,
+          mode: "unpersonalize",
+          title: "Unpersonalization status",
+        });
+        unpersonalizeModuleLoaded = true;
+      } catch (error) {
+        console.error("Failed to load unpersonalize module:", error);
+        if (unpersonalizeStatus) {
+          unpersonalizeStatus.textContent = "Failed to load module. Please refresh and try again.";
+          unpersonalizeStatus.className = "su-modal__status su-modal__status--error";
+        }
+      }
+    }
+
+    async function validateUnpersonalizeInput() {
+      const tokenId = parseInt(unpersonalizeTokenInput?.value);
+      if (!tokenId || tokenId < 1 || tokenId > 10000) {
+        if (unpersonalizeSubmit) unpersonalizeSubmit.disabled = true;
+        if (unpersonalizeStatus) {
+          unpersonalizeStatus.textContent = "";
+          unpersonalizeStatus.className = "su-modal__status";
+        }
+        return false;
+      }
+
+      // Check personalization status on main contract
+      if (unpersonalizeService?.checkMainContractStatus) {
+        try {
+          const status = await unpersonalizeService.checkMainContractStatus(tokenId);
+          if (unpersonalizeStatus) {
+            if (status.message) {
+              unpersonalizeStatus.textContent = status.message;
+              if (status.isOnMain && status.hasPersonalization) {
+                unpersonalizeStatus.className = "su-modal__status su-modal__status--success";
+              } else {
+                unpersonalizeStatus.className = "su-modal__status su-modal__status--warning";
+              }
+            } else {
+              unpersonalizeStatus.textContent = "";
+              unpersonalizeStatus.className = "su-modal__status";
+            }
+          }
+        } catch (error) {
+          console.warn("Could not check personalization status:", error);
+        }
+      }
+
+      if (unpersonalizeSubmit) unpersonalizeSubmit.disabled = false;
+      return true;
+    }
+
+    if (unpersonalizeModalTrigger) {
+      unpersonalizeModalTrigger.addEventListener("click", async (event) => {
+        event.preventDefault();
+        showUnpersonalizeModal();
+        await loadUnpersonalizeModule();
+      });
+    }
+
+    if (unpersonalizeCloseBtn) {
+      unpersonalizeCloseBtn.addEventListener("click", hideUnpersonalizeModal);
+    }
+
+    if (unpersonalizeModal) {
+      unpersonalizeModal.addEventListener("click", (event) => {
+        if (event.target === unpersonalizeModal) {
+          hideUnpersonalizeModal();
+        }
+      });
+    }
+
+    if (unpersonalizeTokenInput) {
+      unpersonalizeTokenInput.addEventListener("input", validateUnpersonalizeInput);
+    }
+
+    if (unpersonalizeSubmit) {
+      unpersonalizeSubmit.addEventListener("click", async () => {
+        const tokenId = parseInt(unpersonalizeTokenInput?.value);
+        if (!tokenId || tokenId < 1 || tokenId > 10000) {
+          return alert("Please enter a valid Token ID (1-10000).");
+        }
+
+        if (!unpersonalizeService || !unpersonalizeTxUi) {
+          return alert("Module not loaded. Please close and reopen the modal.");
+        }
+
+        unpersonalizeTxUi.startProcessing(`Unpersonalizing Square #${tokenId}. Confirm in your wallet to continue.`);
+
+        await ensureConnected(async (clients) => {
+          await ensureCorrectNetwork(clients);
+
+          const isWalletConnect = clients?.getAccount?.()?.connector?.id === "walletConnect";
+          unpersonalizeTxUi.setWalletContext({
+            isWalletConnect,
+          });
+          // Trigger wallet app open on mobile for WalletConnect
+          if (isMobileDevice() && isWalletConnect) {
+            openWalletChooser();
+          }
+
+          // Set balance context
+          const { activeNetwork } = getWeb3Config();
+          const account = clients.getAccount?.();
+          if (account?.address) {
+            unpersonalizeTxUi.setBalanceContext({
+              address: account.address,
+              chainId: activeNetwork.chainId,
+              fetcher: (addr, chain) => clients.fetchBalance({ address: addr, chainId: chain }),
+            });
+          }
+
+          // Check ownership before proceeding
+          try {
+            const owner = await unpersonalizeService.checkSquareOwner(tokenId, clients);
+            const signerAddress = account?.address;
+            if (owner?.toLowerCase() !== signerAddress?.toLowerCase()) {
+              unpersonalizeTxUi.markError("You do not own this Square.");
+              return alert("You do not own this Square. Transaction cancelled.");
+            }
+          } catch (error) {
+            console.error("Ownership check failed:", error);
+            unpersonalizeTxUi.markError("Could not verify ownership. Please try again.");
+            return;
+          }
+
+          // Proceed with unpersonalization
+          try {
+            const result = await unpersonalizeService.unpersonalizePrimary({ squareId: tokenId }, clients);
+            const { buildTxUrl } = await import("{{ site.baseurl }}/assets/web3/services/explorer-links.js");
+            const pendingUrl = buildTxUrl(result.hash);
+            unpersonalizeTxUi.addPending(result.hash, pendingUrl);
+
+            const transaction = await clients.waitForTransaction({ hash: result.hash });
+            const txUrl = buildTxUrl(transaction.transactionHash);
+            unpersonalizeTxUi.markSuccess(
+              transaction.transactionHash,
+              txUrl,
+              "Square unpersonalized! You can now personalize using the cheaper underlay contract."
+            );
+          } catch (error) {
+            console.error("Unpersonalize transaction failed:", error);
+            const message = getTxErrorMessage(error, { isWalletConnect });
+            unpersonalizeTxUi.markError(message);
+            return alert(message);
+          }
+        });
+      });
+    }
+  </script>
+  <script src="{{ site.baseurl }}/assets/js/pwa-init.js"></script>
+</body>
+
+</html>

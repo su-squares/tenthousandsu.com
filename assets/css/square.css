@@ -1,0 +1,89 @@
+/* Square detail page */
+.square-page {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.square-page--hidden {
+  display: none;
+}
+
+.square-default-state {
+  text-align: center;
+  margin: 2rem auto 1rem;
+  max-width: 32rem;
+  padding: 0 1rem;
+}
+
+.square-default-state__description {
+  margin: 0.75rem auto 0;
+  font-size: 1.1rem;
+  line-height: 1.4;
+  color: var(--color-on-surface);
+}
+
+.square-default-state h1 {
+  font-size: 3rem;
+}
+
+.square-page h1,
+.square-page h2,
+.square-page h3,
+.square-page h4,
+.square-page h5,
+.square-page h6 {
+  text-align: center;
+}
+
+.square-page .dl-wrapper {
+  width: 100%;
+  max-width: 600px;
+}
+
+.square-page .dl-styled {
+  overflow-x: auto;
+}
+
+#emojified {
+  text-align: center;
+  display: inline-block;
+  line-height: calc(1em + 0.3rem);
+}
+
+#copy-emojified {
+  width: 150px;
+  margin: 0 auto;
+  font-size: 1rem;
+}
+
+/* Fade-in animation for main content */
+.fade-target {
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.5s ease, visibility 0.5s ease;
+}
+
+.fade-visible {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Flexbox layout only on this page to push footer off-screen */
+body.square-body {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+.square-main {
+  flex: 0 0 100vh;
+  max-width: 95%;
+}
+
+@media (max-width: 900px) {
+  .square-page h1 {
+    font-size: clamp(2.4rem, 3vw + 1.4rem, 3.2rem);
+  }
+}

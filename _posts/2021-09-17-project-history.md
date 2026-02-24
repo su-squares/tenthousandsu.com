@@ -2,6 +2,8 @@
 layout: article
 permalink: /articles/2021-09-17-project-history
 title: Project history
+image: "{{ site.baseurl }}/assets/images/su-OG.png"
+description: "Summarizes Su Squares' origins, ERC-721 involvement, and a detailed timeline of the project milestones."
 ---
 
 # Project history
@@ -85,7 +87,7 @@ Shortly after finalization of the standard, Su Squares was shown on stage at the
 * 2018-08-14 Started our X account https://x.com/SuSquares/status/1029426483318738944
 
 * 2018-11-05 Su Squares [was upgraded](https://etherscan.io/tx/0x07bb215de77674c272b3a0e3f336642879f926df52e79d9ff8b26fdcbc4acb1b), this is current version of the contract
-* 2019-04-04 [First edition business cards ordered GotPrint order #238027xx](/assets/2019-04-04-business-cards-order.pdf), 35 pt. Trifecta Pearl with Kanvas Texture, quantity 250
+* 2019-04-04 [First edition business cards ordered GotPrint order #238027xx](/assets/images/2019-04-04-business-cards-order.pdf), 35 pt. Trifecta Pearl with Kanvas Texture, quantity 250
 * 2021-03-24 A commemorative one-of-one collectable of the original state of Su Squares is [minted on Rarible](https://rarible.com/token/0x60f80121c31a0d46b5279700f9df786054aa5ee5:580921?tab=details)
 
 ## Contemporaneous notes & interviews
@@ -98,3 +100,5 @@ These are some of the interview, notes and live events which mentioned Su Square
 - 2019-04-28 罗鸿达. 金色财 (Jinse). "ERC721主作者：撰写协议的过程是对用例更加深入的探讨".   https://www.jinse.com/news/blockchain/357441.html.
 
 More press coverage and speaking events may also be in the items listed at https://phor.net.
+
+{% include jsonld/articles/project-history.html %}

@@ -1,0 +1,99 @@
+<link rel="stylesheet" href="{{ site.baseurl }}/assets/nav-menu/nav.css">
+<link rel="stylesheet" href="{{ site.baseurl }}/assets/web3/wallet/wallet-ui.css">
+<script type="module" src="{{ site.baseurl }}/assets/js/global-init.js"></script>
+<script>
+  (function () {
+    const baseurl = window.SITE_BASEURL || "";
+    const menuSrc = `${baseurl}/assets/nav-menu/menu.js`;
+    let scriptState = "idle";
+    let scriptReadyPromise = null;
+    const loadMenuScript = () => {
+      if (scriptState === "loaded") {
+        return Promise.resolve();
+      }
+      if (scriptState === "loading" && scriptReadyPromise) {
+        return scriptReadyPromise;
+      }
+      scriptState = "loading";
+      scriptReadyPromise = new Promise((resolve, reject) => {
+        const script = document.createElement("script");
+        script.src = menuSrc;
+        script.defer = true;
+        script.onload = () => {
+          scriptState = "loaded";
+          resolve();
+        };
+        script.onerror = () => {
+          scriptState = "error";
+          console.warn("Failed to load the navigation menu script.");
+          reject(new Error("Failed to load the navigation menu script."));
+        };
+        document.head.appendChild(script);
+      });
+      return scriptReadyPromise;
+    };
+
+    const attachTrigger = () => {
+      const hamburger = document.querySelector(".su-nav-hamburger");
+      if (!hamburger) {
+        return;
+      }
+      const triggerLoad = () => loadMenuScript().catch(() => {});
+
+      const waitForMenuScript = (event) => {
+        if (scriptState === "loaded") {
+          hamburger.removeEventListener("click", waitForMenuScript, true);
+          return;
+        }
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        loadMenuScript()
+          .then(() => {
+            hamburger.removeEventListener("click", waitForMenuScript, true);
+            setTimeout(() => hamburger.click(), 0);
+          })
+          .catch(() => {
+            hamburger.removeEventListener("click", waitForMenuScript, true);
+          });
+      };
+
+      hamburger.addEventListener("pointerdown", triggerLoad, { once: true });
+      hamburger.addEventListener("mouseenter", triggerLoad, { once: true });
+      hamburger.addEventListener("focus", triggerLoad, { once: true });
+      hamburger.addEventListener("click", waitForMenuScript, true);
+      hamburger.addEventListener(
+        "keydown",
+        (event) => {
+          if (event.key === "Enter" || event.key === " ") {
+            loadMenuScript().catch(() => {});
+          }
+        },
+        { once: true }
+      );
+    };
+
+    if (document.readyState !== "loading") {
+      attachTrigger();
+    } else {
+      document.addEventListener("DOMContentLoaded", attachTrigger);
+    }
+  })();
+</script>
+<script>
+  (function () {
+    const baseurl = window.SITE_BASEURL || "";
+    const runtimeScript = document.createElement("script");
+    runtimeScript.src = `${baseurl}/assets/web3/config/runtime.generated.js`;
+    runtimeScript.defer = true;
+    runtimeScript.onload = () => {
+      const network = window.suWeb3?.chain || window.suWeb3?.network || "mainnet";
+      console.info(`Runtime config loaded; current network: ${network}.`);
+    };
+    runtimeScript.onerror = () => {
+      const defaultNetwork = window.suWeb3?.chain || window.suWeb3?.network || "mainnet";
+      console.info(`Optional runtime config not applied; current network: ${defaultNetwork}.`);
+    };
+    document.head.appendChild(runtimeScript);
+  })();
+</script>
+<script type="module" src="{{ site.baseurl }}/assets/web3/connect-button.js" defer></script>

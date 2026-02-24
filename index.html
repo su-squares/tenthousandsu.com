@@ -1,65 +1,181 @@
+---
+layout: null
+title: Billboard homepage
+description: "The first ERC-721 NFT. Cute squares you own and personalize for the homepage."
+permalink: /
+image: "{{ site.baseurl }}/assets/images/su-OG.png"
+---
 <!doctype html>
 <html lang="en">
 
 <head>
+  <script>window.SITE_BASEURL = "{{ site.baseurl }}";</script>
   <meta charset="utf-8">
-  <title>Su Squares, cute squares you own and personalize</title>
-  <meta name="description" content="The first ERC-721 NFT. Cute squares you own and personalize.">
-  <link rel="canonical" href="https://tenthousandsu.com" />
-  <link rel="stylesheet" href="assets/main.css?20210926">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% include pwa-meta-tags.html %}
+  {% seo %}
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/main.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/billboard/billboard.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/index.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/square-lookup/styles.css">
+  {% include nav-menu-head.html %}
+  {% include alert-modal-head.html %}
+  {% include offline-modal-head.html %}
+  {% include jsonld-nav.html %}
+  {% include jsonld/billboard.html %}
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/modals/leaving-modal/modal.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/modals/blocked-modal/blocked-modal.css">
+  <script src="{{ site.baseurl }}/assets/modals/blocked-modal/blocked-modal.js"></script>
+  <script src="{{ site.baseurl }}/assets/modals/leaving-modal/modal-core.js"></script>
+  <script src="{{ site.baseurl }}/assets/modals/leaving-modal/link-guard.js"></script>
 </head>
 
 <body>
-  <header>
-    <a id="logo" href="/"><img src="assets/logo-su-squares.svg" style="width:348px;height:57px;object-fit: cover;"
-        alt="Su Squares logo"></a>
-    <span>
-      The first ERC-721 NFT
-    </span>
-    <a class="btn" href="white-paper">About us</a>
-    <a class="btn" href="buy">Mint</a>
-    <a class="btn" href="personalize">Personalize</a>
-    <a class="btn" target="_blank" href="https://x.com/susquares">
-      <!-- Corrected target attribute -->
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-twitter-x"
-        viewBox="0 0 16 16">
-        <path
-          d="M12.6.75h2.454l-5.36 6.142L16 15.25h-4.937l-3.867-5.07-4.425 5.07H.316l5.733-6.57L0 .75h5.063l3.495 4.633L12.601.75Zm-.86 13.028h1.36L4.323 2.145H2.865l8.875 11.633Z" />
-      </svg>
-    </a>
-    <a class="btn" target="_blank" href="https://discord.gg/6nTGNdjQ3B">
-      <!-- Corrected target attribute -->
-      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-discord"
-        viewBox="0 0 16 16">
-        <path
-          d="M13.545 2.907a13.227 13.227 0 0 0-3.257-1.011.05.05 0 0 0-.052.025c-.141.25-.297.577-.406.833a12.19 12.19 0 0 0-3.658 0 8.258 8.258 0 0 0-.412-.833.051.051 0 0 0-.052-.025c-1.125.194-2.22.534-3.257 1.011a.041.041 0 0 0-.021.018C.356 6.024-.213 9.047.066 12.032c.001.014.01.028.021.037a13.276 13.276 0 0 0 3.995 2.02.05.05 0 0 0 .056-.019c.308-.42.582-.863.818-1.329a.05.05 0 0 0-.01-.059.051.051 0 0 0-.018-.011 8.875 8.875 0 0 1-1.248-.595.05.05 0 0 1-.02-.066.051.051 0 0 1 .015-.019c.084-.063.168-.129.248-.195a.05.05 0 0 1 .051-.007c2.619 1.196 5.454 1.196 8.041 0a.052.052 0 0 1 .053.007c.08.066.164.132.248.195a.051.051 0 0 1-.004.085 8.254 8.254 0 0 1-1.249.594.05.05 0 0 0-.03.03.052.052 0 0 0 .003.041c.24.465.515.909.817 1.329a.05.05 0 0 0 .056.019 13.235 13.235 0 0 0 4.001-2.02.049.049 0 0 0 .021-.037c.334-3.451-.559-6.449-2.366-9.106a.034.034 0 0 0-.02-.019Zm-8.198 7.307c-.789 0-1.438-.724-1.438-1.612 0-.889.637-1.613 1.438-1.613.807 0 1.45.73 1.438 1.613 0 .888-.637 1.612-1.438 1.612Zm5.316 0c-.788 0-1.438-.724-1.438-1.612 0-.889.637-1.613 1.438-1.613.807 0 1.451.73 1.438 1.613 0 .888-.631 1.612-1.438 1.612Z" />
-      </svg>
-    </a>
-  </header>
+  {% include nav-header.html %}
 
   <article>
-    <p>Click below to mint an available Su Square (0.5 ETH).</p>
-    <a id="wheretogo" href="#" target="_blank">
-      <div style="position:relative;height:1000px">
-        <img id="theImage" src="build/wholeSquare.webp" alt="All Su Squares"
-          style="margin:0; height:1000px; width:1000px">
-        <div id="position"
-          style="background:pink;opacity:0.8;width:10px;height:10px;;position:absolute;pointer-events:none">
-        </div>
-        <div id="tooltip" style="color:black"></div>
-        <div id="electric-fence"></div>
+    <h1 class="home-title">The first <span class="no-break">ERC-721</span> NFT</h1>
+    <p>Click an empty white square below to mint an available Su Square (<span id="mint-price-display">0.5 ETH</span>).
+      Clicking an already minted and personalized
+      one will activate its hyperlink.</p>
+      <h2 class="billboard-heading">Su Squares Billboard</h2>
+    <p class="mobile-hint">Pinch to zoom, drag to pan, double tap.</p>
+    <script>
+      // Only update if there's a pricing override to avoid performance tax
+      // Uses DOMContentLoaded because runtime.generated.js is deferred
+      document.addEventListener("DOMContentLoaded", function () {
+        var cfg = window.suWeb3 || window.SU_WEB3 || {};
+        var pricing = cfg.pricing;
+        if (pricing && typeof pricing.mintPriceEth === "number" && pricing.mintPriceEth !== 0.5) {
+          var el = document.getElementById("mint-price-display");
+          if (el) el.textContent = pricing.mintPriceEth + " ETH";
+        }
+      });
+    </script>
+    <a id="wheretogo" class="map-container" href="#" target="_blank">
+      <div class="map-wrapper">
+        <img
+          id="theImage"
+          class="map-image"
+          src="{{ site.baseurl }}/build/wholeSquare.webp"
+          alt="All Su Squares"
+        >
+        <div id="position" class="map-position"></div>
+        <div id="tooltip" class="map-tooltip"></div>
+        <div id="electric-fence" class="map-fence"></div>
       </div>
     </a>
+    <button id="map-reset-btn" class="map-reset-btn" type="button">Reset zoom</button>
   </article>
 
-  <article>
-    <section id="newly-minted" style="display:flex; align-items: center; width: 100%; margin-bottom: 2em">
-      <strong style="flex: 1 1 0">Newly minted</strong>
+  <article class="newly-feed">
+    <section id="newly-minted" class="newly-feed__section">
+      <strong class="newly-feed__heading">Newly minted</strong>
+      <div class="newly-feed__items"></div>
     </section>
-    <section id="newly-personalized" style="display:flex; align-items: center; width: 100%">
-      <strong style="flex: 1 1 0">Latest personalized</strong>
+    <section id="newly-personalized" class="newly-feed__section">
+      <strong class="newly-feed__heading">Latest personalized</strong>
+      <div class="newly-feed__items"></div>
     </section>
   </article>
+
+  <article class="billboard-embed" id="billboard-embed">
+    <h2>Billboard embed</h2>
+    <p>You can display the fully functional billboard on your site or app with our embed feature. Copy the iframe or URL to use it; or if you want to customize it (the background, text, colors), visit the embed builder page.</p>
+    <div class="billboard-embed__actions">
+      <div class="billboard-embed__dropdown" id="embed-copy-dropdown">
+        <button type="button" class="billboard-embed__trigger" id="embed-copy-trigger">
+          Copy embed ▾
+        </button>
+        <div class="billboard-embed__menu" id="embed-copy-menu">
+          <button type="button" class="billboard-embed__option" data-copy="url" id="embed-copy-url">
+            Copy URL
+          </button>
+          <button type="button" class="billboard-embed__option" data-copy="iframe" id="embed-copy-iframe">
+            Copy iframe
+          </button>
+        </div>
+      </div>
+      <a href="{{ site.baseurl }}/embed-builder.html" class="billboard-embed__link">
+        Embed builder
+      </a>
+    </div>
+  </article>
+
+  {% include square-lookup.html %}
+
+  <section class="developer-learning" aria-labelledby="developer-learning-title">
+    <div class="developer-learning__inner">
+      <h2 id="developer-learning-title" class="developer-learning__title">Developer Learning</h2>
+      <p class="developer-learning__subtitle">Learn the technicals behind how this historic project works.</p>
+
+      <p class="developer-learning__intro">
+        Su Squares is much more than a historic smart contract or a collectible billboard on Ethereum... it offers a complete, open-source <i>ecosystem-as-a-playground</i> you can study,
+        run, and modify yourself. The same GitHub repository that powers this live Jekyll dApp also contains the smart
+        contracts, local blockchain setup, UI library, and tests that make the project work end-to-end.
+        <br><br>
+        And it's all made accessible through an agent-guided experience that works with you using your preferred AI models in your IDE. 
+        It's an Agent-Guided Repository (AGR) with different modes your agents can use to help you smoothly navigate and learn what you want at your own pace.
+      </p>
+
+      <p class="developer-learning__lead">Inside the repo you can:</p>
+
+      <div class="developer-learning__grid">
+        <section class="developer-learning__item">
+          <h3 class="developer-learning__item-title">Run the full dApp locally</h3>
+          <p class="developer-learning__item-body">
+            Spin up your own Su Squares dApp with your own smart contract deployments, customize the entire Billboard, run it on a private local Ethereum-like network you can manage and configure.
+            You can experiment safely without touching mainnet or spending real ETH.
+          </p>
+        </section>
+
+        <section class="developer-learning__item">
+          <h3 class="developer-learning__item-title">Explore the pioneering smart contract in depth</h3>
+          <p class="developer-learning__item-body">
+            Run the ERC-721 smart contract that defined the entire digital collectibles ecosystem, using modern tooling, tests and accessible scripts to explore the full gamut of use cases.
+          </p>
+        </section>
+
+        <section class="developer-learning__item">
+          <h3 class="developer-learning__item-title">See the full UI in Storybook</h3>
+          <p class="developer-learning__item-body">
+            Browse the production UI components in isolation: the billboard, square lookup tools, choosers, wallet and
+            transaction modals, offline banner, nav, and more. It’s the live interface broken down into testable, reusable
+            pieces.
+          </p>
+        </section>
+
+        <section class="developer-learning__item">
+          <h3 class="developer-learning__item-title">Run automated tests like a real dapp team</h3>
+          <p class="developer-learning__item-body">
+            Use Playwright to run end-to-end browser tests against the app, and Vitest to validate helper logic and
+            behavior. You can watch how a production NFT project wires testing around contracts and UI.
+          </p>
+        </section>
+
+        <section class="developer-learning__item developer-learning__item--full">
+          <h3 class="developer-learning__item-title">Understand the build and tooling stack</h3>
+          <p class="developer-learning__item-body">
+            Examine the Node.js workspaces that handle contracts, local network scripts, UI tooling, and test runners,
+            alongside the Jekyll code that renders this very dApp. Everything is wired so you can clone, install
+            dependencies, and follow the same commands we use.
+          </p>
+        </section>
+      </div>
+
+      <a
+        class="developer-learning__cta"
+        href="https://github.com/su-squares/tenthousandsu.com"
+        target="_blank"
+        rel="noreferrer"
+      >
+        <span class="developer-learning__cta-text">View on GitHub</span>
+        <span class="developer-learning__cta-icon" aria-hidden="true">
+          <img src="{{ site.baseurl }}/assets/images/github-logo.svg" alt="GitHub" />
+        </span>
+      </a>
+    </div>
+  </section>
 
   <footer>
     <small>
@@ -71,170 +187,204 @@
       United States.
     </small>
   </footer>
+  <script type="module">
+    import { initHomepageBillboard } from "{{ site.baseurl }}/assets/billboard/wrappers/index-billboard.js";
+
+    document.addEventListener("DOMContentLoaded", () => {
+      try {
+        const baseurl = window.SITE_BASEURL || '';
+        const runtimeCfg = window.suWeb3 || window.SU_WEB3 || {};
+        const runtimeChain =
+          (runtimeCfg.chain || runtimeCfg.CHAIN || runtimeCfg.network || runtimeCfg.NETWORK || "mainnet").toString().toLowerCase();
+        const runtimeAssetBases = runtimeCfg.assetBases || {};
+        let assetBase = String(runtimeAssetBases[runtimeChain] || "/build").replace(/\/+$/, "");
+        if (baseurl && !assetBase.startsWith(baseurl)) {
+          assetBase = baseurl + assetBase;
+        }
+        const assetPath = (rel) => `${assetBase}/${String(rel).replace(/^\/+/, "")}`;
+        const normalizeHref = window.suNormalizeHref || ((href) => href);
+
+        // Initialize billboard
+        const billboard = initHomepageBillboard({
+          mapWrapper: document.querySelector(".map-wrapper"),
+          image: document.getElementById("theImage"),
+          positionDiv: document.getElementById("position"),
+          tooltipDiv: document.getElementById("tooltip"),
+          fenceContainer: document.getElementById("electric-fence"),
+          linkAnchor: document.getElementById("wheretogo"),
+          resetButton: document.getElementById("map-reset-btn"),
+          baseurl,
+          normalizeHref,
+        });
+
+        if (!billboard) {
+          console.error("Failed to initialize homepage billboard");
+          return;
+        }
+
+        // Update image src to use computed asset path
+        const theImage = document.getElementById("theImage");
+        if (theImage) {
+          theImage.src = assetPath("wholeSquare.webp");
+        }
+
+        // Load square data
+        const squarePersonalizationsPromise = fetch(assetPath("squarePersonalizations.json")).then(r => r.json());
+        const squareExtraPromise = fetch(assetPath("squareExtra.json")).then(r => r.json());
+
+        // Wait for image to load
+        let imageReadyPromise = Promise.resolve();
+        if (theImage) {
+          imageReadyPromise = new Promise((resolve) => {
+            const handleReady = () => {
+              theImage.removeEventListener("load", handleReady);
+              theImage.removeEventListener("error", handleReady);
+              resolve();
+            };
+            if (theImage.complete && theImage.naturalWidth > 1) {
+              resolve();
+            } else {
+              theImage.addEventListener("load", handleReady);
+              theImage.addEventListener("error", handleReady);
+            }
+          });
+        }
+
+        Promise.all([squarePersonalizationsPromise, squareExtraPromise, imageReadyPromise])
+          .then(([personalizations, extra]) => {
+            billboard.setData(personalizations, extra);
+            billboard.startFenceAnimation();
+
+            // Populate newly minted and personalized feeds
+            const newlyMintedList = document.querySelector("#newly-minted .newly-feed__items");
+            const newlyPersonalizedList = document.querySelector("#newly-personalized .newly-feed__items");
+
+            const mostRecentMintedSquares = extra
+              .map((extraData, index) => [index, extraData])
+              .filter(([, extraData]) => extraData !== null)
+              .sort((a, b) => b[1][0] - a[1][0])
+              .slice(0, 5);
+
+            mostRecentMintedSquares.forEach(([index]) => {
+              const row = Math.floor(index / 100);
+              const col = index % 100;
+              const squareNumber = index + 1;
+              const thumbUrl = assetPath("wholeSquare.webp");
+              newlyMintedList.insertAdjacentHTML(
+                "beforeend",
+                `<a class="newly-feed__item" href="${baseurl}/square#${squareNumber}">
+                  <span class="newly-feed__thumb" style="background-image:url('${thumbUrl}'); background-position:${-col * 10}px ${-row * 10}px;"></span>
+                  <p>#${squareNumber}</p>
+                </a>`
+              );
+            });
+
+            const mostRecentPersonalizedSquares = extra
+              .map((extraData, index) => [index, extraData])
+              .filter(([, extraData]) => extraData !== null)
+              .filter(([, extraData]) => extraData[1] !== extraData[0])
+              .sort((a, b) => b[1][1] - a[1][1])
+              .slice(0, 5);
+
+            mostRecentPersonalizedSquares.forEach(([index]) => {
+              const row = Math.floor(index / 100);
+              const col = index % 100;
+              const squareNumber = index + 1;
+              const thumbUrl = assetPath("wholeSquare.webp");
+              newlyPersonalizedList.insertAdjacentHTML(
+                "beforeend",
+                `<a class="newly-feed__item" href="${baseurl}/square#${squareNumber}">
+                  <span class="newly-feed__thumb" style="background-image:url('${thumbUrl}'); background-position:${-col * 10}px ${-row * 10}px;"></span>
+                  <p>#${squareNumber}</p>
+                </a>`
+              );
+            });
+          })
+          .catch((error) => {
+            console.error("Failed to load square data", error);
+          });
+      } catch (error) {
+        console.error("Homepage init failed", error);
+      }
+    });
+  </script>
+  <script type="module" src="{{ site.baseurl }}/assets/square-lookup/index.js"></script>
+  <script src="{{ site.baseurl }}/assets/js/pwa-init.js"></script>
   <script>
-    let positionSquareNumber = 1;
-    var squarePersonalizations = [];
-    var squareExtra = [];
+  (function() {
+    var baseurl = window.SITE_BASEURL || '';
+    var embedUrl = window.location.origin + baseurl + '/embed.html';
+    var embedIframe = '<iframe width="600" height="600" frameborder="0" title="Su Squares Billboard" src="' + embedUrl + '"></iframe>';
 
-    // Animate the electric fence
-    let fence = new Set();
-    let litUpEdge = new Set();
-    let wasEverLitUp = new Set();
+    var dropdown = document.getElementById('embed-copy-dropdown');
+    var trigger = document.getElementById('embed-copy-trigger');
+    var copyUrlBtn = document.getElementById('embed-copy-url');
+    var copyIframeBtn = document.getElementById('embed-copy-iframe');
 
-    const squarePersonalizationsPromise = fetch("build/squarePersonalizations.json").then(response => response.json());
-    const squareExtraPromise = fetch("build/squareExtra.json").then(response => response.json());
+    if (!dropdown || !trigger) return;
 
-    Promise.all([squarePersonalizationsPromise, squareExtraPromise])
-      .then(([personalizations, extra]) => {
-        squarePersonalizations = personalizations; /* [title, href] or null */
-        squareExtra = extra; /* [mintedBlock, updatedBlock, mainIsPersonalized, version */
+    // Toggle dropdown
+    trigger.addEventListener('click', function(e) {
+      e.stopPropagation();
+      dropdown.classList.toggle('is-open');
+    });
 
-        // Start fence animation
-        lightUpFence(new Set([1]));
+    // Close on outside click
+    document.addEventListener('click', function(e) {
+      if (!dropdown.contains(e.target)) {
+        dropdown.classList.remove('is-open');
+      }
+    });
 
-        // Show newly minted and personalized Squares
-        const newlyMintedSection = document.getElementById("newly-minted");
-        const newlyPersonalizedSection = document.getElementById("newly-personalized");
-        const mostRecentMintedSquares = squareExtra
-          .map((extraData, index) => [index, extraData])
-          .filter(([index, extraData]) => extraData !== null)
-          .sort((a, b) => b[1][0 /* mintedBlock */] - a[1][0])
-          .slice(0, 5);
-        mostRecentMintedSquares.forEach(([index, extraData]) => {
-          const row = Math.floor((index - 1) / 100);
-          const col = (index - 1) % 100;
-          const squareNumber = index + 1;
-          newlyMintedSection.insertAdjacentHTML("beforeend",
-            `<a style="display:flex; flex-direction: column; align-items: center; justify-content: center; flex: 1 1 0" href="https://tenthousandsu.com/square#${squareNumber}">
-              <div style="background: url('https://tenthousandsu.com/build/wholeSquare.webp'); height: 10px; width: 10px; background-position-x: ${-col * 10}px; background-position-y: ${-row * 10}px; display: inline-block; zoom: 5; image-rendering: pixelated;"></div>
-              <p>#${squareNumber}</p>
-            </a>`
-          );
-        });
-        const mostRecentPersonalizedSquares = squareExtra
-          .map((extraData, index) => [index, extraData])
-          .filter(([index, extraData]) => extraData !== null)
-          .filter(([index, extraData]) => extraData[1] !== extraData[0])
-          .sort((a, b) => b[1][1 /* updatedBlock */] - a[1][1])
-          .slice(0, 5);
-        mostRecentPersonalizedSquares.forEach(([index, extraData]) => {
-          const row = Math.floor((index) / 100);
-          const col = (index) % 100;
-          const squareNumber = index + 1;
-          newlyPersonalizedSection.insertAdjacentHTML("beforeend",
-            `<a style="display:flex; flex-direction: column; align-items: center; justify-content: center; flex: 1 1 0" href="https://tenthousandsu.com/square#${squareNumber}">
-              <div style="background: url('https://tenthousandsu.com/build/wholeSquare.webp'); height: 10px; width: 10px; background-position-x: ${-col * 10}px; background-position-y: ${-row * 10}px; display: inline-block; zoom: 5; image-rendering: pixelated;"></div>
-              <p>#${squareNumber}</p>
-            </a>`
-          );
-        });
+    // Copy URL
+    if (copyUrlBtn) {
+      copyUrlBtn.addEventListener('click', function() {
+        copyToClipboard(embedUrl, this);
       });
+    }
 
-    function setPosition(squareNumber) {
-      positionSquareNumber = squareNumber;
-      const positionDiv = document.getElementById("position");
-      const tooltipDiv = document.getElementById("tooltip");
-      const whereToGoAnchor = document.getElementById("wheretogo");
+    // Copy iframe
+    if (copyIframeBtn) {
+      copyIframeBtn.addEventListener('click', function() {
+        copyToClipboard(embedIframe, this);
+      });
+    }
 
-      if (!squarePersonalizations[squareNumber - 1]) {
-        document.getElementById("theImage").style.cursor = "pointer";
-        tooltipDiv.textContent = "Square #" + squareNumber + " is available for sale, click to buy.";
-        whereToGoAnchor.href = "buy?square=" + squareNumber;
-      } else if (!squarePersonalizations[squareNumber - 1][0] && !squarePersonalizations[squareNumber - 1][1]) {
-        document.getElementById("theImage").style.cursor = "not-allowed";
-        tooltipDiv.textContent = "Square #" + squareNumber + " WAS PURCHASED BUT NOT YET PERSONALIZED";
-        whereToGoAnchor.removeAttribute("href");
+    function copyToClipboard(text, button) {
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(function() {
+          showCopied(button);
+        }).catch(function() {
+          fallbackCopy(text, button);
+        });
       } else {
-        document.getElementById("theImage").style.cursor = "pointer";
-        tooltipDiv.textContent = "Square #" + squareNumber + " " + squarePersonalizations[squareNumber - 1][0];
-        whereToGoAnchor.href = squarePersonalizations[squareNumber - 1][1];
-      }
-
-      positionDiv.style.left = ((squareNumber - 1) % 100) * 10 + "px";
-      positionDiv.style.top = Math.floor((squareNumber - 1) / 100) * 10 + "px";
-      tooltipDiv.style.left = positionDiv.style.left;
-      tooltipDiv.style.top = (parseInt(positionDiv.style.top) + 30) + "px";
-      tooltipDiv.style.display = "block";
-    }
-
-    document.getElementById("theImage").addEventListener("mousemove", (e) => {
-      const theImage = document.getElementById("theImage");
-      const rect = theImage.getBoundingClientRect(); // Get the bounding rectangle of the image
-      const x = Math.min(Math.max(Math.floor((e.clientX - rect.left) / 10), 0), 99); // Adjust by element's left position
-      const y = Math.min(Math.max(Math.floor((e.clientY - rect.top) / 10), 0), 99); // Adjust by element's top position
-      const squareNumber = x + y * 100 + 1;
-      setPosition(squareNumber);
-    });
-
-    document.addEventListener("keydown", (e) => {
-      const key = e.key.toLowerCase();
-      if (key === 'w' || key === ',' || key === 'arrowup') {
-        // Move up
-        if (positionSquareNumber > 100) setPosition(positionSquareNumber - 100);
-        event.preventDefault(); // Prevent scrolling
-      } else if (key === 'a' || key === 'a' || key === 'arrowleft') {
-        // Move left
-        if (positionSquareNumber % 100 !== 1) setPosition(positionSquareNumber - 1);
-      } else if (key === 's' || key === 'o' || key === 'arrowdown') {
-        // Move down
-        if (positionSquareNumber <= 100 * 99) setPosition(positionSquareNumber + 100);
-        event.preventDefault(); // Prevent scrolling
-      } else if (key === 'd' || key === 'e' || key === 'arrowright') {
-        // Move right
-        if (positionSquareNumber % 100 !== 0) setPosition(positionSquareNumber + 1);
-      } else if (key === 'enter') {
-        // Trigger click for highlighted square
-        const whereToGoAnchor = document.getElementById("wheretogo");
-        if (whereToGoAnchor.href) {
-          whereToGoAnchor.click();
-        }
-      }
-    });
-
-    function lightUpFence(edge) {
-      litUpEdge.forEach(s => {
-        const element = document.getElementById("electric-fence-" + s);
-        if (element && element.parentNode) {
-          element.parentNode.removeChild(element);
-        }
-      });
-      litUpEdge.clear();
-      let nextEdge = new Set();
-      edge.forEach((square) => {
-        wasEverLitUp.add(square);
-        const element = document.createElement("div");
-        element.id = "electric-fence-" + square;
-        element.style.pointerEvents = "none";
-        element.style.position = "absolute";
-        element.style.left = ((square - 1) % 100 * 10) + "px";
-        element.style.top = Math.floor((square - 1) / 100) * 10 + "px";
-        element.style.width = "10px";
-        element.style.height = "10px";
-        element.style.background = "#ffd700";
-        element.style.opacity = "0.25";
-        document.getElementById("electric-fence").appendChild(element);
-        if (squarePersonalizations[square - 1] !== null) {
-          litUpEdge.add(square);
-          if (square > 100 && !wasEverLitUp.has(square - 100)) {
-            nextEdge.add(square - 100);
-          }
-          if (square <= 100 * 99 && !wasEverLitUp.has(square + 100)) {
-            nextEdge.add(square + 100);
-          }
-          if (square % 100 != 1 && !wasEverLitUp.has(square - 1)) {
-            nextEdge.add(square - 1);
-          }
-          if (square % 100 != 0 && !wasEverLitUp.has(square + 1)) {
-            nextEdge.add(square + 1);
-          }
-        } else {
-          fence.add(square);
-        }
-      });
-      if (nextEdge.size > 0) {
-        setTimeout(() => { lightUpFence(nextEdge) }, 25);
+        fallbackCopy(text, button);
       }
     }
+
+    function fallbackCopy(text, button) {
+      var textarea = document.createElement('textarea');
+      textarea.value = text;
+      textarea.style.position = 'fixed';
+      textarea.style.opacity = '0';
+      document.body.appendChild(textarea);
+      textarea.select();
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      showCopied(button);
+    }
+
+    function showCopied(button) {
+      var original = button.textContent;
+      button.textContent = 'Copied!';
+      button.dataset.copied = 'true';
+      setTimeout(function() {
+        button.textContent = original;
+        button.dataset.copied = 'false';
+        dropdown.classList.remove('is-open');
+      }, 1000);
+    }
+  })();
   </script>
 </body>
 

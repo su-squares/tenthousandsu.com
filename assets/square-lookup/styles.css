@@ -1,0 +1,281 @@
+.su-chooser-backdrop {
+  position: fixed;
+  inset: 0;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 9999;
+}
+
+.su-chooser-backdrop.is-open {
+  display: flex;
+}
+
+.su-chooser {
+  width: min(1000px, 92vw);
+  max-height: 80vh;
+  padding: 1.2rem;
+  background: var(--bg-gradient);
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius-md);
+  box-shadow: var(--shadow-strong);
+  color: var(--color-accent);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  overflow: hidden;
+}
+
+.su-chooser--canvas,
+.su-chooser--billboard {
+  width: min(1100px, 95vw);
+  max-height: 90vh;
+  overflow: hidden;
+}
+
+.su-chooser__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.su-chooser__title {
+  margin: 0;
+}
+
+.su-chooser__close {
+  appearance: none;
+  background: transparent;
+  color: var(--color-accent);
+  border: none;
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: auto;
+  height: auto;
+  font-size: 1.5rem;
+  line-height: 1;
+  padding: 0;
+  cursor: pointer;
+}
+
+.su-chooser__helper {
+  margin: 0;
+  opacity: 0.9;
+}
+
+.su-chooser__mobile-hint {
+  margin: 0;
+  display: none;
+  font-weight: 700;
+}
+
+.su-chooser__grid {
+  --su-chooser-cell-width: 88px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(var(--su-chooser-cell-width), var(--su-chooser-cell-width)));
+  gap: 0;
+  width: 100%;
+  overflow: auto;
+  max-height: 60vh;
+  justify-content: center;
+}
+
+.su-chooser__cell {
+  appearance: none;
+  border: 0.5px solid var(--color-accent);
+  background: rgba(0, 0, 0, 0.15);
+  color: var(--color-accent);
+  padding: 0.45rem 0.25rem;
+  font-size: 1rem;
+  cursor: pointer;
+  text-align: center;
+  white-space: nowrap;
+  transition: background 120ms ease, color 120ms ease, box-shadow 120ms ease;
+}
+
+.su-chooser__cell:hover,
+.su-chooser__cell:focus-visible {
+  background: rgba(0, 0, 0, 0.35);
+  box-shadow: inset 0 0 0 1px rgba(255, 215, 0, 0.7);
+  outline: none;
+}
+
+.su-chooser__empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 1rem;
+  margin: 0;
+}
+
+.square-lookup {
+  margin-top: 2rem;
+  gap: .5rem;
+}
+
+/* Narrow variant with 500px max-width for focused square lookup pages.
+   This variant centers the component when needed to align with other centered elements. */
+.square-lookup--narrow {
+  max-width: 500px;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.square-lookup__controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  align-items: flex-start;
+}
+
+.square-lookup__controls input[type="number"] {
+  width: 8rem;
+  flex: 0 0 auto;
+}
+
+.square-lookup__actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(10rem, .3fr));
+  gap: 0.5rem;
+  flex: 1 1 14rem;
+  min-width: 14rem;
+  margin-left: 2rem;
+}
+
+.square-lookup__controls button,
+.square-lookup__submit {
+  padding: 0.65rem 1rem;
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  color: var(--color-accent);
+  cursor: pointer;
+  transition: background 120ms ease, transform 120ms ease;
+}
+
+.square-lookup__controls button {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.square-lookup__controls button:hover,
+.square-lookup__submit:hover {
+  background: rgba(0, 0, 0, 0.4);
+  transform: translateY(-1px);
+}
+
+.square-lookup__submit {
+  margin-top: 0.75rem;
+  width: fit-content;
+}
+
+@media (max-width: 600px) {
+  .su-chooser__grid {
+    --su-chooser-cell-width: 76px;
+  }
+
+  .su-chooser__cell {
+    font-size: 0.95rem;
+    padding: 0.4rem 0.2rem;
+  }
+
+  .square-lookup__controls input[type="number"] {
+    width: 6.5rem;
+  }
+}
+
+#square-lookup-billboard {
+  max-width: 200px;
+}
+
+#square-lookup-choose {
+  max-width: 180px;
+}
+
+@media (max-width: 700px) {
+  .su-chooser__mobile-hint {
+    display: block;
+    text-align: center;
+  }
+}
+
+@media (min-width: 900px) {
+  .su-chooser--canvas,
+  .su-chooser--billboard {
+    overflow: scroll;
+    scrollbar-gutter: stable;
+  }
+}
+
+/* Checkbox variant - wider cells */
+.su-chooser__grid--checkbox {
+  --su-chooser-cell-width: 117px;
+}
+
+/* Checkbox cell layout */
+.su-chooser__cell--checkbox {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: flex-start;
+  padding-left: 0.5rem;
+}
+
+/* Checked cell - permanent darker background */
+.su-chooser__cell--checkbox.su-chooser__cell--checked {
+  background: rgba(0, 0, 0, 0.35);
+}
+
+/* Checkbox square */
+.su-chooser__checkbox {
+  width: 18px;
+  height: 18px;
+  border: 2px solid #ffd700;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+}
+
+/* Pink checkmark when checked */
+.su-chooser__checkbox--checked::after {
+  content: "✓";
+  color: #ff69b4;
+  font-weight: bold;
+  font-size: 14px;
+  line-height: 1;
+}
+
+/* Okay button container */
+.su-chooser__footer {
+  display: flex;
+  justify-content: center;
+  padding-top: 0.8rem;
+}
+
+/* Okay button */
+.su-chooser__okay-btn {
+  appearance: none;
+  padding: 0.6rem 2rem;
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  background: rgba(0, 0, 0, 0.25);
+  color: var(--color-accent);
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 120ms ease, transform 120ms ease;
+}
+
+.su-chooser__okay-btn:hover {
+  background: rgba(0, 0, 0, 0.4);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 600px) {
+  .su-chooser__grid--checkbox {
+    --su-chooser-cell-width: 100px;
+  }
+}

@@ -1,25 +1,33 @@
+---
+layout: null
+title: Buy a Square and claim a spot on the homepage
+description: "Purchase Su Squares NFTs on Ethereum that you can personalize to appear on the TenThousandSu.com homepage billboard."
+permalink: /buy
+image: "{{ site.baseurl }}/assets/images/su-OG.png"
+---
 <!doctype html>
-<html lang="en">
+<html lang="en" class="mint-page">
 
 <head>
+  <script>window.SITE_BASEURL = "{{ site.baseurl }}";</script>
   <meta charset="utf-8">
-  <title>Su Squares, mint a square</title>
-  <link rel="canonical" href="https://tenthousandsu.com/buy" />
-  <link rel="stylesheet" href="assets/main.css">
-  <style>
-    #square-number {
-      margin-top: 0.5em;
-      margin-bottom: 0.5em;
-    }
-  </style>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% include pwa-meta-tags.html %}
+  {% seo %}
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/main.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/billboard/billboard.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/buy.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/square-lookup/styles.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/web3/tx/styles.css">
+  {% include nav-menu-head.html %}
+  {% include alert-modal-head.html %}
+  {% include offline-modal-head.html %}
+  {% include jsonld-nav.html %}
+  {% include jsonld/webpage.html %}
 </head>
 
 <body>
-  <header>
-    <a id="logo" href="/"><img src="assets/logo-su-squares.svg" style="width:348px;height:57px;object-fit: cover;"
-        alt="Su Squares logo"></a>
-    <button id="connect-wallet" class="btn">Connect wallet</button>
-  </header>
+  {% include nav-header.html desktop_button_one_label="Personalize" desktop_button_one_href="/personalize-modern" %}
   <article class="lead">
     <h1>Mint Su Squares <span id="square-number-with-number-sign"></span></h1>
     <p><em>If you have a question, please mail <a
@@ -28,22 +36,37 @@
 
     <div id="pick-a-square">
       <h2>Which Square would you like?</h2>
-      <form>
-        <p><strong>Square number</strong> (between 1 and 10,000)</p>
-        <input id="square-number" type=number min=1 max=10000 required style="width:7em">
-      </form>
+      <p><strong>Square number</strong> (between 1 and 10,000)</p>
+      <div class="square-lookup__controls">
+        <input id="square-number" type="number" min="1" max="10000" required style="width:7em" placeholder="e.g. 2345">
+        <div class="square-lookup__actions">
+          <button id="square-choose-list" type="button">Choose from list</button>
+          <button id="square-choose-billboard" type="button">Choose from Billboard</button>
+        </div>
+      </div>
       <button id="select-square" type="button" class="btn btn-lg">Select Square</button>
     </div>
 
     <div id="mint-selected-square" style="display:none">
       <p>Please connect your wallet using the button above and then click mint below.</p>
-      <button id="mint" type="button" class="btn btn-lg">Mint Square</button>
+      <div class="wallet-actions">
+        <button id="open-wallet-app" type="button" class="btn btn-lg">Open mobile wallet</button>
+        <button id="mint" type="button" class="btn btn-lg">Mint Square</button>
+      </div>
     </div>
 
-    <p>Your purchase is subject to the terms, and your understanding of, our <a href="/white-paper">white paper</a>.</p>
-
-    <div id="receipts">
+    <div id="mint-success" style="display:none">
+      <p>Your Square is minted.</p>
+      <div class="wallet-actions">
+        <a id="personalize-now" class="btn btn-lg" href="{{ site.baseurl }}/personalize-modern">Personalize Now</a>
+        <button id="mint-another" type="button" class="btn btn-lg">Mint Another</button>
+      </div>
     </div>
+
+    <p>Your purchase is subject to the terms, and your understanding of, our <a
+        href="{{ site.baseurl }}/white-paper">white paper</a>.</p>
+
+    <div id="tx-fixture"></div>
   </article>
 
   <footer>
@@ -54,37 +77,139 @@
   </footer>
 
   <script type="module">
+    import {
+      ensureConnected,
+      ensureCorrectNetwork,
+      isMobileDevice,
+      openWalletChooser,
+    } from "{{ site.baseurl }}/assets/web3/foundation.js";
+    import { createTxFixture } from "{{ site.baseurl }}/assets/web3/tx/index.js";
+    import { getTxErrorMessage } from "{{ site.baseurl }}/assets/web3/tx/errors.js";
+    import { getWeb3Config } from "{{ site.baseurl }}/assets/web3/config.js";
+    import { purchaseSquare } from "{{ site.baseurl }}/assets/web3/services/primary.js";
+    import { buildTxUrl } from "{{ site.baseurl }}/assets/web3/services/explorer-links.js";
+    import { loadSquareData } from "{{ site.baseurl }}/assets/js/square-data.js";
+
     // Elements and state //////////////////////////////////////////////////////////////////////////////////////////////
     const squareNumberWithNumberSignSpan = document.getElementById("square-number-with-number-sign");
     const squareNumberInput = document.getElementById("square-number");
-    const connectWalletButton = document.getElementById("connect-wallet");
+    const chooseListButton = document.getElementById("square-choose-list");
+    const chooseBillboardButton = document.getElementById("square-choose-billboard");
     const mintButton = document.getElementById("mint");
     const pickASquareDiv = document.getElementById("pick-a-square");
     const mintSelectedSquareDiv = document.getElementById("mint-selected-square");
-    const receiptsDiv = document.getElementById("receipts");
+    const mintSuccessDiv = document.getElementById("mint-success");
+    const personalizeNowLink = document.getElementById("personalize-now");
+    const mintAnotherButton = document.getElementById("mint-another");
+    const openWalletButton = document.getElementById("open-wallet-app");
+    const txFixtureDiv = document.getElementById("tx-fixture");
+    const { pricing } = getWeb3Config();
+    const txUi = createTxFixture({
+      target: txFixtureDiv,
+      pricing,
+      mode: "mint",
+      title: "Mint status",
+    });
     let squareNumber;
     let squarePersonalizations;
+    let squareExtra;
+    let lastMintedSquare = null;
+    let currentWagmi = null; // Track current wagmi client for button visibility
+    const skipAvailabilityCheck = Boolean(window.__E2E_SKIP_AVAILABILITY_CHECK);
 
-    // Load personalizations ///////////////////////////////////////////////////////////////////////////////////////////
-    fetch("build/squarePersonalizations.json")
-      .then(response => response.json())
-      .then(data => { squarePersonalizations = data; })
-      .then(data => {
-        // Setup datalist for square number input
-        const datalist = document.createElement("datalist");
-        datalist.id = "square-numbers";
-        for (let i = 1; i <= 10000; i++) {
-          if (squarePersonalizations && squarePersonalizations[i - 1]) {
-            continue;
-          }
-          const option = document.createElement("option");
-          option.value = i;
-          datalist.appendChild(option);
+    const baseurl = window.SITE_BASEURL || '';
+    const buildPersonalizeHref = (squareId) => {
+      if (!squareId) return baseurl + "/personalize-modern";
+      return `${baseurl}/personalize-modern?square=${squareId}`;
+    };
+
+    const showMintState = () => {
+      mintSuccessDiv.style.display = "none";
+      pickASquareDiv.style.display = "block";
+      mintSelectedSquareDiv.style.display = "none";
+      squareNumberInput.value = "";
+      squareNumber = null;
+      txUi.reset();
+    };
+
+    const showSuccessState = (squareId) => {
+      pickASquareDiv.style.display = "none";
+      mintSelectedSquareDiv.style.display = "none";
+      mintSuccessDiv.style.display = "block";
+      const href = buildPersonalizeHref(squareId);
+      personalizeNowLink.href = href;
+    };
+
+    // Load square data for availability checks ////////////////////////////////////////////////////////////////////////
+    loadSquareData().then(({ personalizations, extra }) => {
+      squarePersonalizations = personalizations;
+      squareExtra = extra;
+    }).catch((error) => {
+      console.error("Failed to load square data", error);
+    });
+
+    // Attach choosers /////////////////////////////////////////////////////////////////////////////////////////////////
+    if (chooseListButton) {
+      let listChooserHandle;
+      const ensureListChooser = async () => {
+        if (listChooserHandle) return listChooserHandle;
+        const module = await import(`${baseurl}/assets/square-lookup/list.js`);
+        listChooserHandle = module.attachListChooser({
+          input: squareNumberInput,
+          trigger: chooseListButton,
+          filter: (_id, ctx) => !ctx.extra,
+          title: "Choose an available Square",
+          description: "Only unminted Squares are shown.",
+        });
+        return listChooserHandle;
+      };
+
+      const handleChooseListClick = async (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        try {
+          const chooser = await ensureListChooser();
+          chooser.open();
+          chooseListButton.removeEventListener("click", handleChooseListClick);
+        } catch (error) {
+          console.error("Failed to load the list chooser", error);
+          alert("Unable to open the chooser right now.");
         }
-        squareNumberInput.setAttribute("list", "square-numbers");
-        squareNumberInput.parentNode.appendChild(datalist);
-        console.log(datalist);
-      })
+      };
+
+      chooseListButton.addEventListener("click", handleChooseListClick);
+    }
+
+    if (chooseBillboardButton) {
+      let billboardChooserHandle;
+      const ensureBillboardChooser = async () => {
+        if (billboardChooserHandle) return billboardChooserHandle;
+        const module = await import(`${baseurl}/assets/billboard/wrappers/modal-chooser.js`);
+        billboardChooserHandle = module.attachBillboardChooser({
+          input: squareNumberInput,
+          trigger: chooseBillboardButton,
+          filter: (_id, ctx) => !ctx.extra, // only unminted
+          title: "Choose Square from billboard",
+          tooltipMode: "buy",
+        });
+        return billboardChooserHandle;
+      };
+
+      const handleChooseBillboardClick = async (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        try {
+          const chooser = await ensureBillboardChooser();
+          chooser.open();
+          chooseBillboardButton.removeEventListener("click", handleChooseBillboardClick);
+        } catch (error) {
+          console.error("Failed to load the billboard chooser", error);
+          alert("Unable to open the chooser right now.");
+        }
+      };
+
+      chooseBillboardButton.addEventListener("click", handleChooseBillboardClick);
+    }
 
     // Validate Square number //////////////////////////////////////////////////////////////////////////////////////////
     squareNumberInput.addEventListener("input", () => {
@@ -102,8 +227,11 @@
         return alert("Please enter a Square number.");
       }
       // If the personalizations are loaded, check that the Square is available
-      if (squarePersonalizations) {
-        if (squarePersonalizations[squareNumber - 1]) {
+      if (!skipAvailabilityCheck) {
+        if (squareExtra && squareExtra[squareNumber - 1]) {
+          return alert("Sorry, Square " + squareNumber + " was already purchased.");
+        }
+        if (squarePersonalizations && squarePersonalizations[squareNumber - 1]) {
           return alert("Sorry, Square " + squareNumber + " was already purchased.");
         }
       }
@@ -111,6 +239,12 @@
       mintSelectedSquareDiv.style.display = "block";
       squareNumberWithNumberSignSpan.innerText = "#" + squareNumber;
     });
+
+    if (mintAnotherButton) {
+      mintAnotherButton.addEventListener("click", () => {
+        showMintState();
+      });
+    }
 
     // Handle ?square= query parameter /////////////////////////////////////////////////////////////////////////////////
     const urlParams = new URLSearchParams(window.location.search);
@@ -120,103 +254,78 @@
       //document.getElementById("select-square").click(); let the customer click it, by then the personalizations will be loaded
     }
 
-    // Web3Modal setup /////////////////////////////////////////////////////////////////////////////////////////////////
-    // Using @web3modal/cdn which provides a bundled version for browser usage
-    // Hack from https://github.com/WalletConnect/web3modal-examples/issues/46
-    window.process = { env: { NODE_ENV: "development" } };
-    const { Web3modal, WagmiCore, Chains } = await import(
-      "https://cdn.jsdelivr.net/npm/@web3modal/cdn@5.1.11/dist/wagmi.js"
-    );
-    const { createWeb3Modal, defaultWagmiConfig } = Web3modal;
-    const { mainnet } = Chains;
-    const { reconnect, getAccount, watchAccount, writeContract, waitForTransactionReceipt } = WagmiCore;
-    const walletConnectProjectId = '2aca272d18deb10ff748260da5f78bfd';
-    const chains = [mainnet];
-    const wagmiConfig = defaultWagmiConfig({
-      chains,
-      projectId: walletConnectProjectId,
-      metadata: {
-        name: 'Su Squares',
-        description: 'Own a piece of the Ethereum blockchain',
-        url: 'https://tenthousandsu.com',
-        icons: ['https://tenthousandsu.com/assets/logo-su-squares.svg']
-      }
-    });
-    reconnect(wagmiConfig);
-    const web3modal = createWeb3Modal({
-      wagmiConfig,
-      projectId: walletConnectProjectId,
-      chains
-    });
+    // Open wallet button - shows on mobile when connected via WalletConnect
+    const updateOpenWalletButton = () => {
+      if (!openWalletButton) return;
+      const isWalletConnect = currentWagmi?.getAccount?.()?.connector?.id === "walletConnect";
+      const showButton = isMobileDevice() && isWalletConnect;
+      openWalletButton.style.display = showButton ? "inline-block" : "none";
+    };
 
-    // Handle connect wallet button and its animation //////////////////////////////////////////////////////////////////
-    watchAccount(wagmiConfig, {
-      onChange: (account) => {
-        connectWalletButton.innerText = account.isConnected
-          ? "Connected: " + account.address.slice(0, 6) + "\u2026" + account.address.slice(-4)
-          : "Connect wallet";
-      }
-    });
-    document.getElementById('connect-wallet').addEventListener('click', () => {
-      web3modal.open();
-    });
+    if (openWalletButton) {
+      updateOpenWalletButton();
+      openWalletButton.addEventListener("click", () => {
+        // Opens OS app chooser with placeholder URI (no real session data exposed)
+        openWalletChooser();
+      });
+    }
 
     // Handle mint button ///////////////////////////////////////////////////////////////////////////////////////////////
-    const mainContractABI = [
-      { "constant": false, "inputs": [{ "name": "_tokenId", "type": "uint256" }, { "name": "_newOwner", "type": "address" }], "name": "grantToken", "outputs": [], "payable": false, "stateMutability": "nonpayable", "type": "function" },
-      { "anonymous": false, "inputs": [{ "indexed": false, "name": "_nftId", "type": "uint256" }], "name": "Personalized", "type": "event" },
-      { "constant": false, "inputs": [{ "name": "_squareId", "type": "uint256" }, { "name": "_rgbData", "type": "bytes" }, { "name": "_title", "type": "string" }, { "name": "_href", "type": "string" }], "name": "personalizeSquare", "outputs": [], "payable": true, "stateMutability": "payable", "type": "function" },
-      { "anonymous": false, "inputs": [{ "indexed": true, "name": "_from", "type": "address" }, { "indexed": true, "name": "_to", "type": "address" }, { "indexed": true, "name": "_tokenId", "type": "uint256" }], "name": "Transfer", "type": "event" },
-      { "constant": false, "inputs": [{ "name": "_nftId", "type": "uint256" }], "name": "purchase", "outputs": [], "payable": true, "stateMutability": "payable", "type": "function" },
-      { "constant": true, "inputs": [{ "name": "_owner", "type": "address" }], "name": "balanceOf", "outputs": [{ "name": "", "type": "uint256" }], "payable": false, "stateMutability": "view", "type": "function" },
-      { "constant": true, "inputs": [{ "name": "_tokenId", "type": "uint256" }], "name": "ownerOf", "outputs": [{ "name": "_owner", "type": "address" }], "payable": false, "stateMutability": "view", "type": "function" },
-      { "constant": true, "inputs": [{ "name": "_owner", "type": "address" }, { "name": "_index", "type": "uint256" }], "name": "tokenOfOwnerByIndex", "outputs": [{ "name": "_tokenId", "type": "uint256" }], "payable": false, "stateMutability": "view", "type": "function" },
-    ];
-
     mintButton.addEventListener("click", async () => {
       if (!squareNumber) {
         return alert("Please enter a Square number.");
       }
-      const doSendTransaction = async () => {
-        receiptsDiv.innerHTML = "<p>Sending transaction, waiting for confirmation&hellip;</p>";
-        let hash;
+      txUi.startProcessing(`Minting Square #${squareNumber}. Confirm in your wallet to continue.`);
+      const doSendTransaction = async (wagmi) => {
+        const isWalletConnect = wagmi?.getAccount?.()?.connector?.id === "walletConnect";
+        txUi.setWalletContext({
+          isWalletConnect,
+        });
+        // Trigger wallet app open on mobile for WalletConnect
+        if (isMobileDevice() && isWalletConnect) {
+          openWalletChooser();
+        }
+        let result;
         try {
-          hash = await writeContract(wagmiConfig, {
-            address: "0xE9e3F9cfc1A64DFca53614a0182CFAD56c10624F",
-            abi: mainContractABI,
-            functionName: "purchase",
-            args: [BigInt(squareNumber)],
-            value: BigInt("500000000000000000"), // 0.5 Eth
-          });
-          console.log('hash', hash);
-          const receipt = await waitForTransactionReceipt(wagmiConfig, { hash });
-          console.log('receipt', receipt);
-          receiptsDiv.innerHTML = `<h3>Transaction confirmed</h3><p>Transaction ID: <a target="_blank" href="https://etherscan.io/tx/${receipt.transactionHash}">${receipt.transactionHash}</a>. Next, go to <a href="https://tenthousandsu.com/personalize?square=${squareNumber}">personalize</a> to personalize your Square.</p>`;
+          result = await purchaseSquare(squareNumber, wagmi);
+          const pendingUrl = buildTxUrl(result.hash);
+          txUi.addPending(result.hash, pendingUrl);
+          const transaction = await wagmi.waitForTransaction({ hash: result.hash });
+          const txUrl = buildTxUrl(transaction.transactionHash);
+          lastMintedSquare = squareNumber;
+          showSuccessState(squareNumber);
+          const personalizeHref = buildPersonalizeHref(squareNumber);
+          txUi.markSuccess(
+            transaction.transactionHash,
+            txUrl,
+            `Transaction confirmed. Next, go to the <a href="${personalizeHref}" target="_blank" rel="noreferrer" style="text-decoration: underline;">personalize page</a> to personalize your Square.`,
+            { trusted: true }
+          );
         } catch (error) {
           console.log(error);
-          return alert(error.message);
+          const message = getTxErrorMessage(error, { isWalletConnect });
+          txUi.markError(message);
+          return alert(message);
         }
       };
-      // If the wallet is not connected, connect it
-      const account = getAccount(wagmiConfig);
-      if (!account.isConnected) {
-        // Arm on connecting wallet, if connected then fire the transaction
-        const unwatch = watchAccount(wagmiConfig, {
-          onChange: (newAccount) => {
-            if (newAccount.isConnected) {
-              unwatch();
-              doSendTransaction();
-            }
-          }
-        });
-        // Open modal to connect
-        web3modal.open();
-      } else {
-        // The wallet is connected, fire the transaction
-        doSendTransaction();
-      }
+      await ensureConnected(async (clients) => {
+        currentWagmi = clients;
+        updateOpenWalletButton();
+        await ensureCorrectNetwork(clients);
+        const { activeNetwork } = getWeb3Config();
+        const account = clients.getAccount?.();
+        if (account?.address) {
+          txUi.setBalanceContext({
+            address: account.address,
+            chainId: activeNetwork.chainId,
+            fetcher: (addr, chain) => clients.fetchBalance({ address: addr, chainId: chain }),
+          });
+        }
+        await doSendTransaction(clients);
+      });
     });
   </script>
+  <script src="{{ site.baseurl }}/assets/js/pwa-init.js"></script>
 </body>
 
 </html>

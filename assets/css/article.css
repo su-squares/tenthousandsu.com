@@ -1,0 +1,49 @@
+/* Article and markdown styling */
+.highlighter-rouge,
+.language-solidity {
+  max-width: 100%;
+  overflow-x: auto;
+  margin: 1.5rem 0;
+}
+
+.highlighter-rouge .highlight,
+.language-solidity .highlight {
+  border: 1px solid var(--color-accent);
+  border-radius: 0;
+  padding: 0.5rem;
+  overflow-x: auto;
+  max-width: 100%;
+}
+
+.highlighter-rouge pre,
+.language-solidity pre {
+  margin: 0;
+  overflow-x: auto;
+  white-space: pre;
+  color: var(--color-accent);
+}
+
+.highlighter-rouge code,
+.language-solidity code {
+  color: var(--color-accent);
+  background: transparent;
+  white-space: pre;
+}
+
+#frequently-asked-questions {
+  margin: 0;
+}
+
+.articles-list {
+  margin: 0 0 0.7rem 0;  /* Half of default 1.4rem */
+  padding-left: 1.4rem;  /* Keep default padding */
+}
+
+.articles-list li {
+  margin-bottom: 0.25rem;  /* Half of default 0.5rem */
+  line-height: 1.6;  /* Keep default line-height */
+}
+
+.articles-see-also p {
+  margin: 0 0 0.6rem 0;  /* Half of default 1.2rem */
+}

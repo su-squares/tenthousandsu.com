@@ -1,0 +1,339 @@
+---
+layout: null
+title: Su Squares Embed Builder
+---
+<!doctype html>
+<html lang="en">
+
+<head>
+  <script>window.SITE_BASEURL = "{{ site.baseurl }}";</script>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% include pwa-meta-tags.html %}
+  <title>Embed Builder - Su Squares</title>
+  <meta name="description" content="Configure and generate embed code for the Su Squares Billboard.">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/main.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/billboard/embed-builder/embed-builder.css">
+  {% include nav-menu-head.html %}
+</head>
+
+<body>
+  {% include nav-header.html %}
+
+  <main class="embed-builder">
+    <h1 class="embed-builder__title">Embed Builder</h1>
+    <p class="embed-builder__intro">Configure and generate embed code for the Su Squares Billboard. Use the controls below to customize the embed, then copy the URL or iframe code.</p>
+
+    <div class="embed-builder__layout">
+      <!-- Controls Panel -->
+      <section class="embed-builder__controls">
+        <!-- Tab Navigation -->
+        <nav class="embed-builder__tabs" role="tablist" aria-label="Configuration tabs">
+          <button
+            class="embed-builder__tab"
+            role="tab"
+            aria-selected="true"
+            data-tab="mobile"
+          >Mobile</button>
+          <button
+            class="embed-builder__tab"
+            role="tab"
+            aria-selected="false"
+            data-tab="theme"
+          >Theme</button>
+          <button
+            class="embed-builder__tab"
+            role="tab"
+            aria-selected="false"
+            data-tab="header"
+          >Header</button>
+          <button
+            class="embed-builder__tab"
+            role="tab"
+            aria-selected="false"
+            data-tab="blocklist"
+          >Blocklist</button>
+        </nav>
+
+        <!-- Tab Panels -->
+        <div class="embed-builder__panels">
+          <!-- Layout Tab -->
+          <div
+            class="embed-builder__panel"
+            role="tabpanel"
+            data-panel="mobile"
+            data-active="true"
+          >
+            <label class="embed-builder__toggle">
+              <input type="checkbox" id="panzoom-toggle" checked>
+              <span class="embed-builder__toggle-label">Enable pan/zoom on mobile</span>
+            </label>
+            <p class="embed-builder__hint">Pan/zoom is enabled by default. Uncheck this to disable it for your embed.</p>
+            <div id="mobile-color-section">
+              <div class="embed-builder__field">
+                <label class="embed-builder__label" for="hint-color-picker">Hint text color</label>
+                <div class="embed-builder__color-row">
+                  <input
+                    type="color"
+                    id="hint-color-picker"
+                    class="embed-builder__color-picker"
+                    value="#ffd700"
+                  >
+                  <input
+                    type="text"
+                    id="hint-color-value"
+                    class="embed-builder__color-value"
+                    value="#ffd700"
+                    readonly
+                  >
+                </div>
+                <p class="embed-builder__hint">Controls the color of the mobile pan/zoom hint text.</p>
+              </div>
+
+              <div class="embed-builder__field">
+                <label class="embed-builder__label" for="reset-color-picker">Reset button's text and border color</label>
+                <div class="embed-builder__color-row">
+                  <input
+                    type="color"
+                    id="reset-color-picker"
+                    class="embed-builder__color-picker"
+                    value="#ffd700"
+                  >
+                  <input
+                    type="text"
+                    id="reset-color-value"
+                    class="embed-builder__color-value"
+                    value="#ffd700"
+                    readonly
+                  >
+                </div>
+                <p class="embed-builder__hint">Customize the reset zoom button's text and border color.</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Theme Tab -->
+          <div
+            class="embed-builder__panel"
+            role="tabpanel"
+            data-panel="theme"
+            data-active="false"
+          >
+            <div class="embed-builder__field">
+              <label class="embed-builder__toggle">
+                <input type="checkbox" id="gradient-toggle" checked>
+                <span class="embed-builder__toggle-label">Use Su Squares gradient background</span>
+              </label>
+              <p class="embed-builder__hint">Uncheck to use transparent or a custom color instead.</p>
+            </div>
+
+            <div class="embed-builder__field">
+              <label class="embed-builder__label">Background Color</label>
+              <label class="embed-builder__toggle">
+                <input type="checkbox" id="bg-transparent">
+                <span class="embed-builder__toggle-label">Transparent (show host page behind)</span>
+              </label>
+              <div class="embed-builder__color-row">
+                <input
+                  type="color"
+                  id="bg-color-picker"
+                  class="embed-builder__color-picker"
+                  value="#000000"
+                >
+                <input
+                  type="text"
+                  id="bg-color-value"
+                  class="embed-builder__color-value"
+                  value="#000000"
+                  readonly
+                >
+              </div>
+              <p class="embed-builder__hint">The background color outside the billboard area.</p>
+              <p class="embed-builder__hint">Note: if pan/zoom and header text are both hidden/disabled, little or none of the background may be visible.</p>
+            </div>
+          </div>
+
+          <!-- Header Tab -->
+          <div
+            class="embed-builder__panel"
+            role="tabpanel"
+            data-panel="header"
+            data-active="false"
+          >
+            <div class="embed-builder__field">
+              <span class="embed-builder__label">Header Text</span>
+              <div class="embed-builder__radio-group">
+                <label class="embed-builder__radio">
+                  <input type="radio" name="header" value="susquares" checked>
+                  <span class="embed-builder__radio-label">Su Squares Billboard</span>
+                </label>
+                <label class="embed-builder__radio">
+                  <input type="radio" name="header" value="billboard">
+                  <span class="embed-builder__radio-label">Billboard</span>
+                </label>
+                <label class="embed-builder__radio">
+                  <input type="radio" name="header" value="squares">
+                  <span class="embed-builder__radio-label">Su Squares</span>
+                </label>
+                <label class="embed-builder__radio">
+                  <input type="radio" name="header" value="none">
+                  <span class="embed-builder__radio-label">None (no header)</span>
+                </label>
+              </div>
+            </div>
+
+            <div class="embed-builder__field">
+              <label class="embed-builder__label" for="header-size-value">Header Font Size</label>
+              <div class="embed-builder__input-row">
+                <input
+                  type="number"
+                  id="header-size-value"
+                  class="embed-builder__input embed-builder__input--number"
+                  min="0"
+                  step="0.1"
+                  value="2"
+                >
+                <select id="header-size-unit" class="embed-builder__select">
+                  <option value="rem" selected>rem</option>
+                  <option value="em">em</option>
+                  <option value="px">px</option>
+                  <option value="vh">vh</option>
+                  <option value="vw">vw</option>
+                  <option value="%">%</option>
+                </select>
+              </div>
+              <p class="embed-builder__hint">Defaults to 2rem. Leave blank to keep the default size.</p>
+            </div>
+
+            <div class="embed-builder__field">
+              <label class="embed-builder__label" for="header-color-picker">Header Text Color</label>
+              <div class="embed-builder__color-row">
+                <input
+                  type="color"
+                  id="header-color-picker"
+                  class="embed-builder__color-picker"
+                  value="#ffd700"
+                >
+                <input
+                  type="text"
+                  id="header-color-value"
+                  class="embed-builder__color-value"
+                  value="#ffd700"
+                  readonly
+                >
+              </div>
+              <p class="embed-builder__hint">Set a custom color for the header text (defaults to #ffd700).</p>
+            </div>
+          </div>
+
+          <!-- Blocklist Tab -->
+          <div
+            class="embed-builder__panel"
+            role="tabpanel"
+            data-panel="blocklist"
+            data-active="false"
+          >
+            <div class="embed-builder__field">
+              <label class="embed-builder__label" for="block-squares">Block Squares</label>
+              <input
+                type="text"
+                id="block-squares"
+                class="embed-builder__input"
+                placeholder="e.g., 10-500,700,8000-8500"
+              >
+              <span id="block-squares-error" class="embed-builder__error" style="display: none;"></span>
+              <p class="embed-builder__hint">Range format: 1-100,500,600-700. Blocked squares appear as black overlays.</p>
+            </div>
+
+            <div class="embed-builder__field">
+              <label class="embed-builder__label" for="silence-squares">Silence Square Text</label>
+              <input
+                type="text"
+                id="silence-squares"
+                class="embed-builder__input"
+                placeholder="e.g., 100-200,500"
+              >
+              <span id="silence-squares-error" class="embed-builder__error" style="display: none;"></span>
+              <p class="embed-builder__hint">Squares where personalization text is hidden but square still displays.</p>
+            </div>
+
+            <div class="embed-builder__field">
+              <label class="embed-builder__label" for="block-domains">Block Domains</label>
+              <textarea
+                id="block-domains"
+                class="embed-builder__textarea"
+                rows="3"
+                placeholder="e.g., evil.com, bad-site.org"
+              ></textarea>
+              <span id="block-domains-error" class="embed-builder__error" style="display: none;"></span>
+              <p class="embed-builder__hint">Comma-separated list of domains to block. Links to these domains will be disabled.</p>
+            </div>
+
+            <p class="embed-builder__hint">Note: These blocklists are applied in addition to the site's core blocklists.</p>
+          </div>
+        </div>
+
+        <!-- Output Section -->
+        <section class="embed-builder__output">
+          <div class="embed-builder__output-field">
+            <span class="embed-builder__output-label">Embed URL</span>
+            <div class="embed-builder__output-row">
+              <input
+                type="text"
+                id="embed-url-output"
+                class="embed-builder__output-input"
+                readonly
+              >
+              <button type="button" id="copy-url-btn" class="embed-builder__copy-btn">Copy URL</button>
+            </div>
+            <div id="url-warning" class="embed-builder__url-warning" style="display: none;"></div>
+          </div>
+
+          <div class="embed-builder__output-field">
+            <span class="embed-builder__output-label">Iframe Code</span>
+            <div class="embed-builder__output-row">
+              <textarea
+                id="embed-iframe-output"
+                class="embed-builder__output-textarea"
+                readonly
+              ></textarea>
+              <button type="button" id="copy-iframe-btn" class="embed-builder__copy-btn">Copy Iframe</button>
+            </div>
+          </div>
+
+          <button type="button" id="reset-btn" class="embed-builder__reset">Reset to Defaults</button>
+        </section>
+      </section>
+
+      <!-- Preview Panel -->
+      <section class="embed-builder__preview">
+        <h2 class="embed-builder__preview-title">Preview</h2>
+        <iframe
+          id="embed-preview"
+          class="embed-builder__preview-frame"
+          src=""
+          title="Embed preview"
+        ></iframe>
+        <p class="embed-builder__preview-note">This is a live preview of how the embed will appear.</p>
+      </section>
+    </div>
+  </main>
+
+  <script type="module">
+    import { initEmbedBuilder } from "{{ site.baseurl }}/assets/billboard/embed-builder/embed-builder.js";
+
+    document.addEventListener("DOMContentLoaded", () => {
+      const baseurl = window.SITE_BASEURL || "";
+      const embedPageUrl = baseurl + "/embed.html";
+
+      const builder = initEmbedBuilder({
+        embedPageUrl,
+      });
+
+      // Expose for debugging
+      window.suEmbedBuilder = builder;
+    });
+  </script>
+</body>
+
+</html>

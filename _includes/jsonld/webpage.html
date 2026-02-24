@@ -1,0 +1,21 @@
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "WebPage",
+  "name": "{{ page.title | escape }}",
+  "headline": "{{ page.title | escape }}",
+  "description": "{{ page.description | escape }}",
+  "inLanguage": "en",
+  "url": "{{ site.url }}{{ site.baseurl }}{{ page.url }}",
+  "mainEntityOfPage": {
+    "@type": "WebPage",
+    "@id": "{{ site.url }}{{ site.baseurl }}{{ page.url }}"
+  },
+  "isPartOf": {
+    "@type": "WebSite",
+    "name": "{{ site.title | escape }}",
+    "url": "{{ site.url }}{{ site.baseurl }}/"
+  },
+  "image": "{{ site.url }}{{ page.image }}"
+}
+</script>

@@ -2,6 +2,8 @@
 layout: article
 permalink: /articles/2018-11-11-operator-bug-fixed
 title: Operator bug fixed
+image: "{{ site.baseurl }}/assets/images/su-OG.png"
+description: "Announces the relaunch after the operator bug fix and shares lessons learned for ERC-721 security."
 ---
 
 # Su Squares relaunches with fix for operator bug
@@ -47,3 +49,5 @@ Now we have a higher degree of confidence in the Su Squares smart contract and i
 Thank you for your extreme patience during this update, and we sincerely apologize for the inconvenience this caused you.
 
 Stay tuned for an upcoming announcement about our re-launch event. [See our X](https://x.com/susquares). And happy singles day!
+
+{% include jsonld/articles/operator-bug-fixed.html %}

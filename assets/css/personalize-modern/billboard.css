@@ -1,0 +1,638 @@
+.personalize-modern-page .personalize-billboard {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+  --personalize-billboard-max-width: 1000px;
+}
+
+.personalize-modern-page .personalize-billboard__mode-row {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1rem;
+  position: relative;
+  z-index: 0;
+}
+
+.personalize-modern-page .personalize-billboard__mode {
+  display: inline-flex;
+  border: 2px solid var(--color-accent);
+  border-radius: 999px;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.personalize-modern-page .personalize-billboard__mode-btn {
+  border: none;
+  background: transparent;
+  color: var(--color-accent);
+  padding: 0.35rem 1.2rem;
+  cursor: pointer;
+  font-weight: 700;
+}
+
+.personalize-modern-page .personalize-billboard__mode-btn:not(.is-active):hover {
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.personalize-modern-page .personalize-billboard__mode-btn.is-active {
+  background: var(--color-accent);
+  color: var(--color-primary);
+}
+
+.personalize-modern-page .personalize-billboard__toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  position: relative;
+  z-index: 0;
+}
+
+.personalize-modern-page .personalize-billboard[data-mode="owned"] .personalize-billboard__toggle {
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.personalize-modern-page .personalize-billboard__toggle input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.personalize-modern-page .personalize-billboard__toggle-box {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--color-accent);
+  display: inline-block;
+  box-shadow: 0 0 6px rgba(255, 215, 0, 0.45);
+  position: relative;
+}
+
+.personalize-modern-page .personalize-billboard__toggle input:checked + .personalize-billboard__toggle-box::after {
+  content: "\2713";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent);
+  font-size: 0.8rem;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.personalize-modern-page .personalize-billboard__controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 2.8rem;
+}
+
+.personalize-modern-page .personalize-billboard[data-placement="true"] .personalize-billboard__controls {
+  display: none;
+}
+
+.personalize-modern-page .personalize-billboard__placement-panel {
+  display: none;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  border: 2px solid var(--color-accent);
+}
+
+.personalize-modern-page .personalize-billboard[data-placement="true"] .personalize-billboard__placement-panel {
+  display: flex;
+}
+
+.personalize-modern-page .personalize-billboard__placement-coords {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.35rem 1rem;
+}
+
+.personalize-modern-page .personalize-billboard__placement-resize {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.personalize-modern-page .personalize-billboard__resize-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: var(--radius-sm);
+  border: 2px solid var(--color-accent);
+  background: transparent;
+  color: var(--color-accent);
+  font-size: 1.1rem;
+  cursor: pointer;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.personalize-modern-page .personalize-billboard__resize-btn:hover {
+  filter: brightness(1.1);
+}
+
+.personalize-modern-page .personalize-billboard__placement-actions {
+  display: inline-flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+
+.personalize-modern-page .personalize-billboard__reset,
+.personalize-modern-page .personalize-billboard__hint {
+  align-self: center;
+}
+
+.personalize-modern-page .personalize-billboard__controls-left,
+.personalize-modern-page .personalize-billboard__controls-center,
+.personalize-modern-page .personalize-billboard__controls-right {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.personalize-modern-page .personalize-billboard .personalize-billboard__update {
+  background: var(--color-primary);
+  border-color: var(--color-accent);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.personalize-modern-page .personalize-billboard .personalize-billboard__update::after {
+  content: "\2713";
+  color: var(--billboard-glow-owned-personalized);
+  font-size: 0.95em;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.personalize-modern-page .personalize-billboard .personalize-billboard__update:hover {
+  background: var(--color-primary);
+  filter: brightness(1.1);
+}
+
+.personalize-modern-page .personalize-billboard .personalize-billboard__cancel {
+  background: var(--color-danger);
+  border-color: var(--color-accent);
+}
+
+.personalize-modern-page .personalize-billboard .personalize-billboard__cancel:hover {
+  background: var(--color-danger);
+  filter: brightness(1.1);
+}
+
+.personalize-modern-page .personalize-billboard #placement-cancel {
+  background: var(--color-danger);
+  border-color: var(--color-accent);
+}
+
+.personalize-modern-page .personalize-billboard #placement-cancel:hover {
+  background: var(--color-danger);
+  filter: brightness(1.1);
+}
+
+.personalize-modern-page .personalize-billboard .personalize-billboard__reset-all {
+  background: var(--color-danger);
+  border-color: var(--color-accent);
+  white-space: nowrap;
+}
+
+.personalize-modern-page .personalize-billboard .personalize-billboard__upload {
+  white-space: normal;
+  width: 6.5em;
+  text-align: center;
+  line-height: 1.1;
+}
+
+.personalize-modern-page .personalize-billboard .personalize-billboard__reset-all:hover {
+  background: var(--color-danger);
+  filter: brightness(1.1);
+}
+
+.personalize-modern-page .personalize-billboard__update.is-invisible {
+  opacity: 0;
+  pointer-events: none;
+  display: none;
+}
+
+.personalize-modern-page .personalize-billboard__view {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+}
+
+.personalize-modern-page .personalize-billboard__view .map-container {
+  width: 100%;
+  max-width: 1000px;
+  display: block;
+  margin: 0 auto;
+  overflow: hidden; /* Clip zoomed content */
+}
+
+.personalize-modern-page .personalize-billboard__view .map-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+  touch-action: none;
+  transform-origin: 0 0;
+  will-change: transform;
+}
+
+.personalize-modern-page .personalize-billboard__loading {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0.75rem;
+  background: rgba(0, 0, 0, 0.6);
+  z-index: 14;
+  pointer-events: auto;
+}
+
+.personalize-modern-page .personalize-billboard__loading[hidden] {
+  display: none;
+}
+
+.personalize-modern-page .personalize-billboard__loading-text {
+  color: var(--color-accent);
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  font-size: 0.9rem;
+  white-space: nowrap;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  text-align: center;
+}
+
+.personalize-modern-page .personalize-billboard__loading-count {
+  margin-left: 0.35rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.personalize-modern-page .personalize-billboard__loading-dots {
+  display: inline-block;
+  overflow: hidden;
+  vertical-align: baseline;
+  width: 0;
+  white-space: nowrap;
+  line-height: 1;
+  writing-mode: horizontal-tb;
+  animation: personalize-billboard-dots 1.2s steps(3, end) infinite;
+}
+
+.personalize-modern-page .personalize-billboard__placement-overlay {
+  position: absolute;
+  border-radius: 0;
+  border: 2px solid var(--billboard-glow-selected);
+  outline: none;
+  background: transparent;
+  box-shadow:
+    0 0 12px var(--billboard-glow-selected),
+    0 0 24px var(--billboard-glow-selected);
+  z-index: 9;
+  cursor: grab;
+  pointer-events: auto;
+}
+
+.personalize-modern-page .personalize-billboard__placement-overlay:focus,
+.personalize-modern-page .personalize-billboard__placement-overlay:focus-visible {
+  outline: none;
+}
+
+.personalize-modern-page .personalize-billboard__placement-overlay:active {
+  cursor: grabbing;
+}
+
+.personalize-modern-page .personalize-billboard__placement-overlay.is-invalid {
+  border-color: var(--billboard-glow-error);
+  box-shadow:
+    0 0 12px var(--billboard-glow-error),
+    0 0 24px var(--billboard-glow-error);
+}
+
+.personalize-modern-page .personalize-billboard__placement-image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  image-rendering: pixelated;
+  pointer-events: none;
+  user-select: none;
+}
+
+.personalize-modern-page .personalize-billboard__locator-btn {
+  position: absolute;
+  right: 0.5rem;
+  bottom: 0;
+  transform: translateY(120%);
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: transparent;
+  border: 2px solid var(--color-accent);
+  border-radius: var(--radius-sm);
+  color: var(--color-accent);
+  padding: 0.35rem 0.45rem;
+  cursor: pointer;
+  font-weight: 600;
+  z-index: 9;
+}
+
+.personalize-modern-page .personalize-billboard__locator-btn[hidden] {
+  display: none;
+}
+
+.personalize-modern-page .personalize-billboard__locator-btn img {
+  width: 20px;
+  height: 20px;
+  display: block;
+}
+
+.personalize-modern-page .personalize-billboard__locator-btn:hover {
+  filter: brightness(0.85);
+}
+
+.personalize-modern-page .personalize-billboard__glow-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 6;
+}
+
+.personalize-modern-page .personalize-billboard__locator-arrow {
+  position: absolute;
+  pointer-events: none;
+  image-rendering: pixelated;
+  z-index: 12;
+}
+
+.personalize-modern-page .personalize-billboard-map {
+  display: flex;
+  justify-content: center;
+}
+
+.personalize-modern-page .personalize-billboard__map {
+  border: 2px solid var(--color-accent);
+  padding: 1rem;
+}
+
+.personalize-modern-page .personalize-billboard__map h3 {
+  margin-top: 0;
+  margin-bottom: 0.75rem;
+  text-align: center;
+}
+
+.personalize-modern-page .personalize-billboard__glow-toggle {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  margin-bottom: 0.75rem;
+  position: relative;
+}
+
+.personalize-modern-page .personalize-billboard__glow-toggle input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.personalize-modern-page .personalize-billboard__glow-toggle .personalize-billboard__toggle-box {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--color-accent);
+  display: inline-block;
+  box-shadow: 0 0 6px rgba(255, 215, 0, 0.45);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.personalize-modern-page .personalize-billboard__glow-toggle input:checked + .personalize-billboard__toggle-box::after {
+  content: "\2713";
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-accent);
+  font-size: 0.8rem;
+  line-height: 1;
+  font-weight: 700;
+}
+
+.personalize-modern-page .personalize-billboard__glow-toggle.is-forced {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.personalize-modern-page .personalize-billboard__glow-toggle.is-forced input {
+  pointer-events: none;
+}
+
+.personalize-modern-page .personalize-billboard__glow-toggle .personalize-billboard__toggle-text {
+  font-size: 0.9rem;
+}
+
+.personalize-modern-page .personalize-billboard__map-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.personalize-modern-page .personalize-billboard__map-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.personalize-modern-page .personalize-billboard__map-swatch {
+  width: 12px;
+  height: 12px;
+  border-radius: 3px;
+  display: inline-block;
+  background: #fff;
+  border: 3px solid var(--glow-color, transparent);
+  box-shadow:
+    0 0 calc(4px + 6px * var(--glow-pulse)) var(--glow-color, transparent),
+    0 0 calc(12px + 8px * var(--glow-pulse)) var(--glow-color, transparent);
+}
+
+.personalize-modern-page .personalize-billboard__map-swatch[data-color="owned-unpersonalized"] {
+  --glow-color: var(--billboard-glow-owned-unpersonalized);
+}
+
+.personalize-modern-page .personalize-billboard__map-swatch[data-color="owned-personalized"] {
+  --glow-color: var(--billboard-glow-owned-personalized);
+}
+
+.personalize-modern-page .personalize-billboard__map-swatch[data-color="selected"] {
+  --glow-color: var(--billboard-glow-selected);
+}
+
+.personalize-modern-page .personalize-billboard__map-swatch[data-color="error"] {
+  --glow-color: var(--billboard-glow-error);
+}
+
+/* Static mode map swatches (when glow is off) */
+.personalize-modern-page .personalize-billboard__map[data-glow-off="true"] .personalize-billboard__map-swatch {
+  box-shadow: none;
+  border-width: 0;
+  position: relative;
+}
+
+.personalize-modern-page .personalize-billboard__map[data-glow-off="true"] .personalize-billboard__map-swatch::before,
+.personalize-modern-page .personalize-billboard__map[data-glow-off="true"] .personalize-billboard__map-swatch::after {
+  content: "";
+  position: absolute;
+  background: var(--static-x-color, #000);
+}
+
+.personalize-modern-page .personalize-billboard__map[data-glow-off="true"] .personalize-billboard__map-swatch::before {
+  width: 2px;
+  height: 100%;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%) rotate(45deg);
+}
+
+.personalize-modern-page .personalize-billboard__map[data-glow-off="true"] .personalize-billboard__map-swatch::after {
+  width: 2px;
+  height: 100%;
+  left: 50%;
+  top: 0;
+  transform: translateX(-50%) rotate(-45deg);
+}
+
+.personalize-modern-page .personalize-billboard__map[data-glow-off="true"] .personalize-billboard__map-swatch[data-color="owned-unpersonalized"] {
+  background: var(--billboard-glow-owned-unpersonalized);
+  --static-x-color: #000;
+}
+
+.personalize-modern-page .personalize-billboard__map[data-glow-off="true"] .personalize-billboard__map-swatch[data-color="owned-personalized"] {
+  background: var(--billboard-glow-owned-personalized);
+  --static-x-color: #000;
+}
+
+.personalize-modern-page .personalize-billboard__map[data-glow-off="true"] .personalize-billboard__map-swatch[data-color="selected"] {
+  background: var(--billboard-glow-selected);
+  --static-x-color: #000;
+}
+
+.personalize-modern-page .personalize-billboard__map[data-glow-off="true"] .personalize-billboard__map-swatch[data-color="error"] {
+  background: var(--billboard-glow-error);
+  --static-x-color: #fff;
+}
+
+.personalize-modern-page .personalize-billboard__grid {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(100, 1fr);
+  grid-template-rows: repeat(100, 1fr);
+  z-index: 5;
+  touch-action: none;
+}
+
+.personalize-modern-page .personalize-billboard[data-placement="true"] .personalize-billboard__grid {
+  pointer-events: none;
+}
+
+.personalize-modern-page .personalize-billboard__cell {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+  outline: none;
+}
+
+.personalize-modern-page .personalize-billboard__cell[data-blocked="true"] {
+  background: #000;
+}
+
+.personalize-modern-page .personalize-billboard__cell::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background-image: var(--preview-image);
+  background-size: cover;
+  background-position: center;
+  image-rendering: pixelated;
+  pointer-events: none;
+  display: none;
+  z-index: 2;
+}
+
+.personalize-modern-page .personalize-billboard__cell[data-preview="true"]::before {
+  display: block;
+}
+
+.personalize-modern-page .personalize-billboard__cell::after {
+  content: "";
+  display: none;
+}
+
+@keyframes personalize-billboard-dots {
+  0% {
+    width: 0;
+  }
+  100% {
+    width: 0.9em;
+  }
+}
+
+
+@media (max-width: 700px) {
+  .personalize-modern-page .personalize-billboard {
+    gap: 0.6rem;
+  }
+  .personalize-modern-page .personalize-billboard__placement-panel {
+    order: 1;
+  }
+  .personalize-modern-page .personalize-billboard__controls {
+    order: 1;
+  }
+  .personalize-modern-page .personalize-billboard__hint {
+    order: 2;
+    margin-top: 0.2rem;
+  }
+  .personalize-modern-page .personalize-billboard__view {
+    order: 3;
+  }
+  .personalize-modern-page .personalize-billboard__reset {
+    order: 4;
+    margin: 0.4rem auto 0;
+  }
+  .personalize-modern-page .personalize-billboard__mode-row {
+    order: 5;
+    margin-top: 0;
+  }
+  .personalize-modern-page .personalize-billboard__controls {
+    flex-wrap: wrap;
+    gap: 0.6rem 0.75rem;
+    justify-content: center;
+  }
+}

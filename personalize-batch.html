@@ -1,43 +1,57 @@
+---
+layout: null
+title: Personalize a batch of your Squares for the homepage
+description: "Batch personalize multiple Su Squares you own at once so their titles, links, and images update together on the TenThousandSu.com homepage billboard."
+permalink: /personalize-batch
+image: "{{ site.baseurl }}/assets/images/su-OG.png"
+---
 <!doctype html>
-<html lang="en">
+<html lang="en" class="personalize-page">
 
 <head>
+  <script>window.SITE_BASEURL = "{{ site.baseurl }}";</script>
   <meta charset="utf-8">
-  <title>Su Squares, personalize batch</title>
-  <link rel="canonical" href="https://tenthousandsu.com/personalize-batch" />
-  <link rel="stylesheet" href="assets/main.css">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  {% include pwa-meta-tags.html %}
+  {% seo %}
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/main.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/personalize.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/web3/tx/styles.css">
+  {% include nav-menu-head.html %}
+  {% include alert-modal-head.html %}
+  {% include offline-modal-head.html %}
+  {% include jsonld-nav.html %}
+  {% include jsonld/webpage.html %}
+
 </head>
 
 <body>
-  <header>
-    <a id="logo" href="/"><img src="assets/logo-su-squares.svg" style="width:348px;height:57px;object-fit: cover;"
-        alt="Su Squares logo"></a>
-    <button id="connect-wallet" class="btn">Connect wallet</button>
-  </header>
+  {% include nav-header.html %}
 
   <article class="lead">
     <h1>Batch personalize</h1>
     <p>
       <em>If you have any questions, please mail <a
           href="mailto:Su@TenThousandSu.com?subject=Personalize+underlay+batch">Su@TenThousandSu.com</a>. The price to
-        personalize is 0.001 Ether per Square.</em>
+        personalize is <span id="personalize-price-display">0.001 ETH</span> per Square.</em>
     </p>
     <p>
       Use this page to personalize Su Squares you own on TenThousandSu.com. If your Square was previously personalized
-      using the old, more expensive method you will need to <a
-        href="https://tools.tenthousandsu.com/unpersonalize.html">unpersonalize</a> it first.
+      using the old, more expensive method you will need to <a href="#" id="open-unpersonalize-modal">unpersonalize</a>
+      it first.
     </p>
 
     <h2>Select top-left Square</h2>
     <p>Which Square will be the topmost and leftmost Square you will personalize?</p>
     <p>
-      <input id="top-left-square-number" type=number min=1 max=10000 required style="width:7em">
+      <input id="top-left-square-number" type="number" min="1" max="10000" required style="width:7em"
+        placeholder="e.g. 101">
     </p>
 
     <h2>Enter title</h2>
     <p>Enter a title for your Squares. Later you can change the title of each Square individually.</p>
     <p>
-      <input id="title" type="text" maxlength="64">
+      <input id="title" type="text" maxlength="64" placeholder="e.g. My Su Squares">
     </p>
     <p><span id="title-count">0</span> of 64 bytes</p>
 
@@ -45,7 +59,7 @@
     <p>Enter a URL for your Squares. Later you can change the URL of each Square individually. Typically this will start
       with <code>https://</code>.</p>
     <p>
-      <input id="url" type="text" maxlength="96">
+      <input id="url" type="text" maxlength="96" placeholder="e.g. https://example.com">
     </p>
     <p><span id="url-count">0</span> of 96 bytes</p>
 
@@ -81,11 +95,35 @@
 
     <h2>Personalize</h2>
     <p>Click this button to personalize your Squares.</p>
-    <p>
+    <div class="wallet-actions">
+      <button id="open-wallet-app" type="button" class="btn">Open mobile wallet</button>
       <button id="personalize" class="btn btn-lg">Personalize</button>
-    </p>
+    </div>
 
-    <div id="receipts">
+    <div id="tx-fixture"></div>
+
+    <!-- Unpersonalize Modal (lazy loaded) -->
+    <div id="unpersonalize-modal" class="su-modal-overlay" aria-hidden="true">
+      <div class="su-modal">
+        <div class="su-modal__header">
+          <h3 class="su-modal__title">Unpersonalize Square</h3>
+          <button type="button" class="su-modal__close" aria-label="Close">&times;</button>
+        </div>
+        <div class="su-modal__body">
+          <p class="su-modal__desc">Remove personalization from the main contract so you can use the cheaper underlay
+            contract.</p>
+          <div class="su-modal__field">
+            <label for="unpersonalize-token-id" class="su-modal__label">Token ID</label>
+            <input id="unpersonalize-token-id" class="su-modal__input" type="number" min="1" max="10000" required
+              placeholder="e.g. 7421">
+          </div>
+          <div id="unpersonalize-status" class="su-modal__status"></div>
+          <div id="unpersonalize-tx-fixture"></div>
+          <div class="su-modal__actions">
+            <button id="unpersonalize-submit" class="btn btn-primary" disabled>Unpersonalize</button>
+          </div>
+        </div>
+      </div>
     </div>
   </article>
 
@@ -96,9 +134,32 @@
     </small>
   </footer>
 
+  <script>
+    (function() {
+      var cfg = window.suWeb3 || window.SU_WEB3 || {};
+      var pricing = cfg.pricing;
+      if (pricing && typeof pricing.personalizePriceEth === "number" && pricing.personalizePriceEth !== 0.001) {
+        var el = document.getElementById("personalize-price-display");
+        if (el) el.textContent = pricing.personalizePriceEth + " ETH";
+      }
+    })();
+  </script>
+
   <script type="module">
+    import {
+      ensureConnected,
+      ensureCorrectNetwork,
+      isMobileDevice,
+      openWalletChooser,
+    } from "{{ site.baseurl }}/assets/web3/foundation.js";
+    import { createTxFixture } from "{{ site.baseurl }}/assets/web3/tx/index.js";
+    import { getTxErrorMessage } from "{{ site.baseurl }}/assets/web3/tx/errors.js";
+    import { getWeb3Config } from "{{ site.baseurl }}/assets/web3/config.js";
+    import { personalizeUnderlayBatch } from "{{ site.baseurl }}/assets/web3/services/underlay-batch.js";
+    import { buildTxUrl } from "{{ site.baseurl }}/assets/web3/services/explorer-links.js";
+    import { maybeAlertBillboardUpdate } from "{{ site.baseurl }}/assets/web3/alerts.js";
+
     // Elements and state //////////////////////////////////////////////////////////////////////////////////////////////
-    const connectWalletButton = document.getElementById("connect-wallet");
     const topLeftSquareNumberInput = document.getElementById("top-left-square-number");
     const titleInput = document.getElementById("title");
     const titleCountSpan = document.getElementById("title-count");
@@ -110,28 +171,17 @@
     const preflightButton = document.getElementById("preflight");
     const preflightOutputTextArea = document.getElementById("preflight-output");
     const preflightStatusSpan = document.getElementById("preflight-status");
+    const openWalletButton = document.getElementById("open-wallet-app");
     const personalizeButton = document.getElementById("personalize");
-    const receiptsDiv = document.getElementById("receipts");
-    const underlayContractAddress = "0x992bDEC05cD423B73085586f7DcbbDaB953E0DCd";
-    const underlayContractABI = [
-      {
-        "inputs": [
-          {
-            "components": [
-              { "internalType": "uint256", "name": "squareId", "type": "uint256" },
-              { "internalType": "bytes", "name": "rgbData", "type": "bytes" },
-              { "internalType": "string", "name": "title", "type": "string" },
-              { "internalType": "string", "name": "href", "type": "string" }
-            ],
-            "internalType": "struct SuSquaresUnderlay.Personalization[]", "name": "personalizations", "type": "tuple[]"
-          }
-        ],
-        "name": "personalizeSquareUnderlayBatch",
-        "outputs": [],
-        "stateMutability": "payable",
-        "type": "function"
-      }
-    ];
+    const txFixtureDiv = document.getElementById("tx-fixture");
+    const { pricing } = getWeb3Config();
+    const txUi = createTxFixture({
+      target: txFixtureDiv,
+      pricing,
+      mode: "personalize",
+      title: "Personalization status",
+      showPersonalizeTotal: true,
+    });
     let topLeftSquareNumber;
     let title;
     let url;
@@ -243,9 +293,14 @@
     preflightOutputTextArea.addEventListener("input", (event) => {
       personalizationArgs = null;
       preflightStatusSpan.innerText = "Contents are not valid.";
+      txUi.setPersonalizeCount?.(0);
       // check that each line has a valid square number, title, url, and pixel data
       const lines = event.target.value.trim().split(/\r\n|\n|\r/);
+      if (!lines[0]) {
+        return;
+      }
       let newPersonalizationArgs = [];
+      const uniqueSquares = new Set();
       for (let i = 0; i < lines.length; i++) {
         const line = lines[i];
         const cols = line.split(/\t/);
@@ -259,6 +314,7 @@
           preflightStatusSpan.innerText = "ERROR: Row " + (i + 1) + " has invalid square number.";
           return;
         }
+        uniqueSquares.add(squareNumber);
         const titleLength = new TextEncoder().encode(title).length; // UTF-8 byte length
         if (titleLength > 64) {
           preflightStatusSpan.innerText = "ERROR: Row " + (i + 1) + " has title that is too long.";
@@ -295,6 +351,7 @@
       }
       personalizationArgs = newPersonalizationArgs;
       preflightStatusSpan.innerText = "successful, ready to personalize " + lines.length + " Squares.";
+      txUi.setPersonalizeCount?.(uniqueSquares.size);
     });
 
     // Perform #preflight //////////////////////////////////////////////////////////////////////////////////////////////
@@ -349,92 +406,272 @@
       preflightOutputTextArea.dispatchEvent(new Event("input"));
     });
 
-    // Web3Modal setup /////////////////////////////////////////////////////////////////////////////////////////////////
-    // Using @web3modal/cdn which provides a bundled version for browser usage
-    // Hack from https://github.com/WalletConnect/web3modal-examples/issues/46
-    window.process = { env: { NODE_ENV: "development" } };
-    const { Web3modal, WagmiCore, Chains } = await import(
-      "https://cdn.jsdelivr.net/npm/@web3modal/cdn@5.1.11/dist/wagmi.js"
-    );
-    const { createWeb3Modal, defaultWagmiConfig } = Web3modal;
-    const { mainnet } = Chains;
-    const { reconnect, getAccount, watchAccount, writeContract, waitForTransactionReceipt } = WagmiCore;
-    const walletConnectProjectId = '2aca272d18deb10ff748260da5f78bfd';
-    const chains = [mainnet];
-    const wagmiConfig = defaultWagmiConfig({
-      chains,
-      projectId: walletConnectProjectId,
-      metadata: {
-        name: 'Su Squares',
-        description: 'Own a piece of the Ethereum blockchain',
-        url: 'https://tenthousandsu.com',
-        icons: ['https://tenthousandsu.com/assets/logo-su-squares.svg']
-      }
-    });
-    reconnect(wagmiConfig);
-    const web3modal = createWeb3Modal({
-      wagmiConfig,
-      projectId: walletConnectProjectId,
-      chains
-    });
+    let currentWagmi = null; // Track current wagmi client for button visibility
 
-    // Handle connect wallet button and its animation //////////////////////////////////////////////////////////////////
-    watchAccount(wagmiConfig, {
-      onChange: (account) => {
-        connectWalletButton.innerText = account.isConnected
-          ? "Connected: " + account.address.slice(0, 6) + "\u2026" + account.address.slice(-4)
-          : "Connect wallet";
-      }
-    });
-    document.getElementById('connect-wallet').addEventListener('click', () => {
-      web3modal.open();
-    });
+    // Open wallet button - shows on mobile when connected via WalletConnect
+    const updateOpenWalletButton = () => {
+      if (!openWalletButton) return;
+      const isWalletConnect = currentWagmi?.getAccount?.()?.connector?.id === "walletConnect";
+      const showButton = isMobileDevice() && isWalletConnect;
+      openWalletButton.style.display = showButton ? "inline-block" : "none";
+    };
+
+    if (openWalletButton) {
+      updateOpenWalletButton();
+      openWalletButton.addEventListener("click", () => {
+        // Opens OS app chooser with placeholder URI (no real session data exposed)
+        openWalletChooser();
+      });
+    }
 
     // Handle personalize button ///////////////////////////////////////////////////////////////////////////////////////
     personalizeButton.addEventListener("click", async function () {
       if (!personalizationArgs) {
         return alert("ERROR: Please perform preflight, or manually edit the preflight box and pass validation, then try again.");
       }
-      const doSendTransaction = async () => {
-        receiptsDiv.innerHTML = "<p>Sending transaction, waiting for confirmation&hellip;</p>";
-        let hash;
+      txUi.startProcessing("Sending personalization batch. Confirm in your wallet to continue.");
+      const doSendTransaction = async (wagmi) => {
+        const isWalletConnect = wagmi?.getAccount?.()?.connector?.id === "walletConnect";
+        txUi.setWalletContext({
+          isWalletConnect,
+        });
+        // Trigger wallet app open on mobile for WalletConnect
+        if (isMobileDevice() && isWalletConnect) {
+          openWalletChooser();
+        }
+        let result;
         try {
-          hash = await writeContract(wagmiConfig, {
-            address: underlayContractAddress,
-            abi: underlayContractABI,
-            functionName: "personalizeSquareUnderlayBatch",
-            args: [personalizationArgs],
-            value: BigInt(personalizationArgs.length) * 1000000000000000n, // 0.001 Ether per Square
-          });
-          console.log('hash', hash);
-          const receipt = await waitForTransactionReceipt(wagmiConfig, { hash });
-          console.log('receipt', receipt);
-          receiptsDiv.innerHTML = `<h3>Transaction confirmed</h3><p>Transaction ID: <a target="_blank" href="https://etherscan.io/tx/${receipt.transactionHash}">${receipt.transactionHash}</a>. Your image will show on the Su Squares homepage, which <a target="_blank" href="https://github.com/su-squares/tenthousandsu.com/actions/workflows/load-from-blockchain.yml">refreshes hourly</a>.`;
+          result = await personalizeUnderlayBatch(personalizationArgs, wagmi);
+          const pendingUrl = buildTxUrl(result.hash);
+          txUi.addPending(result.hash, pendingUrl);
+          const transaction = await wagmi.waitForTransaction({ hash: result.hash });
+          const txUrl = buildTxUrl(transaction.transactionHash);
+          txUi.markSuccess(
+            transaction.transactionHash,
+            txUrl,
+            "Transaction confirmed. Your image will show on the Su Squares homepage, which refreshes hourly."
+          );
+          maybeAlertBillboardUpdate();
         } catch (error) {
           console.log(error);
-          return alert(error.message);
+          const message = getTxErrorMessage(error, { isWalletConnect });
+          txUi.markError(message);
+          return alert(message);
         }
       };
-      // If the wallet is not connected, connect it
-      const account = getAccount(wagmiConfig);
-      if (!account.isConnected) {
-        // Arm on connecting wallet, if connected then fire the transaction
-        const unwatch = watchAccount(wagmiConfig, {
-          onChange: (newAccount) => {
-            if (newAccount.isConnected) {
-              unwatch();
-              doSendTransaction();
+      await ensureConnected(async (clients) => {
+        currentWagmi = clients;
+        updateOpenWalletButton();
+        await ensureCorrectNetwork(clients);
+        const { activeNetwork } = getWeb3Config();
+        const account = clients.getAccount?.();
+        if (account?.address) {
+          txUi.setBalanceContext({
+            address: account.address,
+            chainId: activeNetwork.chainId,
+            fetcher: (addr, chain) => clients.fetchBalance({ address: addr, chainId: chain }),
+          });
+        }
+        await doSendTransaction(clients);
+      });
+    });
+
+    // Unpersonalize Modal - Lazy Loaded /////////////////////////////////////////////////////////////////////////
+    const unpersonalizeModalTrigger = document.getElementById("open-unpersonalize-modal");
+    const unpersonalizeModal = document.getElementById("unpersonalize-modal");
+    const unpersonalizeTokenInput = document.getElementById("unpersonalize-token-id");
+    const unpersonalizeStatus = document.getElementById("unpersonalize-status");
+    const unpersonalizeSubmit = document.getElementById("unpersonalize-submit");
+    const unpersonalizeTxFixtureDiv = document.getElementById("unpersonalize-tx-fixture");
+    const unpersonalizeCloseBtn = unpersonalizeModal?.querySelector(".su-modal__close");
+
+    let unpersonalizeModuleLoaded = false;
+    let unpersonalizeService = null;
+    let unpersonalizeTxUi = null;
+
+    function showUnpersonalizeModal() {
+      if (!unpersonalizeModal) return;
+      unpersonalizeModal.classList.add("is-visible");
+      unpersonalizeModal.setAttribute("aria-hidden", "false");
+      // Pre-fill token ID from main form if available
+      if (topLeftSquareNumber && unpersonalizeTokenInput) {
+        unpersonalizeTokenInput.value = topLeftSquareNumber;
+        validateUnpersonalizeInput();
+      }
+    }
+
+    function hideUnpersonalizeModal() {
+      if (!unpersonalizeModal) return;
+      unpersonalizeModal.classList.remove("is-visible");
+      unpersonalizeModal.setAttribute("aria-hidden", "true");
+      if (unpersonalizeTxUi) {
+        unpersonalizeTxUi.reset();
+      }
+      if (unpersonalizeStatus) {
+        unpersonalizeStatus.textContent = "";
+        unpersonalizeStatus.className = "su-modal__status";
+      }
+    }
+
+    async function loadUnpersonalizeModule() {
+      if (unpersonalizeModuleLoaded) return;
+      try {
+        const [serviceModule, txModule] = await Promise.all([
+          import("{{ site.baseurl }}/assets/web3/services/unpersonalize.js"),
+          import("{{ site.baseurl }}/assets/web3/tx/index.js"),
+        ]);
+        unpersonalizeService = serviceModule;
+        unpersonalizeTxUi = txModule.createTxFixture({
+          target: unpersonalizeTxFixtureDiv,
+          pricing,
+          mode: "unpersonalize",
+          title: "Unpersonalization status",
+        });
+        unpersonalizeModuleLoaded = true;
+      } catch (error) {
+        console.error("Failed to load unpersonalize module:", error);
+        if (unpersonalizeStatus) {
+          unpersonalizeStatus.textContent = "Failed to load module. Please refresh and try again.";
+          unpersonalizeStatus.className = "su-modal__status su-modal__status--error";
+        }
+      }
+    }
+
+    async function validateUnpersonalizeInput() {
+      const tokenId = parseInt(unpersonalizeTokenInput?.value);
+      if (!tokenId || tokenId < 1 || tokenId > 10000) {
+        if (unpersonalizeSubmit) unpersonalizeSubmit.disabled = true;
+        if (unpersonalizeStatus) {
+          unpersonalizeStatus.textContent = "";
+          unpersonalizeStatus.className = "su-modal__status";
+        }
+        return false;
+      }
+
+      // Check personalization status on main contract
+      if (unpersonalizeService?.checkMainContractStatus) {
+        try {
+          const status = await unpersonalizeService.checkMainContractStatus(tokenId);
+          if (unpersonalizeStatus) {
+            if (status.message) {
+              unpersonalizeStatus.textContent = status.message;
+              if (status.isOnMain && status.hasPersonalization) {
+                unpersonalizeStatus.className = "su-modal__status su-modal__status--success";
+              } else {
+                unpersonalizeStatus.className = "su-modal__status su-modal__status--warning";
+              }
+            } else {
+              unpersonalizeStatus.textContent = "";
+              unpersonalizeStatus.className = "su-modal__status";
             }
           }
-        });
-        // Open modal to connect
-        web3modal.open();
-      } else {
-        // The wallet is connected, fire the transaction
-        doSendTransaction();
+        } catch (error) {
+          console.warn("Could not check personalization status:", error);
+        }
       }
-    });
+
+      if (unpersonalizeSubmit) unpersonalizeSubmit.disabled = false;
+      return true;
+    }
+
+    if (unpersonalizeModalTrigger) {
+      unpersonalizeModalTrigger.addEventListener("click", async (event) => {
+        event.preventDefault();
+        showUnpersonalizeModal();
+        await loadUnpersonalizeModule();
+      });
+    }
+
+    if (unpersonalizeCloseBtn) {
+      unpersonalizeCloseBtn.addEventListener("click", hideUnpersonalizeModal);
+    }
+
+    if (unpersonalizeModal) {
+      unpersonalizeModal.addEventListener("click", (event) => {
+        if (event.target === unpersonalizeModal) {
+          hideUnpersonalizeModal();
+        }
+      });
+    }
+
+    if (unpersonalizeTokenInput) {
+      unpersonalizeTokenInput.addEventListener("input", validateUnpersonalizeInput);
+    }
+
+    if (unpersonalizeSubmit) {
+      unpersonalizeSubmit.addEventListener("click", async () => {
+        const tokenId = parseInt(unpersonalizeTokenInput?.value);
+        if (!tokenId || tokenId < 1 || tokenId > 10000) {
+          return alert("Please enter a valid Token ID (1-10000).");
+        }
+
+        if (!unpersonalizeService || !unpersonalizeTxUi) {
+          return alert("Module not loaded. Please close and reopen the modal.");
+        }
+
+        unpersonalizeTxUi.startProcessing(`Unpersonalizing Square #${tokenId}. Confirm in your wallet to continue.`);
+
+        await ensureConnected(async (clients) => {
+          await ensureCorrectNetwork(clients);
+
+          const isWalletConnect = clients?.getAccount?.()?.connector?.id === "walletConnect";
+          unpersonalizeTxUi.setWalletContext({
+            isWalletConnect,
+          });
+          // Trigger wallet app open on mobile for WalletConnect
+          if (isMobileDevice() && isWalletConnect) {
+            openWalletChooser();
+          }
+
+          // Set balance context
+          const { activeNetwork } = getWeb3Config();
+          const account = clients.getAccount?.();
+          if (account?.address) {
+            unpersonalizeTxUi.setBalanceContext({
+              address: account.address,
+              chainId: activeNetwork.chainId,
+              fetcher: (addr, chain) => clients.fetchBalance({ address: addr, chainId: chain }),
+            });
+          }
+
+          // Check ownership before proceeding
+          try {
+            const owner = await unpersonalizeService.checkSquareOwner(tokenId, clients);
+            const signerAddress = account?.address;
+            if (owner?.toLowerCase() !== signerAddress?.toLowerCase()) {
+              unpersonalizeTxUi.markError("You do not own this Square.");
+              return alert("You do not own this Square. Transaction cancelled.");
+            }
+          } catch (error) {
+            console.error("Ownership check failed:", error);
+            unpersonalizeTxUi.markError("Could not verify ownership. Please try again.");
+            return;
+          }
+
+          // Proceed with unpersonalization
+          try {
+            const result = await unpersonalizeService.unpersonalizePrimary({ squareId: tokenId }, clients);
+            const pendingUrl = buildTxUrl(result.hash);
+            unpersonalizeTxUi.addPending(result.hash, pendingUrl);
+
+            const transaction = await clients.waitForTransaction({ hash: result.hash });
+            const txUrl = buildTxUrl(transaction.transactionHash);
+            unpersonalizeTxUi.markSuccess(
+              transaction.transactionHash,
+              txUrl,
+              "Square unpersonalized! You can now personalize using the cheaper underlay contract."
+            );
+          } catch (error) {
+            console.error("Unpersonalize transaction failed:", error);
+            const message = getTxErrorMessage(error, { isWalletConnect });
+            unpersonalizeTxUi.markError(message);
+            return alert(message);
+          }
+        });
+      });
+    }
   </script>
+  <script src="{{ site.baseurl }}/assets/js/pwa-init.js"></script>
 </body>
 
 </html>

@@ -1,0 +1,221 @@
+/* ==========================================================================
+   Big Accordion Component
+   A large banner-style accordion with 200px tall header
+   Uses existing CSS variables from main.css
+   ========================================================================== */
+
+.bigaccordion {
+  --bigaccordion-header-height: 150px;
+  --bigaccordion-border-color: var(--color-accent);
+  --bigaccordion-text-color: var(--color-accent);
+  --bigaccordion-transition-duration: 200ms;
+
+  border: 2px solid var(--bigaccordion-border-color);
+  border-radius: var(--radius-sm);
+  overflow: hidden;
+  margin: 1.5rem 0;
+  width: 100%;
+  max-width: var(--max-width-content);
+}
+
+/* Header/Trigger - 200px tall banner style */
+.bigaccordion__trigger {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: var(--bigaccordion-header-height);
+  padding: 1rem 3rem;
+  background: transparent;
+  border: none;
+  color: var(--bigaccordion-text-color);
+  font: inherit;
+  font-weight: 700;
+  font-size: 1.5rem;
+  cursor: pointer;
+  position: relative;
+  text-align: center;
+  transition: background 120ms ease;
+}
+
+.bigaccordion__trigger:hover {
+  background: rgba(255, 215, 0, 0.05);
+}
+
+.bigaccordion__trigger:focus-visible {
+  outline: 2px solid #fff;
+  outline-offset: -4px;
+}
+
+/* Title - centered yellow text */
+.bigaccordion__title {
+  flex: 1;
+  text-align: center;
+}
+
+/* Plus/Minus Icon - positioned on right */
+.bigaccordion__icon {
+  position: absolute;
+  right: 1.5rem;
+  width: 2rem;
+  height: 2rem;
+  transition: transform var(--bigaccordion-transition-duration) ease;
+}
+
+/* SVG icon styling */
+.bigaccordion__icon svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+
+/* Vertical line - always visible */
+.bigaccordion__icon-vertical {
+  transition: transform var(--bigaccordion-transition-duration) ease;
+  transform-origin: center;
+  transform-box: fill-box;
+}
+
+/* Horizontal line - fades out when open */
+.bigaccordion__icon-horizontal {
+  transition: opacity var(--bigaccordion-transition-duration) ease;
+  opacity: 1;
+}
+
+/* Open state - rotate and hide horizontal line */
+.bigaccordion.is-open .bigaccordion__icon-vertical {
+  transform: rotate(90deg);
+}
+
+.bigaccordion.is-open .bigaccordion__icon-horizontal {
+  opacity: 0;
+}
+
+/* Panel - animated height using grid technique */
+.bigaccordion__panel {
+  display: grid;
+  grid-template-rows: 0fr;
+  transition: grid-template-rows var(--bigaccordion-transition-duration) ease;
+}
+
+.bigaccordion__panel[hidden] {
+  display: grid;
+}
+
+.bigaccordion__panel:not([hidden]) {
+  grid-template-rows: 1fr;
+}
+
+/* Content wrapper for overflow */
+.bigaccordion__content {
+  overflow: hidden;
+}
+
+/* Inner content with padding and scrolling */
+.bigaccordion__inner {
+  padding: 0 1.5rem 1.5rem;
+  border-top: 1px solid var(--bigaccordion-border-color);
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+/* Open state */
+.bigaccordion.is-open .bigaccordion__trigger {
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+
+/* Content typography */
+.bigaccordion__inner h4 {
+  margin: 1.25rem 0 0.5rem 0;
+  font-size: 1.1rem;
+  font-weight: 700;
+  color: var(--bigaccordion-text-color);
+}
+
+.bigaccordion__inner h4:first-child {
+  margin-top: 1rem;
+}
+
+.bigaccordion__inner p {
+  margin: 0 0 0.75rem 0;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  color: var(--bigaccordion-text-color);
+}
+
+.bigaccordion__inner ul,
+.bigaccordion__inner ol {
+  margin: 0 0 0.75rem 0;
+  padding-left: 1.5rem;
+}
+
+.bigaccordion__inner li {
+  margin-bottom: 0.35rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+  color: var(--bigaccordion-text-color);
+}
+
+.bigaccordion__inner strong {
+  font-weight: 700;
+}
+
+.bigaccordion__inner code {
+  background: rgba(0, 0, 0, 0.25);
+  padding: 0.15rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.9em;
+  font-family: monospace;
+}
+
+/* Scrollbar styling */
+.bigaccordion__inner::-webkit-scrollbar {
+  width: var(--scrollbar-size);
+}
+
+.bigaccordion__inner::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.bigaccordion__inner::-webkit-scrollbar-thumb {
+  background: var(--bigaccordion-border-color);
+  border-radius: 20px;
+}
+
+/* Mobile adjustments */
+@media (max-width: 768px) {
+  .bigaccordion {
+    --bigaccordion-header-height: 150px;
+  }
+
+  .bigaccordion__trigger {
+    padding: 1rem 2rem;
+    font-size: 1.25rem;
+  }
+
+  .bigaccordion__icon {
+    right: 1rem;
+    width: 1.75rem;
+    height: 1.75rem;
+  }
+
+  .bigaccordion__inner {
+    padding: 0 1rem 1rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .bigaccordion {
+    --bigaccordion-header-height: 100px;
+  }
+
+  .bigaccordion__trigger {
+    font-size: 1.1rem;
+  }
+
+  .bigaccordion__icon {
+    width: 1.5rem;
+    height: 1.5rem;
+  }
+}
