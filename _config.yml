@@ -1,0 +1,13 @@
+baseurl: ""
+url: https://tenthousandsu.com
+
+exclude:
+  # For local development, uncomment `erc721/` to speed up Jekyll builds
+  # when you are not testing the on-site NFT metadata/image
+  # - erc721/
+
+incremental: true
+
+# Uncomment for same-device local use only; livereload can break when testing
+# from other devices on the network, such as a phone.
+# livereload: true
