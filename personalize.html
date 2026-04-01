@@ -1,18 +1,22 @@
+---
+layout: null
+---
 <!doctype html>
 <html lang="en">
 
 <head>
+  <script>window.SITE_BASEURL = "{{ site.baseurl }}";</script>
   <meta charset="utf-8">
   <title>Su Squares, personalize</title>
-  <link rel="canonical" href="https://tenthousandsu.com/personalize" />
-  <link rel="icon" type="image/svg+xml" href="/assets/images/branding/logomark.svg">
-  <link rel="stylesheet" href="assets/css/main.css">
-  <link rel="stylesheet" href="assets/css/personalize.css">
+  <link rel="canonical" href="{{ site.url }}{{ site.baseurl }}/personalize" />
+  <link rel="icon" type="image/svg+xml" href="{{ site.baseurl }}/assets/images/branding/logomark.svg">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/main.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/personalize.css">
 </head>
 
 <body>
   <header>
-    <a id="logo" href="/"><img src="/assets/images/branding/logo-su-squares.svg"
+    <a id="logo" href="{{ site.baseurl }}/"><img src="{{ site.baseurl }}/assets/images/branding/logo-su-squares.svg"
         alt="Su Squares logo"></a>
     <button id="connect-wallet" class="btn">Connect wallet</button>
   </header>
@@ -26,7 +30,7 @@
     </p>
     <p>
       Use this page to personalize a Su Square you own on TenThousandSu.com. To personalize many squares, try the <a
-        href="personalize-batch">batch tool</a>. If your Square was previously personalized using the old, more
+        href="{{ site.baseurl }}/personalize-batch">batch tool</a>. If your Square was previously personalized using the old, more
       expensive method you will need to <a href="https://tools.tenthousandsu.com/unpersonalize.html">unpersonalize</a>
       it first.
     </p>

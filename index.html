@@ -1,26 +1,30 @@
+---
+layout: null
+---
 <!doctype html>
 <html lang="en">
 
 <head>
+  <script>window.SITE_BASEURL = "{{ site.baseurl }}";</script>
   <meta charset="utf-8">
   <title>Su Squares, cute squares you own and personalize</title>
   <meta name="description" content="The first ERC-721 NFT. Cute squares you own and personalize.">
-  <link rel="canonical" href="https://tenthousandsu.com" />
-  <link rel="icon" type="image/svg+xml" href="/assets/images/branding/logomark.svg">
-  <link rel="stylesheet" href="assets/css/main.css">
-  <link rel="stylesheet" href="assets/css/index.css">
+  <link rel="canonical" href="{{ site.url }}{{ site.baseurl }}/" />
+  <link rel="icon" type="image/svg+xml" href="{{ site.baseurl }}/assets/images/branding/logomark.svg">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/main.css">
+  <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/index.css">
 </head>
 
 <body>
   <header>
-    <a id="logo" href="/"><img src="/assets/images/branding/logo-su-squares.svg"
+    <a id="logo" href="{{ site.baseurl }}/"><img src="{{ site.baseurl }}/assets/images/branding/logo-su-squares.svg"
         alt="Su Squares logo"></a>
     <span>
       The first ERC-721 NFT
     </span>
-    <a class="btn" href="white-paper">About us</a>
-    <a class="btn" href="buy">Mint</a>
-    <a class="btn" href="personalize">Personalize</a>
+    <a class="btn" href="{{ site.baseurl }}/white-paper">About us</a>
+    <a class="btn" href="{{ site.baseurl }}/buy">Mint</a>
+    <a class="btn" href="{{ site.baseurl }}/personalize">Personalize</a>
     <a class="btn" target="_blank" href="https://x.com/susquares">
       <!-- Corrected target attribute -->
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-twitter-x"
