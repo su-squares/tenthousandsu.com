@@ -6,12 +6,13 @@
   <title>Su Squares, personalize</title>
   <link rel="canonical" href="https://tenthousandsu.com/personalize" />
   <link rel="icon" type="image/svg+xml" href="/assets/images/branding/logomark.svg">
-  <link rel="stylesheet" href="assets/main.css">
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/personalize.css">
 </head>
 
 <body>
   <header>
-    <a id="logo" href="/"><img src="/assets/images/branding/logo-su-squares.svg" style="width:348px;height:57px;object-fit: cover;"
+    <a id="logo" href="/"><img src="/assets/images/branding/logo-su-squares.svg"
         alt="Su Squares logo"></a>
     <button id="connect-wallet" class="btn">Connect wallet</button>
   </header>
@@ -33,7 +34,7 @@
     <h2>Select a Square</h2>
     <p>Which Square will you personalize?</p>
     <p>
-      <input id="square-number" type=number min=1 max=10000 required style="width:7em">
+      <input id="square-number" type=number min=1 max=10000 required>
     </p>
 
     <h2>Enter title</h2>
@@ -60,7 +61,7 @@
       Image status: <span id="image-status">no image selected</span>
     </p>
     <p>
-      <canvas id="image-preview" style="width:0;height:0;image-rendering:pixelated;"></canvas>
+      <canvas id="image-preview"></canvas>
     </p>
 
     <h2>Personalize</h2>

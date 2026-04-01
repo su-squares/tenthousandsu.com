@@ -7,12 +7,13 @@
   <meta name="description" content="The first ERC-721 NFT. Cute squares you own and personalize.">
   <link rel="canonical" href="https://tenthousandsu.com" />
   <link rel="icon" type="image/svg+xml" href="/assets/images/branding/logomark.svg">
-  <link rel="stylesheet" href="assets/main.css?20210926">
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/index.css">
 </head>
 
 <body>
   <header>
-    <a id="logo" href="/"><img src="/assets/images/branding/logo-su-squares.svg" style="width:348px;height:57px;object-fit: cover;"
+    <a id="logo" href="/"><img src="/assets/images/branding/logo-su-squares.svg"
         alt="Su Squares logo"></a>
     <span>
       The first ERC-721 NFT
@@ -41,24 +42,22 @@
   <article>
     <p>Click below to mint an available Su Square (0.5 ETH).</p>
     <a id="wheretogo" href="#" target="_blank">
-      <div style="position:relative;height:1000px">
-        <img id="theImage" src="build/wholeSquare.webp" alt="All Su Squares"
-          style="margin:0; height:1000px; width:1000px">
-        <div id="position"
-          style="background:pink;opacity:0.8;width:10px;height:10px;;position:absolute;pointer-events:none">
+      <div>
+        <img id="theImage" src="build/wholeSquare.webp" alt="All Su Squares">
+        <div id="position">
         </div>
-        <div id="tooltip" style="color:black"></div>
+        <div id="tooltip"></div>
         <div id="electric-fence"></div>
       </div>
     </a>
   </article>
 
   <article>
-    <section id="newly-minted" style="display:flex; align-items: center; width: 100%; margin-bottom: 2em">
-      <strong style="flex: 1 1 0">Newly minted</strong>
+    <section id="newly-minted">
+      <strong>Newly minted</strong>
     </section>
-    <section id="newly-personalized" style="display:flex; align-items: center; width: 100%">
-      <strong style="flex: 1 1 0">Latest personalized</strong>
+    <section id="newly-personalized">
+      <strong>Latest personalized</strong>
     </section>
   </article>
 

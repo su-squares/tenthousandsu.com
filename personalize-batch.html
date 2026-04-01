@@ -6,12 +6,13 @@
   <title>Su Squares, personalize batch</title>
   <link rel="canonical" href="https://tenthousandsu.com/personalize-batch" />
   <link rel="icon" type="image/svg+xml" href="/assets/images/branding/logomark.svg">
-  <link rel="stylesheet" href="assets/main.css">
+  <link rel="stylesheet" href="assets/css/main.css">
+  <link rel="stylesheet" href="assets/css/personalize-batch.css">
 </head>
 
 <body>
   <header>
-    <a id="logo" href="/"><img src="/assets/images/branding/logo-su-squares.svg" style="width:348px;height:57px;object-fit: cover;"
+    <a id="logo" href="/"><img src="/assets/images/branding/logo-su-squares.svg"
         alt="Su Squares logo"></a>
     <button id="connect-wallet" class="btn">Connect wallet</button>
   </header>
@@ -32,7 +33,7 @@
     <h2>Select top-left Square</h2>
     <p>Which Square will be the topmost and leftmost Square you will personalize?</p>
     <p>
-      <input id="top-left-square-number" type=number min=1 max=10000 required style="width:7em">
+      <input id="top-left-square-number" type=number min=1 max=10000 required>
     </p>
 
     <h2>Enter title</h2>
@@ -71,7 +72,7 @@
     <p>
       <button id="preflight" class="btn">Preflight</button>
     </p>
-    <textarea id="preflight-output" style="width:100%;height:10em"></textarea>
+    <textarea id="preflight-output"></textarea>
     <p>
       To manually edit individual Squares, copy/paste to a spreadsheet, edit, and then copy/paste back here. If you
       would like to personalize a non-rectangular area, delete any rows that are not needed.

@@ -1,0 +1,48 @@
+#wheretogo > div {
+  position: relative;
+  height: 1000px;
+}
+
+#wheretogo #theImage {
+  margin: 0;
+  height: 1000px;
+  width: 1000px;
+}
+
+#position {
+  background: pink;
+  opacity: 0.8;
+  width: 10px;
+  height: 10px;
+  position: absolute;
+  pointer-events: none;
+}
+
+#tooltip {
+  background: rgba(255, 255, 255, 0.8);
+  width: 140px;
+  position: absolute;
+  pointer-events: none;
+  display: none;
+  font-family: var(--font-sans);
+  font-size: 12px;
+  border-radius: 10px;
+  padding: 10px;
+  color: black;
+}
+
+#newly-minted,
+#newly-personalized {
+  display: flex;
+  align-items: center;
+  width: 100%;
+}
+
+#newly-minted {
+  margin-bottom: 2em;
+}
+
+#newly-minted > strong,
+#newly-personalized > strong {
+  flex: 1 1 0;
+}
