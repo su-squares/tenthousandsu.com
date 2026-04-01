@@ -1,8 +1,23 @@
+#mint-selected-square,
+#pick-a-square,
+#receipts {
+  width: 100%;
+}
+
+.mint-page p {
+  margin: 0;
+}
+
 #square-number {
   margin-top: 0.5em;
   margin-bottom: 0.5em;
+  max-width: 10rem;
 }
 
 #mint-selected-square {
   display: none;
+}
+
+#receipts {
+  overflow-wrap: anywhere;
 }

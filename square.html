@@ -20,11 +20,11 @@ layout: null
 <body>
   {% include nav/header.html desktop_button_one_label="Mint" desktop_button_one_href="/buy" desktop_button_two_label="Personalize" desktop_button_two_href="/personalize" %}
 
-  <article>
+  <article class="square-page">
     <h1>Square #<span id="square-number">...</span></h1>
     <div id="image"></div>
 
-    <dl>
+    <dl class="square-metadata">
       <dt>Minted</dt>
       <dd id="minted"></dd>
       <dt>Personalized</dt>
@@ -37,12 +37,12 @@ layout: null
 
     <h2>Location</h2>
     <div class="square-location-map">
-      <img id="theImage" src="build/wholeSquare.webp" alt="All Su Squares">
-      <img id="arrow" src="/assets/images/billboard/dr.png" alt="Location">
+      <img id="theImage" class="square-location-map__image" src="build/wholeSquare.webp" alt="All Su Squares">
+      <img id="arrow" class="square-location-map__arrow" src="/assets/images/billboard/dr.png" alt="Location">
     </div>
 
     <h2>Emojified</h2>
-    <pre id="emojified"></pre>
+    <pre id="emojified" class="square-emojified"></pre>
     <button class="btn" id="copy-emojified">Copy</button>
   </article>
 
@@ -98,27 +98,36 @@ layout: null
 
       // Set arrow location, based on quadrant
       const elArrow = document.getElementById('arrow');
-      if (row < 50) {
-        if (col < 50) {
-          elArrow.src = '/assets/images/billboard/ul.png';
-          elArrow.style.top = `${row * 10 + 10}px`;
-          elArrow.style.left = `${col * 10 + 10}px`;
+      const elLocationMap = document.querySelector('.square-location-map');
+
+      function updateArrowPosition() {
+        const renderedWidth = elLocationMap ? elLocationMap.getBoundingClientRect().width : 1000;
+        const scale = renderedWidth / 1000 || 1;
+        const scalePosition = (value) => `${value * scale}px`;
+        const setArrow = (src, topPx, leftPx) => {
+          elArrow.src = src;
+          elArrow.style.top = scalePosition(topPx);
+          elArrow.style.left = scalePosition(leftPx);
+        };
+        elArrow.style.width = `${100 * scale}px`;
+        elArrow.style.height = `${100 * scale}px`;
+
+        if (row < 50) {
+          if (col < 50) {
+            setArrow('/assets/images/billboard/ul.png', row * 10 + 10, col * 10 + 10);
+          } else {
+            setArrow('/assets/images/billboard/ur.png', row * 10 + 10, col * 10 - 100);
+          }
         } else {
-          elArrow.src = '/assets/images/billboard/ur.png';
-          elArrow.style.top = `${row * 10 + 10}px`;
-          elArrow.style.left = `${col * 10 - 100}px`;
-        }
-      } else {
-        if (col < 50) {
-          elArrow.src = '/assets/images/billboard/dl.png';
-          elArrow.style.top = `${row * 10 - 100}px`;
-          elArrow.style.left = `${col * 10 + 10}px`;
-        } else {
-          elArrow.src = '/assets/images/billboard/dr.png';
-          elArrow.style.top = `${row * 10 - 100}px`;
-          elArrow.style.left = `${col * 10 - 100}px`;
+          if (col < 50) {
+            setArrow('/assets/images/billboard/dl.png', row * 10 - 100, col * 10 + 10);
+          } else {
+            setArrow('/assets/images/billboard/dr.png', row * 10 - 100, col * 10 - 100);
+          }
         }
       }
+      updateArrowPosition();
+      window.addEventListener('resize', updateArrowPosition);
 
       // Emoji squares and RGB values for ⬛⬜🟥🟧🟨🟩🟦🟪🟫
       const emojis = [
