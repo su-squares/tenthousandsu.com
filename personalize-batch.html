@@ -12,14 +12,11 @@ layout: null
   <link rel="icon" type="image/svg+xml" href="{{ site.baseurl }}/assets/images/branding/logomark.svg">
   <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/main.css">
   <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/personalize-batch.css">
+  {% include nav/menu-head.html %}
 </head>
 
 <body>
-  <header>
-    <a id="logo" href="{{ site.baseurl }}/"><img src="{{ site.baseurl }}/assets/images/branding/logo-su-squares.svg"
-        alt="Su Squares logo"></a>
-    <button id="connect-wallet" class="btn">Connect wallet</button>
-  </header>
+  {% include nav/header.html show_connect_wallet="true" desktop_button_one_label="Mint" desktop_button_one_href="/buy" desktop_button_two_label="Personalize" desktop_button_two_href="/personalize" %}
 
   <article class="lead">
     <h1>Batch personalize</h1>

@@ -12,14 +12,11 @@ layout: null
   <link rel="icon" type="image/svg+xml" href="{{ site.baseurl }}/assets/images/branding/logomark.svg">
   <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/main.css">
   <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/buy.css">
+  {% include nav/menu-head.html %}
 </head>
 
 <body>
-  <header>
-    <a id="logo" href="{{ site.baseurl }}/"><img src="{{ site.baseurl }}/assets/images/branding/logo-su-squares.svg"
-        alt="Su Squares logo"></a>
-    <button id="connect-wallet" class="btn">Connect wallet</button>
-  </header>
+  {% include nav/header.html show_connect_wallet="true" desktop_button_one_label="Personalize" desktop_button_one_href="/personalize" desktop_button_two_label="Batch" desktop_button_two_href="/personalize-batch" %}
   <article class="lead">
     <h1>Mint Su Squares <span id="square-number-with-number-sign"></span></h1>
     <p><em>If you have a question, please mail <a
@@ -40,7 +37,7 @@ layout: null
       <button id="mint" type="button" class="btn btn-lg">Mint Square</button>
     </div>
 
-    <p>Your purchase is subject to the terms, and your understanding of, our <a href="{{ site.baseurl }}/white-paper">white paper</a>.</p>
+    <p>Your purchase is subject to the terms, and your understanding of, our <a href="/white-paper">white paper</a>.</p>
 
     <div id="receipts">
     </div>

@@ -7,12 +7,11 @@
   <link rel="canonical" href="{{ site.url | escape }}{{ site.baseurl }}{{ page.permalink | escape }}" />
   <link rel="icon" type="image/svg+xml" href="{{ site.baseurl }}/assets/images/branding/logomark.svg">
   <link rel="stylesheet" href="{{ site.baseurl }}/assets/css/main.css">
+  {% include nav/menu-head.html %}
   <script src="https://cdn.jsdelivr.net/npm/anchor-js@4.3.1/anchor.min.js" integrity="sha256-0WMZ9PF4b2hTF66Eglv/9H5Vwk6lnOG4AbmCJxo96WQ=" crossorigin="anonymous"></script>
 </head>
 <body>
-  <header>
-    <a id="logo" href="{{ site.baseurl }}/"><img src="{{ site.baseurl }}/assets/images/branding/logo-su-squares.svg" alt="Su Squares logo"></a>
-  </header>
+  {% include nav/header.html desktop_button_one_label="Mint" desktop_button_one_href="/buy" desktop_button_two_label="Personalize" desktop_button_two_href="/personalize" %}
 
   <hr>
 
