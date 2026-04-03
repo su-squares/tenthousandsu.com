@@ -1,0 +1,16 @@
+.square-location-map {
+  position: relative;
+  height: 1000px;
+  zoom: 0.5;
+}
+
+#theImage {
+  height: 1000px;
+  width: 1000px;
+}
+
+#arrow {
+  height: 100px;
+  width: 100px;
+  position: absolute;
+}

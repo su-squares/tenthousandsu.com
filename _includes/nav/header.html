@@ -1,0 +1,93 @@
+<header class="su-nav-header">
+  <a class="su-nav-logo" href="{{ site.baseurl }}/">
+    <img src="{{ site.baseurl }}/assets/images/branding/logo-su-squares.svg" alt="Su Squares logo">
+  </a>
+
+  <div class="su-nav-actions">
+    {% if include.desktop_button_one_label and include.desktop_button_one_href %}
+    <a class="btn su-nav-desktop-extra" href="{{ site.baseurl }}{{ include.desktop_button_one_href }}">{{ include.desktop_button_one_label }}</a>
+    {% endif %}
+    {% if include.desktop_button_two_label and include.desktop_button_two_href %}
+    <a class="btn su-nav-desktop-extra" href="{{ site.baseurl }}{{ include.desktop_button_two_href }}">{{ include.desktop_button_two_label }}</a>
+    {% endif %}
+    {% assign _btn_count = 0 %}{% if include.desktop_button_one_label and include.desktop_button_one_href %}{% assign _btn_count = _btn_count | plus: 1 %}{% endif %}{% if include.desktop_button_two_label and include.desktop_button_two_href %}{% assign _btn_count = _btn_count | plus: 1 %}{% endif %}
+    <span class="su-nav-desktop-tagline su-nav-desktop-tagline--btns-{{ _btn_count }}">The first ERC-721 NFT</span>
+    {% if include.show_connect_wallet %}
+    <button id="connect-wallet" class="btn su-nav-connect" type="button" aria-label="Connect wallet">
+      <span>Connect</span>
+      <span>Wallet</span>
+    </button>
+    {% endif %}
+  </div>
+
+  <button class="su-nav-hamburger" type="button" aria-label="Open menu" aria-expanded="false" aria-controls="su-nav-main-modal">
+    <span aria-hidden="true"></span>
+    <span aria-hidden="true"></span>
+    <span aria-hidden="true"></span>
+  </button>
+</header>
+
+<div class="su-nav-overlay" aria-hidden="true">
+  <div class="su-nav-modal" id="su-nav-main-modal" role="dialog" aria-modal="true" aria-label="Main menu" aria-hidden="true" tabindex="-1">
+    <div class="su-nav-modal__top">
+      <div class="su-nav-modal__header">
+        <span class="su-nav-main-placeholder" aria-hidden="true"></span>
+        <div class="su-nav-modal__tagline">The first ERC-721 NFT</div>
+        <button class="su-nav-close" type="button" aria-label="Close menu">
+          <span aria-hidden="true">&#10005;</span>
+        </button>
+      </div>
+      <div class="su-nav-social">
+        {% include nav/social-links.html %}
+      </div>
+    </div>
+
+    <nav aria-label="Main navigation">
+      <div class="su-nav-buttons">
+        <a class="su-nav-btn" data-nav-path="{{ site.baseurl }}/" href="{{ site.baseurl }}/">Home</a>
+        <a class="su-nav-btn" data-nav-path="{{ site.baseurl }}/buy" href="{{ site.baseurl }}/buy">Mint</a>
+        <div class="su-nav-buttons-row">
+          <a class="su-nav-btn" data-nav-path="{{ site.baseurl }}/personalize" href="{{ site.baseurl }}/personalize">Personalize</a>
+          <a class="su-nav-btn su-nav-btn--batch" data-nav-path="{{ site.baseurl }}/personalize-batch" href="{{ site.baseurl }}/personalize-batch">Batch</a>
+        </div>
+        <a class="su-nav-btn" data-nav-path="{{ site.baseurl }}/white-paper" href="{{ site.baseurl }}/white-paper">About us</a>
+        <a class="su-nav-btn" data-nav-path="{{ site.baseurl }}/faq" href="{{ site.baseurl }}/faq">FAQ</a>
+        <button class="su-nav-btn su-nav-btn-articles" type="button" aria-controls="su-nav-articles-modal">
+          Articles
+          <svg class="su-nav-arrow-right" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M5 12h14M13 6l6 6-6 6" />
+          </svg>
+        </button>
+      </div>
+    </nav>
+  </div>
+
+  <div class="su-nav-modal" id="su-nav-articles-modal" role="dialog" aria-modal="true" aria-label="Articles" aria-hidden="true" tabindex="-1">
+    <div class="su-nav-modal__top">
+      <div class="su-nav-modal__header">
+        <span class="su-nav-main-placeholder" aria-hidden="true"></span>
+        <div class="su-nav-modal__tagline">The first ERC-721 NFT</div>
+        <button class="su-nav-close" type="button" aria-label="Close articles menu">
+          <span aria-hidden="true">&#10005;</span>
+        </button>
+      </div>
+      <div class="su-nav-social">
+        <button class="su-nav-back" type="button" aria-label="Back to main menu" aria-controls="su-nav-main-modal">
+          <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="#ffffff" stroke-width="2">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5" />
+          </svg>
+        </button>
+        {% include nav/social-links.html %}
+      </div>
+    </div>
+
+    <div class="su-nav-modal__title">Articles</div>
+    <nav aria-label="Article navigation">
+      <div class="su-nav-articles">
+        {% for post in site.posts %}
+        <a class="su-nav-article-link" data-nav-path="{{ post.url }}" href="{{ post.url | relative_url }}">{{ post.title | escape }}</a>
+        {% endfor %}
+      </div>
+    </nav>
+  </div>
+</div>
