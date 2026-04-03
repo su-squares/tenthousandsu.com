@@ -1,0 +1,28 @@
+#image-preview {
+  width: 0;
+  height: 0;
+  max-width: 100%;
+  image-rendering: pixelated;
+}
+
+.personalize-page article {
+  gap: 0.6rem;
+}
+
+.personalize-page p {
+  margin: 0;
+}
+
+.personalize-page h2 {
+  margin-top: 2rem;
+  margin-bottom: 0;
+}
+
+.personalize-page input[type="number"] {
+  max-width: 10rem;
+}
+
+.personalize-page #receipts {
+  width: 100%;
+  overflow-wrap: anywhere;
+}

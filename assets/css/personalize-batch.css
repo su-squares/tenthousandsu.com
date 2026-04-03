@@ -1,0 +1,33 @@
+.personalize-page article {
+  gap: 0.6rem;
+}
+
+.personalize-page p {
+  margin: 0;
+}
+
+.personalize-page h2 {
+  margin-top: 2rem;
+  margin-bottom: 0;
+}
+
+#top-left-square-number {
+  width: 7em;
+  max-width: 100%;
+}
+
+#preflight-output {
+  width: 100%;
+  min-height: 12rem;
+}
+
+#image-preview {
+  max-width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+}
+
+.personalize-page #receipts {
+  width: 100%;
+  overflow-wrap: anywhere;
+}
