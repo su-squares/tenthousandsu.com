@@ -1,12 +1,15 @@
+---
+title: "Su Squares, cute squares you own and personalize"
+---
 <!doctype html>
 <html lang="en">
 
 <head>
   <meta charset="utf-8">
-  <title>Su Squares, cute squares you own and personalize</title>
-  <meta name="description" content="The first ERC-721 NFT. Cute squares you own and personalize.">
+  <title>{{ page.title }}</title>
   <link rel="icon" type="image/svg+xml" href="/assets/images/branding/logomark.svg">
-  <link rel="stylesheet" href="assets/main.css?20210926">
+  <link rel="stylesheet" href="/assets/main.css?20210926">
+  {% include foot.html %}
 </head>
 
 <body>
@@ -16,8 +19,8 @@
     <span>
       The first ERC-721 NFT
     </span>
-    <a class="btn" href="white-paper">About us</a>
-    <a class="btn" href="buy">Mint</a>
+    <a class="btn" href="/white-paper">About us</a>
+    <a class="btn" href="/buy">Mint</a>
     <a class="btn" href="https://tools.tenthousandsu.com/personalize">Personalize</a>
     <a class="btn" target="_blank" href="https://x.com/susquares">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-twitter-x"
@@ -52,7 +55,7 @@
 
     <h2>Location</h2>
     <div style="position:relative;height:1000px; zoom: 0.5">
-      <img id="theImage" src="build/wholeSquare.webp" alt="All Su Squares" style="height:1000px; width:1000px">
+      <img id="theImage" src="/build/wholeSquare.webp" alt="All Su Squares" style="height:1000px; width:1000px">
       <img id="arrow" src="/assets/images/billboard/dr.png" alt="Location" style="height:100px; width:100px; position:absolute">
     </div>
 
@@ -74,8 +77,8 @@
   <script>
     // Get URL fragment
     const squareNumber = parseInt(window.location.hash.substring(1));
-    const personalizations = fetch('build/squarePersonalizations.json').then(response => response.json());
-    const extras = fetch('build/squareExtra.json').then(response => response.json());
+    const personalizations = fetch('/build/squarePersonalizations.json').then(response => response.json());
+    const extras = fetch('/build/squareExtra.json').then(response => response.json());
 
     Promise.all([personalizations, extras]).then(([personalizations, extras]) => {
       // Each personalization is [title, href] or null
@@ -103,7 +106,7 @@
       const row = Math.floor((squareNumber - 1) / 100); // 0 indexed
       const col = (squareNumber - 1) % 100; // 0 indexed
       const elImage = document.getElementById('image');
-      elImage.style.backgroundImage = 'url("build/wholeSquare.webp")';
+      elImage.style.backgroundImage = 'url("/build/wholeSquare.webp")';
       elImage.style.backgroundPosition = `-${col * 10}px -${row * 10}px`;
       elImage.style.height = '10px';
       elImage.style.width = '10px';
@@ -155,7 +158,7 @@
       // Add wholeSquare to canvas
       const context = canvas.getContext('2d');
       const image = new Image();
-      image.src = 'build/wholeSquare.webp';
+      image.src = '/build/wholeSquare.webp';
       image.onload = function () {
         context.drawImage(image, col * 10, row * 10, 10, 10, 0, 0, 10, 10);
         // Get pixels

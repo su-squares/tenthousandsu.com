@@ -1,0 +1,11 @@
+  <link rel="canonical" href="{{ page.url | prepend: site.url }}">
+  <meta name="description" content="{{ page.og_description | default: page.description | default: site.description | escape }}">
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="{{ page.url | prepend: site.url }}">
+  <meta property="og:title" content="{{ page.og_title | default: page.title | default: site.title | escape }}">
+  <meta property="og:description" content="{{ page.og_description | default: page.description | default: site.description | escape }}">
+  <meta property="og:image" content="{{ site.url }}/assets/images/branding/OG.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ page.og_title | default: page.title | default: site.title | escape }}">
+  <meta name="twitter:description" content="{{ page.og_description | default: page.description | default: site.description | escape }}">
+  <meta name="twitter:image" content="{{ site.url }}/assets/images/branding/OG.png">
