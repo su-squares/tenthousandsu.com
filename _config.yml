@@ -1,5 +1,7 @@
 baseurl: ""
 url: https://tenthousandsu.com
+title: "Su Squares"
+description: "The first ERC-721 NFT. Cute squares you own and personalize."
 
 exclude:
   # For local development, uncomment `erc721/` to speed up Jekyll builds
