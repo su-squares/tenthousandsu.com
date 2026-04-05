@@ -45,10 +45,12 @@ title: "Su Squares, cute squares you own and personalize"
     <div class="map-shell">
       <a id="wheretogo" class="map-container" href="#" target="_blank">
         <div class="map-wrapper">
-          <img id="theImage" class="map-image" src="/build/wholeSquare.webp" alt="All Su Squares">
-          <div id="position" class="map-position"></div>
-          <div id="tooltip" class="map-tooltip"></div>
-          <div id="electric-fence" class="map-fence"></div>
+          <div id="map-stage" class="map-stage">
+            <img id="theImage" class="map-image" src="/build/wholeSquare.webp" alt="All Su Squares">
+            <div id="position" class="map-position"></div>
+            <div id="tooltip" class="map-tooltip"></div>
+            <div id="electric-fence" class="map-fence"></div>
+          </div>
         </div>
       </a>
     </div>
@@ -75,21 +77,141 @@ title: "Su Squares, cute squares you own and personalize"
       United States.
     </small>
   </footer>
+  <script src="/assets/js/billboard/panzoom.js"></script>
+  <script src="/assets/js/billboard/touch-ui.js"></script>
   <script>
     let positionSquareNumber = 1;
     var squarePersonalizations = [];
     var squareExtra = [];
+    const GRID_DIMENSION = 100;
+    const DOUBLE_TAP_WINDOW_MS = 1200;
+    const SUPPRESS_CLICK_WINDOW_MS = 1000;
+    const TAP_MOVE_TOLERANCE_PX = 12;
+    const TAP_MAX_DURATION_MS = 700;
+    const theImage = document.getElementById("theImage");
+    const mapWrapper = document.querySelector(".map-wrapper");
+    const mapStage = document.getElementById("map-stage");
+    const mapShell = document.querySelector(".map-shell");
+    const whereToGoAnchor = document.getElementById("wheretogo");
+    const isTouchBillboard = Boolean(
+      window.SuBillboardPanZoom &&
+      typeof window.SuBillboardPanZoom.isTouchDevice === "function" &&
+      window.SuBillboardPanZoom.isTouchDevice()
+    );
+    let panZoom = null;
+    let billboardTouchUi = null;
+    let pendingTouchSquare = null;
+    let pendingTouchAt = 0;
+    let suppressClickUntil = 0;
+    let touchStartX = null;
+    let touchStartY = null;
+    let touchStartAt = 0;
+    let touchTapReady = false;
 
     // Animate the electric fence
     let fence = new Set();
     let litUpEdge = new Set();
     let wasEverLitUp = new Set();
-    const GRID_DIMENSION = 100;
+
+    if (isTouchBillboard) {
+      mapShell.classList.add("map-shell--touch");
+      mapStage.classList.add("map-stage--touch");
+    }
+
+    if (window.SuBillboardPanZoom && typeof window.SuBillboardPanZoom.create === "function") {
+      panZoom = window.SuBillboardPanZoom.create(mapStage, {
+        minScale: 1,
+        maxScale: 6,
+        onZoomChange(isZoomed) {
+          if (billboardTouchUi && typeof billboardTouchUi.onZoomChange === "function") {
+            billboardTouchUi.onZoomChange(isZoomed);
+          }
+        }
+      });
+    }
+
+    if (panZoom && panZoom.isActive && window.SuBillboardTouchUi && typeof window.SuBillboardTouchUi.attach === "function") {
+      billboardTouchUi = window.SuBillboardTouchUi.attach({
+        wrapper: mapWrapper,
+        uiMount: mapShell,
+        hintText: "Pinch to zoom, drag to pan, double tap Squares to activate",
+        resetText: "Reset zoom",
+        onReset() {
+          panZoom.reset();
+          pendingTouchSquare = null;
+          pendingTouchAt = 0;
+          touchTapReady = false;
+        }
+      });
+    }
 
     function getMapMetrics() {
-      const wrapper = document.querySelector(".map-wrapper");
-      const cellSize = wrapper ? wrapper.getBoundingClientRect().width / GRID_DIMENSION : 10;
-      return { wrapper, cellSize: cellSize || 10 };
+      const viewport = mapWrapper;
+      const stage = mapStage;
+      const viewportRect = viewport ? viewport.getBoundingClientRect() : null;
+      const cellSize = viewportRect ? viewportRect.width / GRID_DIMENSION : 10;
+      return { viewport, stage, cellSize: cellSize || 10 };
+    }
+
+    function getSquareFromPoint(clientX, clientY) {
+      let x;
+      let y;
+      let effectiveWidth;
+
+      if (panZoom && panZoom.isActive) {
+        const canvasPosition = panZoom.screenToCanvas(clientX, clientY);
+        x = canvasPosition.x;
+        y = canvasPosition.y;
+        effectiveWidth = mapWrapper.getBoundingClientRect().width || 1000;
+      } else {
+        const rect = theImage.getBoundingClientRect();
+        x = clientX - rect.left;
+        y = clientY - rect.top;
+        effectiveWidth = rect.width || 1000;
+      }
+
+      const cellSize = effectiveWidth / GRID_DIMENSION || 10;
+      const col = Math.min(Math.max(Math.floor(x / cellSize), 0), GRID_DIMENSION - 1);
+      const row = Math.min(Math.max(Math.floor(y / cellSize), 0), GRID_DIMENSION - 1);
+      return col + row * GRID_DIMENSION + 1;
+    }
+
+    function wasTouchTap(event) {
+      if (touchStartX === null || touchStartY === null || !touchStartAt) {
+        return false;
+      }
+
+      if (!event || !event.changedTouches || !event.changedTouches[0]) {
+        return false;
+      }
+
+      const touch = event.changedTouches[0];
+      const dx = touch.clientX - touchStartX;
+      const dy = touch.clientY - touchStartY;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      const duration = Date.now() - touchStartAt;
+
+      return distance <= TAP_MOVE_TOLERANCE_PX && duration <= TAP_MAX_DURATION_MS;
+    }
+
+    function clearTouchTapTracking() {
+      touchStartX = null;
+      touchStartY = null;
+      touchStartAt = 0;
+      touchTapReady = false;
+    }
+
+    function activateSelectedSquare() {
+      const href = whereToGoAnchor.getAttribute("href");
+      if (!href) return;
+
+      const target = whereToGoAnchor.getAttribute("target") || "_self";
+      if (target === "_blank") {
+        window.open(href, "_blank", "noopener");
+        return;
+      }
+
+      window.location.assign(href);
     }
 
     const squarePersonalizationsPromise = fetch("/build/squarePersonalizations.json").then(response => response.json());
@@ -147,10 +269,11 @@ title: "Su Squares, cute squares you own and personalize"
       positionSquareNumber = squareNumber;
       const positionDiv = document.getElementById("position");
       const tooltipDiv = document.getElementById("tooltip");
-      const whereToGoAnchor = document.getElementById("wheretogo");
-      const { wrapper, cellSize } = getMapMetrics();
+      const { stage, cellSize } = getMapMetrics();
       const col = (squareNumber - 1) % GRID_DIMENSION;
       const row = Math.floor((squareNumber - 1) / GRID_DIMENSION);
+      const zoomScale = panZoom && panZoom.isActive ? panZoom.scale : 1;
+      const tooltipBaseScale = zoomScale > 0 ? 1 / zoomScale : 1;
 
       if (!squarePersonalizations[squareNumber - 1]) {
         document.getElementById("theImage").style.cursor = "pointer";
@@ -166,39 +289,109 @@ title: "Su Squares, cute squares you own and personalize"
         whereToGoAnchor.href = squarePersonalizations[squareNumber - 1][1];
       }
 
-      positionDiv.style.width = cellSize + "px";
-      positionDiv.style.height = cellSize + "px";
-      positionDiv.style.left = (col * cellSize) + "px";
-      positionDiv.style.top = (row * cellSize) + "px";
+      positionDiv.style.width = "1%";
+      positionDiv.style.height = "1%";
+      positionDiv.style.left = col + "%";
+      positionDiv.style.top = row + "%";
       positionDiv.style.display = "block";
 
+      tooltipDiv.style.setProperty("--map-tooltip-base-scale", String(tooltipBaseScale));
       tooltipDiv.style.display = "block";
-      const maxLeft = Math.max(0, wrapper.clientWidth - tooltipDiv.offsetWidth);
+      const visualTooltipWidth = tooltipDiv.offsetWidth * tooltipBaseScale;
+      const visualTooltipHeight = tooltipDiv.offsetHeight * tooltipBaseScale;
+      const maxLeft = Math.max(0, stage.clientWidth - visualTooltipWidth);
       const preferredLeft = col * cellSize;
       const preferredTop = row * cellSize + cellSize * 3;
-      const fallbackTop = row * cellSize - tooltipDiv.offsetHeight - cellSize;
+      const fallbackTop = row * cellSize - visualTooltipHeight - cellSize;
       tooltipDiv.style.left = Math.min(Math.max(preferredLeft, 0), maxLeft) + "px";
-      tooltipDiv.style.top = (preferredTop + tooltipDiv.offsetHeight <= wrapper.clientHeight
+      tooltipDiv.style.top = (preferredTop + visualTooltipHeight <= stage.clientHeight
         ? preferredTop
         : Math.max(0, fallbackTop)) + "px";
     }
 
     function setPositionFromPointer(clientX, clientY) {
-      const theImage = document.getElementById("theImage");
-      const rect = theImage.getBoundingClientRect();
-      const cellSize = rect.width / GRID_DIMENSION || 10;
-      const x = Math.min(Math.max(Math.floor((clientX - rect.left) / cellSize), 0), GRID_DIMENSION - 1);
-      const y = Math.min(Math.max(Math.floor((clientY - rect.top) / cellSize), 0), GRID_DIMENSION - 1);
-      const squareNumber = x + y * GRID_DIMENSION + 1;
+      const squareNumber = getSquareFromPoint(clientX, clientY);
       setPosition(squareNumber);
+      return squareNumber;
     }
 
-    document.getElementById("theImage").addEventListener("mousemove", (e) => {
+    theImage.addEventListener("mousemove", (e) => {
       setPositionFromPointer(e.clientX, e.clientY);
     });
 
-    document.getElementById("theImage").addEventListener("click", (e) => {
-      setPositionFromPointer(e.clientX, e.clientY);
+    whereToGoAnchor.addEventListener("touchstart", (event) => {
+      if (!isTouchBillboard || !event.touches || event.touches.length !== 1) {
+        touchStartX = null;
+        touchStartY = null;
+        touchStartAt = 0;
+        return;
+      }
+
+      touchStartX = event.touches[0].clientX;
+      touchStartY = event.touches[0].clientY;
+      touchStartAt = Date.now();
+    }, { passive: true });
+
+    whereToGoAnchor.addEventListener("touchend", (event) => {
+      if (!isTouchBillboard) return;
+
+      if (panZoom && panZoom.isActive && panZoom.hasPanned()) {
+        pendingTouchSquare = null;
+        pendingTouchAt = 0;
+        suppressClickUntil = Date.now() + SUPPRESS_CLICK_WINDOW_MS;
+        clearTouchTapTracking();
+        return;
+      }
+
+      if (!wasTouchTap(event)) {
+        pendingTouchSquare = null;
+        pendingTouchAt = 0;
+        suppressClickUntil = Date.now() + SUPPRESS_CLICK_WINDOW_MS;
+        clearTouchTapTracking();
+        return;
+      }
+
+      touchTapReady = true;
+    }, { passive: true });
+
+    whereToGoAnchor.addEventListener("touchcancel", () => {
+      pendingTouchSquare = null;
+      pendingTouchAt = 0;
+      clearTouchTapTracking();
+    }, { passive: true });
+
+    whereToGoAnchor.addEventListener("click", (event) => {
+      const squareNumber = typeof event.clientX === "number" && typeof event.clientY === "number"
+        ? setPositionFromPointer(event.clientX, event.clientY)
+        : positionSquareNumber;
+      const href = whereToGoAnchor.getAttribute("href");
+
+      if (Date.now() < suppressClickUntil) {
+        event.preventDefault();
+        return;
+      }
+
+      if (isTouchBillboard && touchTapReady) {
+        touchTapReady = false;
+        const now = Date.now();
+        const isSameSquare = pendingTouchSquare === squareNumber;
+        const isWithinWindow = now - pendingTouchAt < DOUBLE_TAP_WINDOW_MS;
+
+        if (!isSameSquare || !isWithinWindow) {
+          pendingTouchSquare = squareNumber;
+          pendingTouchAt = now;
+          event.preventDefault();
+          event.stopPropagation();
+          return;
+        }
+
+        pendingTouchSquare = null;
+        pendingTouchAt = 0;
+      }
+
+      if (!href) {
+        event.preventDefault();
+      }
     });
 
     window.addEventListener("resize", () => {
@@ -213,6 +406,7 @@ title: "Su Squares, cute squares you own and personalize"
         // Move up
         if (positionSquareNumber > GRID_DIMENSION) setPosition(positionSquareNumber - GRID_DIMENSION);
         e.preventDefault(); // Prevent scrolling
+<<<<<<< HEAD
       } else if (key === 'a' || key === 'arrowleft') {
         // Move left
         if (positionSquareNumber % GRID_DIMENSION !== 1) setPosition(positionSquareNumber - 1);
@@ -225,9 +419,8 @@ title: "Su Squares, cute squares you own and personalize"
         if (positionSquareNumber % GRID_DIMENSION !== 0) setPosition(positionSquareNumber + 1);
       } else if (key === 'enter') {
         // Trigger click for highlighted square
-        const whereToGoAnchor = document.getElementById("wheretogo");
-        if (whereToGoAnchor.href) {
-          whereToGoAnchor.click();
+        if (whereToGoAnchor.getAttribute("href")) {
+          activateSelectedSquare();
         }
       }
     });
