@@ -8,6 +8,8 @@ exclude:
   # when you are not testing the on-site NFT metadata/image
   # - erc721/
 
+permalink: pretty
+
 incremental: true
 
 # Uncomment for same-device local use only; livereload can break when testing

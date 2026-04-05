@@ -8,7 +8,7 @@ title: "Su Squares, cute squares you own and personalize"
   <meta charset="utf-8">
   <title>{{ page.title }}</title>
 <link rel="icon" type="image/svg+xml" href="/assets/images/branding/logomark.svg">
-  <link rel="stylesheet" href="assets/main.css?20210926">
+  <link rel="stylesheet" href="/assets/main.css?20210926">
   {% include foot.html %}
 </head>
 
@@ -19,9 +19,9 @@ title: "Su Squares, cute squares you own and personalize"
     <span>
       The first ERC-721 NFT
     </span>
-    <a class="btn" href="white-paper">About us</a>
-    <a class="btn" href="buy">Mint</a>
-    <a class="btn" href="personalize">Personalize</a>
+    <a class="btn" href="/white-paper">About us</a>
+    <a class="btn" href="/buy">Mint</a>
+    <a class="btn" href="/personalize">Personalize</a>
     <a class="btn" target="_blank" href="https://x.com/susquares">
       <!-- Corrected target attribute -->
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-twitter-x"
@@ -44,7 +44,7 @@ title: "Su Squares, cute squares you own and personalize"
     <p>Click below to mint an available Su Square (0.5 ETH).</p>
     <a id="wheretogo" href="#" target="_blank">
       <div style="position:relative;height:1000px">
-        <img id="theImage" src="build/wholeSquare.webp" alt="All Su Squares"
+        <img id="theImage" src="/build/wholeSquare.webp" alt="All Su Squares"
           style="margin:0; height:1000px; width:1000px">
         <div id="position"
           style="background:pink;opacity:0.8;width:10px;height:10px;;position:absolute;pointer-events:none">
@@ -84,8 +84,8 @@ title: "Su Squares, cute squares you own and personalize"
     let litUpEdge = new Set();
     let wasEverLitUp = new Set();
 
-    const squarePersonalizationsPromise = fetch("build/squarePersonalizations.json").then(response => response.json());
-    const squareExtraPromise = fetch("build/squareExtra.json").then(response => response.json());
+    const squarePersonalizationsPromise = fetch("/build/squarePersonalizations.json").then(response => response.json());
+    const squareExtraPromise = fetch("/build/squareExtra.json").then(response => response.json());
 
     Promise.all([squarePersonalizationsPromise, squareExtraPromise])
       .then(([personalizations, extra]) => {
@@ -108,8 +108,8 @@ title: "Su Squares, cute squares you own and personalize"
           const col = (index - 1) % 100;
           const squareNumber = index + 1;
           newlyMintedSection.insertAdjacentHTML("beforeend",
-            `<a style="display:flex; flex-direction: column; align-items: center; justify-content: center; flex: 1 1 0" href="https://tenthousandsu.com/square#${squareNumber}">
-              <div style="background: url('https://tenthousandsu.com/build/wholeSquare.webp'); height: 10px; width: 10px; background-position-x: ${-col * 10}px; background-position-y: ${-row * 10}px; display: inline-block; zoom: 5; image-rendering: pixelated;"></div>
+            `<a style="display:flex; flex-direction: column; align-items: center; justify-content: center; flex: 1 1 0" href="/square#${squareNumber}">
+              <div style="background: url('/build/wholeSquare.webp'); height: 10px; width: 10px; background-position-x: ${-col * 10}px; background-position-y: ${-row * 10}px; display: inline-block; zoom: 5; image-rendering: pixelated;"></div>
               <p>#${squareNumber}</p>
             </a>`
           );
@@ -125,8 +125,8 @@ title: "Su Squares, cute squares you own and personalize"
           const col = (index) % 100;
           const squareNumber = index + 1;
           newlyPersonalizedSection.insertAdjacentHTML("beforeend",
-            `<a style="display:flex; flex-direction: column; align-items: center; justify-content: center; flex: 1 1 0" href="https://tenthousandsu.com/square#${squareNumber}">
-              <div style="background: url('https://tenthousandsu.com/build/wholeSquare.webp'); height: 10px; width: 10px; background-position-x: ${-col * 10}px; background-position-y: ${-row * 10}px; display: inline-block; zoom: 5; image-rendering: pixelated;"></div>
+            `<a style="display:flex; flex-direction: column; align-items: center; justify-content: center; flex: 1 1 0" href="/square#${squareNumber}">
+              <div style="background: url('/build/wholeSquare.webp'); height: 10px; width: 10px; background-position-x: ${-col * 10}px; background-position-y: ${-row * 10}px; display: inline-block; zoom: 5; image-rendering: pixelated;"></div>
               <p>#${squareNumber}</p>
             </a>`
           );
