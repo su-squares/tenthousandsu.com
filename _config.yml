@@ -6,7 +6,13 @@ description: "The first ERC-721 NFT. Cute squares you own and personalize."
 exclude:
   # For local development, uncomment `erc721/` to speed up Jekyll builds
   # when you are not testing the on-site NFT metadata/image
-  # - erc721/
+   - erc721/
+   - vercel
+   - _site
+   - .bundle
+   - vendor
+
+permalink: pretty
 
 incremental: true
 
