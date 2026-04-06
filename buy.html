@@ -1,12 +1,16 @@
+---
+title: "Su Squares, mint a square"
+description: "Own a piece of the original NFT collection. Mint a Su Square for 0.5 ETH."
+---
 <!doctype html>
 <html lang="en">
 
 <head>
   <meta charset="utf-8">
-  <title>Su Squares, mint a square</title>
-  <link rel="canonical" href="https://tenthousandsu.com/buy" />
-  <link rel="icon" type="image/svg+xml" href="/assets/images/branding/logomark.svg">
-  <link rel="stylesheet" href="assets/main.css">
+  <title>{{ page.title }}</title>
+<link rel="icon" type="image/svg+xml" href="/assets/images/branding/logomark.svg">
+  <link rel="stylesheet" href="/assets/main.css">
+  {% include foot.html %}
   <style>
     #square-number {
       margin-top: 0.5em;
@@ -67,7 +71,7 @@
     let squarePersonalizations;
 
     // Load personalizations ///////////////////////////////////////////////////////////////////////////////////////////
-    fetch("build/squarePersonalizations.json")
+    fetch("/build/squarePersonalizations.json")
       .then(response => response.json())
       .then(data => { squarePersonalizations = data; })
       .then(data => {
@@ -192,7 +196,7 @@
           console.log('hash', hash);
           const receipt = await waitForTransactionReceipt(wagmiConfig, { hash });
           console.log('receipt', receipt);
-          receiptsDiv.innerHTML = `<h3>Transaction confirmed</h3><p>Transaction ID: <a target="_blank" href="https://etherscan.io/tx/${receipt.transactionHash}">${receipt.transactionHash}</a>. Next, go to <a href="https://tenthousandsu.com/personalize?square=${squareNumber}">personalize</a> to personalize your Square.</p>`;
+          receiptsDiv.innerHTML = `<h3>Transaction confirmed</h3><p>Transaction ID: <a target="_blank" href="https://etherscan.io/tx/${receipt.transactionHash}">${receipt.transactionHash}</a>. Next, go to <a href="/personalize?square=${squareNumber}">personalize</a> to personalize your Square.</p>`;
         } catch (error) {
           console.log(error);
           return alert(error.message);
