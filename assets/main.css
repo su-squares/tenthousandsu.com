@@ -202,6 +202,13 @@ textarea {
   resize: vertical;
 }
 
+input#square-number,
+input#top-left-square-number {
+  margin-top: 0.5em;
+  margin-bottom: 0.5em;
+  max-width: 10rem;
+}
+
 article {
   margin: 1rem auto;
   width: 100%;
@@ -227,10 +234,235 @@ hr {
   margin-bottom: 0.5rem;
 }
 
+#tooltip,
+.map-tooltip {
+  background: rgba(255, 255, 255, 0.8);
+  width: min(220px, calc(100% - 1rem));
+  min-width: min(150px, calc(100% - 1rem));
+  position: absolute;
+  pointer-events: none;
+  display: none;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
+  font-size: 12px;
+  border-radius: 10px;
+  padding: 10px;
+  color: black;
+  z-index: 20;
+}
+
 a:link,
 a:visited,
 a:active {
   color: #ffd700;
+}
+
+.map-shell {
+  width: 100%;
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.map-container {
+  width: 100%;
+  display: block;
+  text-decoration: none;
+}
+
+.map-wrapper {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1 / 1;
+}
+
+.map-image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  image-rendering: pixelated;
+}
+
+.map-position {
+  background: pink;
+  opacity: 0.8;
+  width: 10px;
+  height: 10px;
+  position: absolute;
+  pointer-events: none;
+  display: none;
+  z-index: 10;
+}
+
+.map-fence {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+.newly-feed {
+  width: 100%;
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+.newly-feed__section {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.newly-feed__heading {
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.newly-feed__items {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.newly-feed__item {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-decoration: none;
+  color: inherit;
+  min-width: 0;
+}
+
+.newly-feed__item p {
+  margin: 0;
+  font-weight: bold;
+}
+
+.newly-feed__thumb {
+  display: inline-block;
+  width: 50px;
+  height: 50px;
+  flex: 0 0 auto;
+  background-repeat: no-repeat;
+  background-size: 1000px 1000px;
+  image-rendering: pixelated;
+}
+
+#mint-selected-square,
+#pick-a-square,
+#receipts {
+  width: 100%;
+}
+
+.mint-page p,
+.personalize-page p {
+  margin: 0;
+}
+
+.personalize-page article {
+  gap: 0.6rem;
+}
+
+.personalize-page #receipts,
+.mint-page #receipts {
+  overflow-wrap: anywhere;
+}
+
+#preflight-output {
+  min-height: 12rem;
+}
+
+#image-preview {
+  max-width: 100%;
+  height: auto;
+  image-rendering: pixelated;
+}
+
+.square-page {
+  align-items: center;
+}
+
+.square-page h1,
+.square-page h2 {
+  text-align: center;
+}
+
+.square-page #image {
+  display: inline-block;
+}
+
+.square-metadata {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  border: 1px solid #ffd700;
+}
+
+.square-metadata dt,
+.square-metadata dd {
+  margin: 0;
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid #ffd700;
+}
+
+.square-metadata dt {
+  border-right: 1px solid #ffd700;
+  font-weight: 700;
+}
+
+.square-metadata dd {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+.square-metadata dt:last-of-type,
+.square-metadata dd:last-of-type {
+  border-bottom: none;
+}
+
+.square-location-map {
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  margin: 0 auto;
+  aspect-ratio: 1 / 1;
+  overflow: hidden;
+}
+
+.square-location-map__image {
+  width: 100%;
+  height: 100%;
+  display: block;
+  image-rendering: pixelated;
+}
+
+.square-location-map__arrow {
+  position: absolute;
+}
+
+.square-emojified {
+  display: inline-block;
+  max-width: 100%;
+  overflow-x: auto;
+  text-align: center;
+  line-height: calc(1em + 0.25rem);
+}
+
+#copy-emojified {
+  width: 150px;
+  margin: 0 auto;
+  font-size: 1rem;
+}
+
+@media (min-width: 900px) {
+  .newly-feed__items {
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+  }
 }
 
 @media (max-width: 1007px) {
@@ -343,9 +575,24 @@ a:active {
     font-size: 1.5rem;
   }
 
+  .square-metadata dt,
+  .square-metadata dd {
+    padding: 0.85rem 1rem;
+  }
+
   footer {
     width: min(100%, 1004px);
     padding: 1.5rem 1rem;
+  }
+}
+
+@media (max-width: 450px) {
+  .newly-feed {
+    grid-template-columns: 1fr;
+  }
+
+  .map-tooltip {
+    min-width: 0;
   }
 }
 
