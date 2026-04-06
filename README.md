@@ -1,4 +1,8 @@
+![Su Squares](assets/images/branding/wordmark-gradient.webp)
+
 # Su Squares website
+
+
 
 This source code runs the Su Squares website at https://tenthousandsu.com
 
