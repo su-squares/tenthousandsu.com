@@ -1,4 +1,4 @@
-<img src="assets/images/branding/logo-square-full.svg" alt="Su Squares logo" style="display: block; width: 200px; height: 200px; margin-left: 0; margin-right: auto;">
+<img src="assets/images/branding/logo-square-full.svg" alt="Su Squares logo" width="200" height="200">
 
 # Su Squares website
 
