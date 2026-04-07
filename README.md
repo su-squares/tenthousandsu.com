@@ -1,10 +1,12 @@
+<img src="assets/images/branding/logo-square-full.svg" alt="Su Squares logo" width="200" height="200">
+
 # Su Squares website
 
-This source code runs the Su Squares website at https://tenthousandsu.com
+This source code runs the Su Squares website at <https://TenThousandSu.com>
 
 ## How it works
 
-The square on this site is updated by https://github.com/su-squares/update-script other stuff is updated by commits into this repo and the site is published live using GitHub Pages. So commits immediately publish to the site.
+The square on this site is updated by <https://github.com/su-squares/update-script> other stuff is updated by commits into this repo and the site is published live using GitHub Pages. So commits immediately publish to the site.
 
 ## Contributing
 
