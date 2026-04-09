@@ -9,7 +9,7 @@ title: "Su Squares, cute squares you own and personalize"
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ page.title }}</title>
   <link rel="icon" type="image/svg+xml" href="/assets/images/branding/logomark.svg">
-  <link rel="stylesheet" href="/assets/main.css?20240406">
+  <link rel="stylesheet" href="/assets/main.css?20260409">
   {% include foot.html %}
 </head>
 
@@ -38,20 +38,58 @@ title: "Su Squares, cute squares you own and personalize"
     </a>
   </header>
 
-  <article class="square-page">
-    <h1>Square #<span id="square-number">...</span></h1>
-    <div id="image"></div>
+  <article class="square-page" aria-live="polite">
+    <div class="square-page__heading">
+      <div class="square-page__heading-copy">
+        <h1>Square #<span id="square-number">...</span></h1>
+        <p id="square-status" class="square-page__status"></p>
+      </div>
+    </div>
+
+    <div id="image" class="square-page__hero-image"></div>
 
     <dl class="square-metadata">
       <dt>Minted</dt>
       <dd id="minted"></dd>
       <dt>Personalized</dt>
-      <dd id="personalized"></dd> <!-- also show #X most recent -->
+      <dd id="personalized"></dd>
       <dt>Title</dt>
       <dd id="title"></dd>
       <dt>Link</dt>
       <dd id="link"></dd>
     </dl>
+
+    <details class="square-nav-help">
+      <summary>
+        Use <kbd>WASD</kbd> to navigate adjacent Squares.
+        <span class="square-nav-help__more">More instructions</span>
+      </summary>
+      <div class="square-nav-help__details">
+        <p><kbd>W</kbd> moves -100, <kbd>S</kbd> +100, <kbd>A</kbd> -1, <kbd>D</kbd> +1.</p>
+        <p>Navigation wraps from <strong>#10000</strong> back to <strong>#1</strong>.</p>
+      </div>
+    </details>
+
+    <section class="square-panel">
+      <p id="panel-square-number" class="square-panel__square-number"></p>
+      <h2 id="panel-title" class="square-panel__title"></h2>
+      <p id="panel-message" class="square-panel__message"></p>
+      <button type="button" id="uri-field" class="square-panel__field square-panel__field--actionable" hidden>
+        <span class="square-panel__field-label">URI</span>
+        <span id="uri-value" class="square-panel__field-value"></span>
+      </button>
+      <p id="link-disclaimer" class="square-panel__disclaimer" hidden></p>
+      <p id="uri-warning" class="square-panel__warning" hidden></p>
+      <div class="square-panel__actions">
+        <button type="button" id="primary-action" class="btn square-panel__button square-panel__button--primary"
+          hidden></button>
+        <button type="button" id="copy-link" class="btn square-panel__button" hidden>Copy link</button>
+      </div>
+      <div id="cta-wrap" class="square-panel__cta" hidden>
+        <p id="square-cta-copy" class="square-panel__cta-copy" hidden></p>
+        <a id="cta-link" class="btn square-panel__button square-panel__button--cta" hidden></a>
+      </div>
+    </section>
 
     <h2>Location</h2>
     <div class="square-location-map">
@@ -59,9 +97,11 @@ title: "Su Squares, cute squares you own and personalize"
       <img id="arrow" class="square-location-map__arrow" src="/assets/images/billboard/dr.png" alt="Location">
     </div>
 
-    <h2>Emojified</h2>
-    <pre id="emojified" class="square-emojified"></pre>
-    <button class="btn" id="copy-emojified">Copy</button>
+    <section id="copy-squares" class="square-copy" hidden>
+      <h2>Emojified</h2>
+      <pre id="copy-squares-output" class="square-copy__output"></pre>
+      <button type="button" id="copy-squares-button" class="btn square-copy__button">Copy Squares</button>
+    </section>
   </article>
 
   <footer>
@@ -75,116 +115,441 @@ title: "Su Squares, cute squares you own and personalize"
     </small>
   </footer>
   <script>
-    // Get URL fragment
-    const squareNumber = parseInt(window.location.hash.substring(1));
-    const personalizations = fetch('/build/squarePersonalizations.json').then(response => response.json());
-    const extras = fetch('/build/squareExtra.json').then(response => response.json());
+    const SQUARE_COUNT = 10000;
+    const GRID_DIMENSION = 100;
+    const FADE_DURATION_MS = 160;
+    const BLOCKED_URI_SCHEMES = new Set(["javascript", "data", "file"]);
+    const KEY_TO_DELTA = {
+      KeyA: -1,
+      KeyD: 1,
+      KeyW: -100,
+      KeyS: 100,
+    };
 
-    Promise.all([personalizations, extras]).then(([personalizations, extras]) => {
-      // Each personalization is [title, href] or null
-      // Each extra is [mintedBlock, updatedBlock, mainIsPersonalized, version] or null
-      // Arrays are zero indexed, but the first Su Square number is 1!
+    let squarePersonalizations = [];
+    let squareExtra = [];
+    let currentSquareNumber = 1;
+    let currentRow = 0;
+    let currentCol = 0;
+    let renderToken = 0;
+    let renderTimer = 0;
+    let currentPrimaryAction = null;
+    let currentUri = "";
+    let copyFeedbackTimer = 0;
+    let copySquaresFeedbackTimer = 0;
 
-      const elSquareNumber = document.getElementById("square-number");
-      elSquareNumber.innerText = squareNumber;
+    const squarePage = document.querySelector(".square-page");
+    const elSquareNumber = document.getElementById("square-number");
+    const elSquareStatus = document.getElementById("square-status");
+    const elMinted = document.getElementById("minted");
+    const elPersonalized = document.getElementById("personalized");
+    const elTitle = document.getElementById("title");
+    const elLink = document.getElementById("link");
+    const elPanelSquareNumber = document.getElementById("panel-square-number");
+    const elPanelTitle = document.getElementById("panel-title");
+    const elPanelMessage = document.getElementById("panel-message");
+    const elUriField = document.getElementById("uri-field");
+    const elUriValue = document.getElementById("uri-value");
+    const elLinkDisclaimer = document.getElementById("link-disclaimer");
+    const elUriWarning = document.getElementById("uri-warning");
+    const elCtaWrap = document.getElementById("cta-wrap");
+    const elCtaCopy = document.getElementById("square-cta-copy");
+    const elPrimaryAction = document.getElementById("primary-action");
+    const elCopyLink = document.getElementById("copy-link");
+    const elCtaLink = document.getElementById("cta-link");
+    const elCopySquares = document.getElementById("copy-squares");
+    const elCopySquaresOutput = document.getElementById("copy-squares-output");
+    const elCopySquaresButton = document.getElementById("copy-squares-button");
+    const elImage = document.getElementById("image");
+    const elArrow = document.getElementById("arrow");
+    const elLocationMap = document.querySelector(".square-location-map");
 
-      const elMinted = document.getElementById('minted');
-      elMinted.innerText = extras[squareNumber - 1] ? `Block ${extras[squareNumber - 1][0]}` : 'Not minted';
+    Promise.all([
+      fetch("/build/squarePersonalizations.json").then(response => response.json()),
+      fetch("/build/squareExtra.json").then(response => response.json())
+    ]).then(([personalizations, extras]) => {
+      squarePersonalizations = personalizations;
+      squareExtra = extras;
 
-      const elPersonalized = document.getElementById('personalized');
-      elPersonalized.innerText = extras[squareNumber - 1] ? `Block ${extras[squareNumber - 1][1]}` : 'Not personalized';
+      elPrimaryAction.addEventListener("click", handlePrimaryAction);
+      elCopyLink.addEventListener("click", handleCopyLink);
+      elCopySquaresButton.addEventListener("click", handleCopySquares);
+      elUriField.addEventListener("click", handleUriFieldClick);
+      document.addEventListener("keydown", handleKeyboardNavigation);
+      window.addEventListener("hashchange", () => transitionToSquareFromHash(true));
+      window.addEventListener("resize", updateArrowPosition);
 
-      const elTitle = document.getElementById('title');
-      elTitle.innerText = personalizations[squareNumber - 1] ? personalizations[squareNumber - 1][0] : 'Not personalized';
+      transitionToSquareFromHash(false);
+    }).catch((error) => {
+      console.error("Failed to load Square data", error);
+      elSquareStatus.innerText = "Unavailable";
+      elMinted.innerText = "Unavailable";
+      elPersonalized.innerText = "Unavailable";
+      elTitle.innerText = "Unavailable";
+      elLink.innerText = "Unavailable";
+      elPanelTitle.innerText = "Square data unavailable";
+      elPanelMessage.innerText = "Please try again later.";
+    });
 
-      const elLink = document.getElementById('link');
-      elLink.innerText = personalizations[squareNumber - 1] ? personalizations[squareNumber - 1][1] : 'Not personalized';
+    function normalizeSquareNumber(squareNumber) {
+      return ((squareNumber - 1) % SQUARE_COUNT + SQUARE_COUNT) % SQUARE_COUNT + 1;
+    }
 
-      const elEmojified = document.getElementById('emojified');
-
-      // Set image
-      const row = Math.floor((squareNumber - 1) / 100); // 0 indexed
-      const col = (squareNumber - 1) % 100; // 0 indexed
-      const elImage = document.getElementById('image');
-      elImage.style.backgroundImage = 'url("/build/wholeSquare.webp")';
-      elImage.style.backgroundPosition = `-${col * 10}px -${row * 10}px`;
-      elImage.style.height = '10px';
-      elImage.style.width = '10px';
-      elImage.style.display = 'inline-block';
-      elImage.style.zoom = '20';
-      elImage.style.imageRendering = 'pixelated';
-
-      // Set arrow location, based on quadrant
-      const elArrow = document.getElementById('arrow');
-      const elLocationMap = document.querySelector('.square-location-map');
-
-      function updateArrowPosition() {
-        const renderedWidth = elLocationMap ? elLocationMap.getBoundingClientRect().width : 1000;
-        const scale = renderedWidth / 1000 || 1;
-        const scalePosition = (value) => `${value * scale}px`;
-        const setArrow = (src, topPx, leftPx) => {
-          elArrow.src = src;
-          elArrow.style.top = scalePosition(topPx);
-          elArrow.style.left = scalePosition(leftPx);
-        };
-        elArrow.style.width = `${100 * scale}px`;
-        elArrow.style.height = `${100 * scale}px`;
-
-        if (row < 50) {
-          if (col < 50) {
-            setArrow('/assets/images/billboard/ul.png', row * 10 + 10, col * 10 + 10);
-          } else {
-            setArrow('/assets/images/billboard/ur.png', row * 10 + 10, col * 10 - 100);
-          }
-        } else {
-          if (col < 50) {
-            setArrow('/assets/images/billboard/dl.png', row * 10 - 100, col * 10 + 10);
-          } else {
-            setArrow('/assets/images/billboard/dr.png', row * 10 - 100, col * 10 - 100);
-          }
-        }
+    function getSquareNumberFromHash() {
+      const parsed = parseInt(window.location.hash.replace(/^#/, ""), 10);
+      if (!Number.isInteger(parsed) || parsed < 1 || parsed > SQUARE_COUNT) {
+        return 1;
       }
+      return parsed;
+    }
+
+    function syncHash(squareNumber) {
+      const normalizedSquareNumber = normalizeSquareNumber(squareNumber);
+      const nextHash = `#${normalizedSquareNumber}`;
+      if (window.location.hash !== nextHash) {
+        history.replaceState(null, "", nextHash);
+      }
+      return normalizedSquareNumber;
+    }
+
+    function transitionToSquareFromHash(animate) {
+      const squareNumber = syncHash(getSquareNumberFromHash());
+      transitionToSquare(squareNumber, animate);
+    }
+
+    function navigateToSquare(squareNumber) {
+      const nextSquareNumber = normalizeSquareNumber(squareNumber);
+      history.replaceState(null, "", `#${nextSquareNumber}`);
+      transitionToSquare(nextSquareNumber, true);
+    }
+
+    function transitionToSquare(squareNumber, animate) {
+      const nextSquareNumber = normalizeSquareNumber(squareNumber);
+      const token = ++renderToken;
+      currentSquareNumber = nextSquareNumber;
+
+      window.clearTimeout(renderTimer);
+      if (!animate) {
+        renderSquare(nextSquareNumber);
+        squarePage.classList.remove("square-page--transitioning");
+        squarePage.setAttribute("aria-busy", "false");
+        return;
+      }
+
+      window.scrollTo({ top: 0, left: 0, behavior: "auto" });
+      squarePage.classList.add("square-page--transitioning");
+      squarePage.setAttribute("aria-busy", "true");
+      renderTimer = window.setTimeout(() => {
+        if (token !== renderToken) {
+          return;
+        }
+        renderSquare(nextSquareNumber);
+        requestAnimationFrame(() => {
+          if (token !== renderToken) {
+            return;
+          }
+          squarePage.classList.remove("square-page--transitioning");
+          squarePage.setAttribute("aria-busy", "false");
+        });
+      }, FADE_DURATION_MS);
+    }
+
+    function extractUriScheme(uri) {
+      const match = String(uri || "").trim().match(/^([a-zA-Z][a-zA-Z0-9+.-]*):/);
+      return match ? match[1].toLowerCase() : "";
+    }
+
+    function isValidHttpUrl(uri) {
+      try {
+        const parsed = new URL(uri);
+        return parsed.protocol === "http:" || parsed.protocol === "https:";
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function getUriInfo(uri) {
+      const trimmedUri = String(uri || "").trim();
+      if (!trimmedUri) {
+        return { kind: "none", uri: "", scheme: "" };
+      }
+
+      const scheme = extractUriScheme(trimmedUri);
+      if (!scheme) {
+        return { kind: "blocked", uri: trimmedUri, scheme: "" };
+      }
+
+      if (BLOCKED_URI_SCHEMES.has(scheme)) {
+        return { kind: "blocked", uri: trimmedUri, scheme };
+      }
+
+      if (scheme === "http" || scheme === "https") {
+        return isValidHttpUrl(trimmedUri)
+          ? { kind: "http", uri: trimmedUri, scheme }
+          : { kind: "blocked", uri: trimmedUri, scheme };
+      }
+
+      return { kind: "deeplink", uri: trimmedUri, scheme };
+    }
+
+    function getSquareState(squareNumber) {
+      const extra = squareExtra[squareNumber - 1] || null;
+      const personalization = squarePersonalizations[squareNumber - 1] || null;
+      const squareTitle = personalization ? String(personalization[0] || "").trim() : "";
+      const uriInfo = getUriInfo(personalization ? personalization[1] : "");
+      const isPersonalized = Boolean(squareTitle || uriInfo.uri);
+
+      if (!extra) {
+        return {
+          label: "Available for sale",
+          title: "This Square is available",
+          message: `Square #${squareNumber} has not been minted yet. Claim it before someone else does.`,
+          mintedText: "Not minted",
+          personalizedText: "Not personalized",
+          titleText: "No title",
+          uriInfo,
+          disclaimer: "",
+          warning: "",
+          primaryAction: null,
+          hasPersonalizedImage: false,
+          ctaCopy: "",
+          ctaLabel: "Mint this Square",
+          ctaHref: `/buy?square=${squareNumber}`,
+        };
+      }
+
+      if (!isPersonalized) {
+        return {
+          label: "Minted, not personalized",
+          title: "Not personalized yet",
+          message: "This Square has been minted, but it does not currently publish a title or URI.",
+          mintedText: `Block ${extra[0]}`,
+          personalizedText: "Not personalized",
+          titleText: "No title",
+          uriInfo,
+          disclaimer: "",
+          warning: "",
+          primaryAction: null,
+          hasPersonalizedImage: false,
+          ctaCopy: "If this is your Square...",
+          ctaLabel: "Personalize it",
+          ctaHref: `/personalize?square=${squareNumber}`,
+        };
+      }
+
+      if (uriInfo.kind === "none") {
+        return {
+          label: "Personalized",
+          title: squareTitle || "Personalized Square",
+          message: "This Square has been personalized, but it does not currently have a URI.",
+          mintedText: `Block ${extra[0]}`,
+          personalizedText: `Block ${extra[1]}`,
+          titleText: squareTitle || "No title",
+          uriInfo,
+          disclaimer: "",
+          warning: "",
+          primaryAction: null,
+          hasPersonalizedImage: true,
+          ctaCopy: "If this is your Square...",
+          ctaLabel: "Update personalization",
+          ctaHref: `/personalize?square=${squareNumber}`,
+        };
+      }
+
+      if (uriInfo.kind === "http") {
+        return {
+          label: "Personalized",
+          title: squareTitle || "Personalized Square",
+          message: "This Square publishes a third-party link.",
+          mintedText: `Block ${extra[0]}`,
+          personalizedText: `Block ${extra[1]}`,
+          titleText: squareTitle || "No title",
+          uriInfo,
+          disclaimer: "We do NOT review third party links and assume no responsibility if you choose to visit them. Proceed at your own discretion.",
+          warning: "",
+          primaryAction: {
+            label: "Go there",
+            type: "http",
+            url: uriInfo.uri,
+          },
+          hasPersonalizedImage: true,
+          ctaCopy: "If this is your Square...",
+          ctaLabel: "Update personalization",
+          ctaHref: `/personalize?square=${squareNumber}`,
+        };
+      }
+
+      if (uriInfo.kind === "deeplink") {
+        return {
+          label: "Personalized",
+          title: squareTitle || "Personalized Square",
+          message: "This Square publishes a non-web URI.",
+          mintedText: `Block ${extra[0]}`,
+          personalizedText: `Block ${extra[1]}`,
+          titleText: squareTitle || "No title",
+          uriInfo,
+          disclaimer: "We do NOT review URIs and assume no responsibility if you choose to open them on your device. Proceed at your own discretion.",
+          warning: "",
+          primaryAction: {
+            label: "Open",
+            type: "deeplink",
+            url: uriInfo.uri,
+          },
+          hasPersonalizedImage: true,
+          ctaCopy: "If this is your Square...",
+          ctaLabel: "Update personalization",
+          ctaHref: `/personalize?square=${squareNumber}`,
+        };
+      }
+
+      return {
+        label: "Personalized",
+        title: squareTitle || "Personalized Square",
+        message: "This Square contains a URI that cannot be opened from this page.",
+        mintedText: `Block ${extra[0]}`,
+        personalizedText: `Block ${extra[1]}`,
+        titleText: squareTitle || "No title",
+        uriInfo,
+        disclaimer: "",
+        warning: "This URI type is not eligible for use",
+        primaryAction: null,
+        hasPersonalizedImage: true,
+        ctaCopy: "If this is your Square...",
+        ctaLabel: "Update personalization",
+        ctaHref: `/personalize?square=${squareNumber}`,
+      };
+    }
+
+    function renderSquare(squareNumber) {
+      const state = getSquareState(squareNumber);
+
+      currentSquareNumber = squareNumber;
+      currentUri = state.uriInfo.uri;
+      currentPrimaryAction = state.primaryAction;
+      currentRow = Math.floor((squareNumber - 1) / GRID_DIMENSION);
+      currentCol = (squareNumber - 1) % GRID_DIMENSION;
+
+      elSquareNumber.innerText = squareNumber;
+      elSquareStatus.innerText = state.label;
+      elMinted.innerText = state.mintedText;
+      elPersonalized.innerText = state.personalizedText;
+      elTitle.innerText = state.titleText;
+      elPanelSquareNumber.innerText = `#${squareNumber}`;
+      elPanelTitle.innerText = state.title;
+      elPanelMessage.innerText = state.message;
+      elCtaCopy.innerText = state.ctaCopy;
+      elCtaCopy.hidden = !state.ctaCopy;
+      elLinkDisclaimer.innerText = state.disclaimer;
+      elLinkDisclaimer.hidden = !state.disclaimer;
+      elUriWarning.innerText = state.warning;
+      elUriWarning.hidden = !state.warning;
+
+      renderMetadataLink(state.uriInfo);
+      renderPanelUri(state);
+      renderActions(state);
+      renderImage();
+      renderCopySquares(state.hasPersonalizedImage);
       updateArrowPosition();
-      window.addEventListener('resize', updateArrowPosition);
+      resetCopyButton();
+    }
 
-      // Emoji squares and RGB values for ⬛⬜🟥🟧🟨🟩🟦🟪🟫
+    function renderMetadataLink(uriInfo) {
+      elLink.replaceChildren();
+      if (!uriInfo.uri) {
+        elLink.innerText = "No link";
+        return;
+      }
+
+      const uriText = document.createElement("span");
+      uriText.className = uriInfo.kind === "blocked"
+        ? "square-metadata__link-text square-metadata__link-text--blocked"
+        : "square-metadata__link-text";
+      uriText.innerText = uriInfo.uri;
+      elLink.appendChild(uriText);
+    }
+
+    function renderActions(state) {
+      if (state.primaryAction && state.primaryAction.label) {
+        elPrimaryAction.innerText = state.primaryAction.label;
+        elPrimaryAction.hidden = false;
+      } else {
+        elPrimaryAction.hidden = true;
+        elPrimaryAction.innerText = "";
+      }
+
+      elCopyLink.hidden = !state.uriInfo.uri;
+
+      elCtaLink.innerText = state.ctaLabel;
+      elCtaLink.href = state.ctaHref;
+      elCtaLink.hidden = false;
+      elCtaWrap.hidden = false;
+    }
+
+    function renderPanelUri(state) {
+      elUriValue.replaceChildren();
+      elUriField.hidden = !state.uriInfo.uri;
+      elUriField.disabled = !state.primaryAction;
+      elUriField.classList.toggle("square-panel__field--disabled", !state.primaryAction);
+      if (!state.uriInfo.uri) {
+        return;
+      }
+
+      const uriText = document.createElement("span");
+      uriText.className = state.uriInfo.kind === "blocked"
+        ? "square-panel__uri-text square-panel__uri-text--blocked"
+        : "square-panel__uri-text";
+      uriText.innerText = state.uriInfo.uri;
+      elUriValue.appendChild(uriText);
+    }
+
+    function renderImage() {
+      elImage.style.backgroundImage = 'url("/build/wholeSquare.webp")';
+      elImage.style.backgroundPosition = `-${currentCol * 10}px -${currentRow * 10}px`;
+    }
+
+    function renderCopySquares(hasPersonalizedImage) {
+      elCopySquares.hidden = !hasPersonalizedImage;
+      elCopySquaresOutput.innerText = "";
+      resetCopySquaresButton();
+      if (!hasPersonalizedImage) {
+        return;
+      }
+      const row = currentRow;
+      const col = currentCol;
+      const token = renderToken;
+
       const emojis = [
-        { "emoji": "⬛", "red": 0, "green": 0, "blue": 0 },
-        { "emoji": "⬜", "red": 255, "green": 255, "blue": 255 },
-        { "emoji": "🟥", "red": 255, "green": 0, "blue": 0 },
-        { "emoji": "🟧", "red": 255, "green": 165, "blue": 0 },
-        { "emoji": "🟨", "red": 255, "green": 255, "blue": 0 },
-        { "emoji": "🟩", "red": 0, "green": 128, "blue": 0 },
-        { "emoji": "🟦", "red": 0, "green": 0, "blue": 255 },
-        { "emoji": "🟪", "red": 128, "green": 0, "blue": 128 },
-        { "emoji": "🟫", "red": 139, "green": 69, "blue": 19 },
-      ]
+        { emoji: "⬛", red: 0, green: 0, blue: 0 },
+        { emoji: "⬜", red: 255, green: 255, blue: 255 },
+        { emoji: "🟥", red: 255, green: 0, blue: 0 },
+        { emoji: "🟧", red: 255, green: 165, blue: 0 },
+        { emoji: "🟨", red: 255, green: 255, blue: 0 },
+        { emoji: "🟩", red: 0, green: 128, blue: 0 },
+        { emoji: "🟦", red: 0, green: 0, blue: 255 },
+        { emoji: "🟪", red: 128, green: 0, blue: 128 },
+        { emoji: "🟫", red: 139, green: 69, blue: 19 },
+      ];
 
-      // Create canvas
-      const canvas = document.createElement('canvas');
+      const canvas = document.createElement("canvas");
       canvas.width = 10;
       canvas.height = 10;
-      // Add wholeSquare to canvas
-      const context = canvas.getContext('2d');
+      const context = canvas.getContext("2d");
       const image = new Image();
-      image.src = '/build/wholeSquare.webp';
+      image.src = "/build/wholeSquare.webp";
       image.onload = function () {
+        if (token !== renderToken) {
+          return;
+        }
         context.drawImage(image, col * 10, row * 10, 10, 10, 0, 0, 10, 10);
-        // Get pixels
-        const imageData = context.getImageData(0, 0, 10, 10);
-        const pixels = imageData.data;
-        // Loop pixels
-        let emojiString = '';
+        const pixels = context.getImageData(0, 0, 10, 10).data;
+        let emojiString = "";
         for (let i = 0; i < pixels.length; i += 4) {
-          // Get pixel color
           const red = pixels[i];
           const green = pixels[i + 1];
           const blue = pixels[i + 2];
-          // Find closest emoji
           let closestEmoji = emojis[0];
-          let closestDistance = 195075;
-          for (let j = 0; j < emojis.length; j++) {
-            const emoji = emojis[j];
+          let closestDistance = Number.POSITIVE_INFINITY;
+          for (const emoji of emojis) {
             const distance = Math.sqrt(
               Math.pow(emoji.red - red, 2) +
               Math.pow(emoji.green - green, 2) +
@@ -196,26 +561,181 @@ title: "Su Squares, cute squares you own and personalize"
             }
           }
           emojiString += closestEmoji.emoji;
-          // Add line break
           if (i % 40 === 36) {
-            emojiString += "<br>";
+            emojiString += "\n";
           }
         }
-        // Set emoji string
-        elEmojified.innerHTML = emojiString;
+        if (token !== renderToken) {
+          return;
+        }
+        elCopySquaresOutput.innerText = emojiString.trimEnd();
+      };
+    }
+
+    function updateArrowPosition() {
+      const renderedWidth = elLocationMap ? elLocationMap.getBoundingClientRect().width : 1000;
+      const scale = renderedWidth / 1000 || 1;
+      const scalePosition = (value) => `${value * scale}px`;
+      const setArrow = (src, topPx, leftPx) => {
+        elArrow.src = src;
+        elArrow.style.top = scalePosition(topPx);
+        elArrow.style.left = scalePosition(leftPx);
+      };
+      elArrow.style.width = `${100 * scale}px`;
+      elArrow.style.height = `${100 * scale}px`;
+
+      if (currentRow < 50) {
+        if (currentCol < 50) {
+          setArrow('/assets/images/billboard/ul.png', currentRow * 10 + 10, currentCol * 10 + 10);
+        } else {
+          setArrow('/assets/images/billboard/ur.png', currentRow * 10 + 10, currentCol * 10 - 100);
+        }
+      } else if (currentCol < 50) {
+        setArrow('/assets/images/billboard/dl.png', currentRow * 10 - 100, currentCol * 10 + 10);
+      } else {
+        setArrow('/assets/images/billboard/dr.png', currentRow * 10 - 100, currentCol * 10 - 100);
+      }
+    }
+
+    function triggerDeeplink(url) {
+      try {
+        const link = document.createElement("a");
+        link.href = url;
+        link.rel = "noopener";
+        link.style.display = "none";
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      } catch (error) {
+        console.warn("Failed to open deeplink", error);
+      }
+    }
+
+    function handlePrimaryAction() {
+      if (!currentPrimaryAction) {
+        return;
       }
 
-      // Copy emojified
-      const elCopyEmojified = document.getElementById('copy-emojified');
-      elCopyEmojified.addEventListener('click', () => {
-        const range = document.createRange();
-        range.selectNode(elEmojified);
-        window.getSelection().removeAllRanges();
-        window.getSelection().addRange(range);
-        document.execCommand('copy');
-        window.getSelection().removeAllRanges();
-      });
-    });
+      if (currentPrimaryAction.type === "http") {
+        window.open(currentPrimaryAction.url, "_blank", "noopener");
+        return;
+      }
+
+      triggerDeeplink(currentPrimaryAction.url);
+    }
+
+    function fallbackCopy(text) {
+      try {
+        const textarea = document.createElement("textarea");
+        textarea.value = text;
+        textarea.setAttribute("readonly", "");
+        textarea.style.position = "absolute";
+        textarea.style.left = "-9999px";
+        document.body.appendChild(textarea);
+        textarea.select();
+        const didCopy = document.execCommand("copy");
+        document.body.removeChild(textarea);
+        return didCopy;
+      } catch (error) {
+        return false;
+      }
+    }
+
+    function resetCopyButton() {
+      window.clearTimeout(copyFeedbackTimer);
+      elCopyLink.innerText = "Copy link";
+      elCopyLink.classList.remove("square-panel__button--copied");
+      elCopyLink.classList.remove("square-panel__button--failed");
+    }
+
+    function applyCopyFeedback(didCopy) {
+      resetCopyButton();
+      elCopyLink.innerText = didCopy ? "Copied" : "Copy failed";
+      elCopyLink.classList.add(didCopy ? "square-panel__button--copied" : "square-panel__button--failed");
+      copyFeedbackTimer = window.setTimeout(() => {
+        resetCopyButton();
+      }, 1400);
+    }
+
+    function resetCopySquaresButton() {
+      window.clearTimeout(copySquaresFeedbackTimer);
+      elCopySquaresButton.innerText = "Copy Squares";
+      elCopySquaresButton.classList.remove("square-panel__button--copied");
+      elCopySquaresButton.classList.remove("square-panel__button--failed");
+    }
+
+    function applyCopySquaresFeedback(didCopy) {
+      resetCopySquaresButton();
+      elCopySquaresButton.innerText = didCopy ? "Copied" : "Copy failed";
+      elCopySquaresButton.classList.add(didCopy ? "square-panel__button--copied" : "square-panel__button--failed");
+      copySquaresFeedbackTimer = window.setTimeout(() => {
+        resetCopySquaresButton();
+      }, 1400);
+    }
+
+    function handleCopyLink() {
+      if (!currentUri) {
+        return;
+      }
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(currentUri)
+          .then(() => applyCopyFeedback(true))
+          .catch(() => applyCopyFeedback(fallbackCopy(currentUri)));
+        return;
+      }
+
+      applyCopyFeedback(fallbackCopy(currentUri));
+    }
+
+    function handleUriFieldClick() {
+      if (!currentPrimaryAction) {
+        return;
+      }
+      handlePrimaryAction();
+    }
+
+    function handleCopySquares() {
+      const text = elCopySquaresOutput.innerText.trim();
+      if (!text) {
+        return;
+      }
+
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text)
+          .then(() => applyCopySquaresFeedback(true))
+          .catch(() => applyCopySquaresFeedback(fallbackCopy(text)));
+        return;
+      }
+
+      applyCopySquaresFeedback(fallbackCopy(text));
+    }
+
+    function isInteractiveElement(element) {
+      if (!element || typeof element.closest !== "function") {
+        return false;
+      }
+      return Boolean(element.closest("a, button, input, textarea, select, [contenteditable], [role='textbox']"));
+    }
+
+    function handleKeyboardNavigation(event) {
+      if (event.defaultPrevented || event.metaKey || event.ctrlKey || event.altKey) {
+        return;
+      }
+
+      const activeElement = document.activeElement;
+      if ((activeElement && (activeElement.isContentEditable || isInteractiveElement(activeElement))) || isInteractiveElement(event.target)) {
+        return;
+      }
+
+      const key = event.code;
+      if (!Object.prototype.hasOwnProperty.call(KEY_TO_DELTA, key)) {
+        return;
+      }
+
+      event.preventDefault();
+      navigateToSquare(currentSquareNumber + KEY_TO_DELTA[key]);
+    }
   </script>
 </body>
 
