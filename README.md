@@ -15,3 +15,5 @@ Thank you for contributing to the project.
 If you want to edit the [FAQ](/faq.md), stop reading. Just edit that file, I think you can figure it out.
 
 For other files, please read the existing HTML. You will see that we try to keep it simple. No jQuery, avoid includes if possible. Minify images. We are designing the website for my grandmom, everything needs to be super clear.
+
+This project is conservatively managed and the maintainer will accept few major changes, if any. The separate website https://tools.tenthousandsu.com/ is much more open for experimentation.
