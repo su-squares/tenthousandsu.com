@@ -579,7 +579,7 @@ a:active {
 
   html.square-detail-page .square-location-section {
     grid-column: 2;
-    grid-row: 1 / span 10;
+    grid-row: 1 / span 10; /* span all content rows in the left column */
     align-self: start;
     position: sticky;
     top: 1rem;

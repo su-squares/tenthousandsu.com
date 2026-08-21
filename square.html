@@ -228,7 +228,8 @@ title: "Su Squares, cute squares you own and personalize"
       }
       if (newRow < 0 || newRow > 99 || newCol < 0 || newCol > 99) return;
       const newSquareNumber = newRow * 100 + newCol + 1;
-      location.hash = newSquareNumber;
+      // Replace hash and reload to re-run page initialization with the new square number
+      history.replaceState(null, '', location.pathname + location.search + '#' + newSquareNumber);
       location.reload();
     });
   </script>
