@@ -53,10 +53,12 @@ title: "Su Squares, cute squares you own and personalize"
       <dd id="link"></dd>
     </dl>
 
-    <h2>Location</h2>
-    <div class="square-location-map">
-      <img id="theImage" class="square-location-map__image" src="/build/wholeSquare.webp" alt="All Su Squares">
-      <img id="arrow" class="square-location-map__arrow" src="/assets/images/billboard/dr.png" alt="Location">
+    <div class="square-location-section">
+      <h2>Location</h2>
+      <div class="square-location-map">
+        <img id="theImage" class="square-location-map__image" src="/build/wholeSquare.webp" alt="All Su Squares">
+        <img id="arrow" class="square-location-map__arrow" src="/assets/images/billboard/dr.png" alt="Location">
+      </div>
     </div>
 
     <h2>Emojified</h2>
@@ -206,6 +208,28 @@ title: "Su Squares, cute squares you own and personalize"
         document.execCommand('copy');
         window.getSelection().removeAllRanges();
       });
+    });
+
+    // Keyboard navigation (wasd / ,aoe) — no wrap
+    document.addEventListener('keydown', (event) => {
+      if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') return;
+      const squareNumber = parseInt(window.location.hash.substring(1));
+      if (!squareNumber || squareNumber < 1 || squareNumber > 10000) return;
+      const row = Math.floor((squareNumber - 1) / 100); // 0-indexed
+      const col = (squareNumber - 1) % 100; // 0-indexed
+      let newRow = row;
+      let newCol = col;
+      switch (event.key) {
+        case 'w': case ',': newRow = row - 1; break; // up
+        case 's': case 'o': newRow = row + 1; break; // down
+        case 'a':           newCol = col - 1; break; // left
+        case 'd': case 'e': newCol = col + 1; break; // right
+        default: return;
+      }
+      if (newRow < 0 || newRow > 99 || newCol < 0 || newCol > 99) return;
+      const newSquareNumber = newRow * 100 + newCol + 1;
+      location.hash = newSquareNumber;
+      location.reload();
     });
   </script>
 </body>
