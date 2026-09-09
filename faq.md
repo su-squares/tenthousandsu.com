@@ -11,7 +11,7 @@ permalink: /faq
 
 ## How do I split a 30×30 image into 9 10×10 images?
 
-Please see our new [batch personalize page](personalize-batch) which does this for you.
+Please see our new [batch personalize page](/personalize-batch) which does this for you.
 ## Why is gas cost ridonkulously high?
 
 Because that Square is not available. You are attempting to place an order that will revert. MetaMask could do a much better job of articulating this.

@@ -84,6 +84,9 @@ description: "Own a piece of the original NFT collection. Mint a Su Square for 0
         squareNumberInput.setAttribute("list", "square-numbers");
         squareNumberInput.parentNode.appendChild(datalist);
         console.log(datalist);
+        if (new URLSearchParams(window.location.search).has("square")) {
+          document.getElementById("select-square").click();
+        }
       })
 
     // Validate Square number //////////////////////////////////////////////////////////////////////////////////////////
@@ -117,7 +120,6 @@ description: "Own a piece of the original NFT collection. Mint a Su Square for 0
     if (urlParams.has("square")) {
       squareNumberInput.value = urlParams.get("square");
       squareNumberInput.dispatchEvent(new Event("input"));
-      //document.getElementById("select-square").click(); let the customer click it, by then the personalizations will be loaded
     }
 
     // Web3Modal setup /////////////////////////////////////////////////////////////////////////////////////////////////

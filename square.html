@@ -9,7 +9,7 @@ title: "Su Squares, cute squares you own and personalize"
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ page.title }}</title>
   <link rel="icon" type="image/svg+xml" href="/assets/images/branding/logomark.svg">
-  <link rel="stylesheet" href="/assets/main.css?20240406">
+  <link rel="stylesheet" href="/assets/main.css?20260909j">
   {% include foot.html %}
 </head>
 
@@ -20,8 +20,8 @@ title: "Su Squares, cute squares you own and personalize"
       The first ERC-721 NFT
     </span>
     <a class="btn" href="/white-paper">About us</a>
-    <a class="btn" href="/buy">Mint</a>
-    <a class="btn" href="https://tools.tenthousandsu.com/personalize">Personalize</a>
+    <a class="btn" id="mint-link" href="/buy">Mint</a>
+    <a class="btn" id="personalize-link" href="/personalize">Personalize</a>
     <a class="btn" target="_blank" href="https://x.com/susquares">
       <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-twitter-x"
         viewBox="0 0 16 16">
@@ -40,18 +40,28 @@ title: "Su Squares, cute squares you own and personalize"
 
   <article class="square-page">
     <h1>Square #<span id="square-number">...</span></h1>
-    <div id="image"></div>
+    <div class="square-preview">
+      <div id="image"></div>
+    </div>
 
-    <dl class="square-metadata">
+    <dl id="square-metadata" class="square-metadata">
       <dt>Minted</dt>
       <dd id="minted"></dd>
-      <dt>Personalized</dt>
+      <dt id="personalized-label">Personalized</dt>
       <dd id="personalized"></dd> <!-- also show #X most recent -->
-      <dt>Title</dt>
+      <dt id="title-label">Title</dt>
       <dd id="title"></dd>
-      <dt>Link</dt>
+      <dt id="link-label">Link</dt>
       <dd id="link"></dd>
     </dl>
+    <p id="owner-disclaimer" class="square-owner-disclaimer" hidden>The contents of this Square were created by the Square owner and are not reviewed by the Su Squares project.</p>
+    <p id="personalize-this-square" class="square-personalize-cta" hidden>
+      If this is your Square, <a id="personalize-this-square-link" href="/personalize">click here</a> to personalize.
+    </p>
+
+    <p id="mint-this-square" class="square-mint-cta" hidden>
+      <a class="btn" id="mint-this-square-link" href="/buy">Mint this Square</a>
+    </p>
 
     <div class="square-location-section">
       <h2>Location</h2>
@@ -61,162 +71,318 @@ title: "Su Squares, cute squares you own and personalize"
       </div>
     </div>
 
-    <h2>Emojified</h2>
-    <pre id="emojified" class="square-emojified"></pre>
-    <button class="btn" id="copy-emojified">Copy</button>
+    <section id="emojified-section">
+      <h2>Emojified</h2>
+      <p id="emojified-unavailable" class="square-emojified-unavailable" hidden>Enable canvas data in your browser, then reload, to generate the emojified Square.</p>
+      <pre id="emojified" class="square-emojified"></pre>
+      <button class="btn" id="copy-emojified">Copy</button>
+    </section>
   </article>
 
   {% include footer.html show_homepage_image_notice=true %}
   <script>
-    // Get URL fragment
-    const squareNumber = parseInt(window.location.hash.substring(1));
-    const personalizations = fetch('/build/squarePersonalizations.json').then(response => response.json());
-    const extras = fetch('/build/squareExtra.json').then(response => response.json());
+    const GRID_DIMENSION = 100;
+    const emojis = [
+      { "emoji": "⬛", "red": 0, "green": 0, "blue": 0 },
+      { "emoji": "⬜", "red": 255, "green": 255, "blue": 255 },
+      { "emoji": "🟥", "red": 255, "green": 0, "blue": 0 },
+      { "emoji": "🟧", "red": 255, "green": 165, "blue": 0 },
+      { "emoji": "🟨", "red": 255, "green": 255, "blue": 0 },
+      { "emoji": "🟩", "red": 0, "green": 128, "blue": 0 },
+      { "emoji": "🟦", "red": 0, "green": 0, "blue": 255 },
+      { "emoji": "🟪", "red": 128, "green": 0, "blue": 128 },
+      { "emoji": "🟫", "red": 139, "green": 69, "blue": 19 },
+    ];
 
-    Promise.all([personalizations, extras]).then(([personalizations, extras]) => {
-      // Each personalization is [title, href] or null
-      // Each extra is [mintedBlock, updatedBlock, mainIsPersonalized, version] or null
-      // Arrays are zero indexed, but the first Su Square number is 1!
+    const boardImage = document.getElementById('theImage');
+    const elEmojified = document.getElementById('emojified');
+    const elEmojifiedUnavailable = document.getElementById('emojified-unavailable');
+    const elCopyEmojified = document.getElementById('copy-emojified');
+    const elPersonalizeLink = document.getElementById('personalize-link');
+    const elMintLink = document.getElementById('mint-link');
+    const elEmojifiedSection = document.getElementById('emojified-section');
+    const elMintThisSquare = document.getElementById('mint-this-square');
+    const elMintThisSquareLink = document.getElementById('mint-this-square-link');
+    const elPersonalizeThisSquare = document.getElementById('personalize-this-square');
+    const elPersonalizeThisSquareLink = document.getElementById('personalize-this-square-link');
+    const elOwnerDisclaimer = document.getElementById('owner-disclaimer');
+    const elMetadata = document.getElementById('square-metadata');
+    const elArrow = document.getElementById('arrow');
+    const elLocationMap = document.querySelector('.square-location-map');
+    let personalizations = [];
+    let extras = [];
+    let currentRow = 0;
+    let currentCol = 0;
 
-      const elSquareNumber = document.getElementById("square-number");
-      elSquareNumber.innerText = squareNumber;
+    function parseSquareNumber() {
+      const n = parseInt(window.location.hash.substring(1), 10);
+      if (!Number.isInteger(n) || n < 1 || n > GRID_DIMENSION * GRID_DIMENSION) return null;
+      return n;
+    }
 
-      const elMinted = document.getElementById('minted');
-      elMinted.innerText = extras[squareNumber - 1] ? `Block ${extras[squareNumber - 1][0]}` : 'Not minted';
-
-      const elPersonalized = document.getElementById('personalized');
-      elPersonalized.innerText = extras[squareNumber - 1] ? `Block ${extras[squareNumber - 1][1]}` : 'Not personalized';
-
-      const elTitle = document.getElementById('title');
-      elTitle.innerText = personalizations[squareNumber - 1] ? personalizations[squareNumber - 1][0] : 'Not personalized';
-
-      const elLink = document.getElementById('link');
-      elLink.innerText = personalizations[squareNumber - 1] ? personalizations[squareNumber - 1][1] : 'Not personalized';
-
-      const elEmojified = document.getElementById('emojified');
-
-      // Set image
-      const row = Math.floor((squareNumber - 1) / 100); // 0 indexed
-      const col = (squareNumber - 1) % 100; // 0 indexed
-      const elImage = document.getElementById('image');
-      elImage.style.backgroundImage = 'url("/build/wholeSquare.webp")';
-      elImage.style.backgroundPosition = `-${col * 10}px -${row * 10}px`;
-      elImage.style.height = '10px';
-      elImage.style.width = '10px';
-      elImage.style.display = 'inline-block';
-      elImage.style.zoom = '20';
-      elImage.style.imageRendering = 'pixelated';
-
-      // Set arrow location, based on quadrant
-      const elArrow = document.getElementById('arrow');
-      const elLocationMap = document.querySelector('.square-location-map');
-
-      function updateArrowPosition() {
-        const renderedWidth = elLocationMap ? elLocationMap.getBoundingClientRect().width : 1000;
-        const scale = renderedWidth / 1000 || 1;
-        const scalePosition = (value) => `${value * scale}px`;
-        const setArrow = (src, topPx, leftPx) => {
-          elArrow.src = src;
-          elArrow.style.top = scalePosition(topPx);
-          elArrow.style.left = scalePosition(leftPx);
-        };
-        elArrow.style.width = `${100 * scale}px`;
-        elArrow.style.height = `${100 * scale}px`;
-
-        if (row < 50) {
-          if (col < 50) {
-            setArrow('/assets/images/billboard/ul.png', row * 10 + 10, col * 10 + 10);
-          } else {
-            setArrow('/assets/images/billboard/ur.png', row * 10 + 10, col * 10 - 100);
-          }
-        } else {
-          if (col < 50) {
-            setArrow('/assets/images/billboard/dl.png', row * 10 - 100, col * 10 + 10);
-          } else {
-            setArrow('/assets/images/billboard/dr.png', row * 10 - 100, col * 10 - 100);
+    function canvasReadbackWorks() {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = 10;
+        canvas.height = 10;
+        const context = canvas.getContext('2d', { willReadFrequently: true });
+        if (!context) return false;
+        context.fillStyle = 'rgb(18, 52, 86)';
+        context.fillRect(0, 0, 10, 10);
+        const pixels = context.getImageData(0, 0, 10, 10).data;
+        for (let i = 0; i < pixels.length; i += 4) {
+          if (pixels[i] !== 18 || pixels[i + 1] !== 52 || pixels[i + 2] !== 86 || pixels[i + 3] !== 255) {
+            return false;
           }
         }
+        return true;
+      } catch (err) {
+        return false;
       }
-      updateArrowPosition();
-      window.addEventListener('resize', updateArrowPosition);
+    }
 
-      // Emoji squares and RGB values for ⬛⬜🟥🟧🟨🟩🟦🟪🟫
-      const emojis = [
-        { "emoji": "⬛", "red": 0, "green": 0, "blue": 0 },
-        { "emoji": "⬜", "red": 255, "green": 255, "blue": 255 },
-        { "emoji": "🟥", "red": 255, "green": 0, "blue": 0 },
-        { "emoji": "🟧", "red": 255, "green": 165, "blue": 0 },
-        { "emoji": "🟨", "red": 255, "green": 255, "blue": 0 },
-        { "emoji": "🟩", "red": 0, "green": 128, "blue": 0 },
-        { "emoji": "🟦", "red": 0, "green": 0, "blue": 255 },
-        { "emoji": "🟪", "red": 128, "green": 0, "blue": 128 },
-        { "emoji": "🟫", "red": 139, "green": 69, "blue": 19 },
-      ]
+    const canvasPixelsAvailable = canvasReadbackWorks();
 
-      // Create canvas
+    function showEmojified(text) {
+      elEmojifiedUnavailable.hidden = true;
+      elEmojified.hidden = !text;
+      elCopyEmojified.hidden = !text;
+      elEmojified.textContent = text;
+    }
+
+    function showCanvasUnavailable() {
+      elEmojified.textContent = '';
+      elEmojified.hidden = true;
+      elCopyEmojified.hidden = true;
+      elEmojifiedUnavailable.hidden = false;
+    }
+
+    function whenImageReady(img) {
+      if (typeof img.decode === 'function') {
+        return img.decode().catch(() => {
+          if (img.complete && img.naturalWidth > 0) return;
+          return new Promise((resolve, reject) => {
+            img.addEventListener('load', resolve, { once: true });
+            img.addEventListener('error', reject, { once: true });
+          });
+        });
+      }
+      if (img.complete && img.naturalWidth > 0) return Promise.resolve();
+      return new Promise((resolve, reject) => {
+        img.addEventListener('load', resolve, { once: true });
+        img.addEventListener('error', reject, { once: true });
+      });
+    }
+
+    function emojifySquare(image, col, row) {
+      if (!image || !image.naturalWidth) return '';
       const canvas = document.createElement('canvas');
       canvas.width = 10;
       canvas.height = 10;
-      // Add wholeSquare to canvas
-      const context = canvas.getContext('2d');
-      const image = new Image();
-      image.src = '/build/wholeSquare.webp';
-      image.onload = function () {
-        context.drawImage(image, col * 10, row * 10, 10, 10, 0, 0, 10, 10);
-        // Get pixels
-        const imageData = context.getImageData(0, 0, 10, 10);
-        const pixels = imageData.data;
-        // Loop pixels
-        let emojiString = '';
-        for (let i = 0; i < pixels.length; i += 4) {
-          // Get pixel color
-          const red = pixels[i];
-          const green = pixels[i + 1];
-          const blue = pixels[i + 2];
-          // Find closest emoji
-          let closestEmoji = emojis[0];
-          let closestDistance = 195075;
-          for (let j = 0; j < emojis.length; j++) {
-            const emoji = emojis[j];
-            const distance = Math.sqrt(
-              Math.pow(emoji.red - red, 2) +
-              Math.pow(emoji.green - green, 2) +
-              Math.pow(emoji.blue - blue, 2)
-            );
-            if (distance < closestDistance) {
-              closestEmoji = emoji;
-              closestDistance = distance;
-            }
-          }
-          emojiString += closestEmoji.emoji;
-          // Add line break
-          if (i % 40 === 36) {
-            emojiString += "<br>";
+      const context = canvas.getContext('2d', { willReadFrequently: true });
+      context.drawImage(image, col * 10, row * 10, 10, 10, 0, 0, 10, 10);
+      const pixels = context.getImageData(0, 0, 10, 10).data;
+      let emojiString = '';
+      for (let i = 0; i < pixels.length; i += 4) {
+        const red = pixels[i];
+        const green = pixels[i + 1];
+        const blue = pixels[i + 2];
+        let closestEmoji = emojis[0];
+        let closestDistance = 195075;
+        for (let j = 0; j < emojis.length; j++) {
+          const emoji = emojis[j];
+          const distance = Math.sqrt(
+            Math.pow(emoji.red - red, 2) +
+            Math.pow(emoji.green - green, 2) +
+            Math.pow(emoji.blue - blue, 2)
+          );
+          if (distance < closestDistance) {
+            closestEmoji = emoji;
+            closestDistance = distance;
           }
         }
-        // Set emoji string
-        elEmojified.innerHTML = emojiString;
+        emojiString += closestEmoji.emoji;
+        if (i % 40 === 36 && i < pixels.length - 4) {
+          emojiString += '\n';
+        }
+      }
+      return emojiString;
+    }
+
+    function updateArrowPosition() {
+      const row = currentRow;
+      const col = currentCol;
+      const renderedWidth = elLocationMap ? elLocationMap.getBoundingClientRect().width : 1000;
+      const scale = renderedWidth / 1000 || 1;
+      const scalePosition = (value) => `${value * scale}px`;
+      const setArrow = (src, topPx, leftPx) => {
+        elArrow.src = src;
+        elArrow.style.top = scalePosition(topPx);
+        elArrow.style.left = scalePosition(leftPx);
+      };
+      elArrow.style.width = `${100 * scale}px`;
+      elArrow.style.height = `${100 * scale}px`;
+
+      if (row < 50) {
+        if (col < 50) {
+          setArrow('/assets/images/billboard/ul.png', row * 10 + 10, col * 10 + 10);
+        } else {
+          setArrow('/assets/images/billboard/ur.png', row * 10 + 10, col * 10 - 100);
+        }
+      } else {
+        if (col < 50) {
+          setArrow('/assets/images/billboard/dl.png', row * 10 - 100, col * 10 + 10);
+        } else {
+          setArrow('/assets/images/billboard/dr.png', row * 10 - 100, col * 10 - 100);
+        }
+      }
+    }
+
+    function renderSquare() {
+      const squareNumber = parseSquareNumber();
+      const elSquareNumber = document.getElementById("square-number");
+      const elMinted = document.getElementById('minted');
+      const elPersonalized = document.getElementById('personalized');
+      const elPersonalizedLabel = document.getElementById('personalized-label');
+      const elTitle = document.getElementById('title');
+      const elTitleLabel = document.getElementById('title-label');
+      const elLink = document.getElementById('link');
+      const elLinkLabel = document.getElementById('link-label');
+      const elImage = document.getElementById('image');
+
+      if (!squareNumber) {
+        elSquareNumber.innerText = '…';
+        elMinted.innerText = 'Not minted';
+        elPersonalized.innerText = 'Not personalized';
+        elTitle.innerText = 'Not personalized';
+        elLink.innerText = 'Not personalized';
+        elPersonalizeLink.href = '/personalize';
+        elMintLink.href = '/buy';
+        elEmojifiedSection.hidden = true;
+        elMintThisSquare.hidden = true;
+        elPersonalizeThisSquare.hidden = true;
+        elOwnerDisclaimer.hidden = true;
+        elMetadata.hidden = true;
+        showEmojified('');
+        return;
       }
 
-      // Copy emojified
-      const elCopyEmojified = document.getElementById('copy-emojified');
-      elCopyEmojified.addEventListener('click', () => {
+      // Each personalization is [title, href] or null
+      // Each extra is [mintedBlock, updatedBlock, mainIsPersonalized, version] or null
+      // Arrays are zero indexed, but the first Su Square number is 1!
+      elSquareNumber.innerText = squareNumber;
+      elMinted.innerText = extras[squareNumber - 1] ? `Block ${extras[squareNumber - 1][0]}` : 'Not minted';
+      elPersonalized.innerText = extras[squareNumber - 1] ? `Block ${extras[squareNumber - 1][1]}` : 'Not personalized';
+      elTitle.innerText = personalizations[squareNumber - 1] ? personalizations[squareNumber - 1][0] : 'Not personalized';
+      elLink.innerText = personalizations[squareNumber - 1] ? personalizations[squareNumber - 1][1] : 'Not personalized';
+      elPersonalizeLink.href = '/personalize?square=' + squareNumber;
+
+      currentRow = Math.floor((squareNumber - 1) / GRID_DIMENSION);
+      currentCol = (squareNumber - 1) % GRID_DIMENSION;
+      elImage.style.backgroundImage = 'url("/build/wholeSquare.webp")';
+      elImage.style.backgroundPosition = `-${currentCol * 10}px -${currentRow * 10}px`;
+      elImage.style.height = '10px';
+      elImage.style.width = '10px';
+      elImage.style.zoom = '20';
+      elImage.style.imageRendering = 'pixelated';
+      updateArrowPosition();
+
+      const extra = extras[squareNumber - 1];
+      const personalization = personalizations[squareNumber - 1];
+      const availableForSale = extra == null;
+      const hasTitle = !!(personalization && String(personalization[0] || '').trim());
+      const hasLink = !!(personalization && String(personalization[1] || '').trim());
+      const isPersonalized = !availableForSale && (hasTitle || hasLink);
+
+      elPersonalizedLabel.hidden = !isPersonalized;
+      elPersonalized.hidden = !isPersonalized;
+      elTitleLabel.hidden = !isPersonalized;
+      elTitle.hidden = !isPersonalized;
+      elLinkLabel.hidden = !isPersonalized;
+      elLink.hidden = !isPersonalized;
+      elOwnerDisclaimer.hidden = !isPersonalized;
+      elPersonalizeThisSquare.hidden = availableForSale;
+      if (!availableForSale) {
+        elPersonalizeThisSquareLink.href = '/personalize?square=' + squareNumber;
+      }
+
+      if (availableForSale) {
+        elMetadata.hidden = true;
+        elEmojifiedSection.hidden = true;
+        showEmojified('');
+        elMintThisSquare.hidden = false;
+        elMintThisSquareLink.href = '/buy?square=' + squareNumber;
+        elMintThisSquareLink.textContent = 'Mint Square #' + squareNumber;
+        elMintLink.href = '/buy?square=' + squareNumber;
+        return;
+      }
+
+      elMetadata.hidden = false;
+      elMintThisSquare.hidden = true;
+      elEmojifiedSection.hidden = false;
+      elMintLink.href = '/buy';
+      if (!canvasPixelsAvailable) {
+        showCanvasUnavailable();
+        return;
+      }
+      try {
+        showEmojified(emojifySquare(boardImage, currentCol, currentRow));
+      } catch (err) {
+        showCanvasUnavailable();
+      }
+    }
+
+    elCopyEmojified.addEventListener('click', async () => {
+      const text = elEmojified.textContent;
+      if (!text) return;
+      try {
+        await navigator.clipboard.writeText(text);
+      } catch (err) {
         const range = document.createRange();
-        range.selectNode(elEmojified);
-        window.getSelection().removeAllRanges();
-        window.getSelection().addRange(range);
+        range.selectNodeContents(elEmojified);
+        const selection = window.getSelection();
+        selection.removeAllRanges();
+        selection.addRange(range);
         document.execCommand('copy');
-        window.getSelection().removeAllRanges();
-      });
+        selection.removeAllRanges();
+      }
+    });
+
+    function squareNumberFromPointer(clientX, clientY) {
+      const rect = elLocationMap.getBoundingClientRect();
+      const cellSize = rect.width / GRID_DIMENSION || 10;
+      const x = Math.min(Math.max(Math.floor((clientX - rect.left) / cellSize), 0), GRID_DIMENSION - 1);
+      const y = Math.min(Math.max(Math.floor((clientY - rect.top) / cellSize), 0), GRID_DIMENSION - 1);
+      return x + y * GRID_DIMENSION + 1;
+    }
+
+    elLocationMap.addEventListener('click', (event) => {
+      const squareNumber = squareNumberFromPointer(event.clientX, event.clientY);
+      if (parseSquareNumber() === squareNumber) return;
+      location.hash = String(squareNumber);
+      document.querySelector('.square-page h1').scrollIntoView();
+    });
+
+    window.addEventListener('resize', updateArrowPosition);
+    window.addEventListener('hashchange', renderSquare);
+
+    Promise.all([
+      fetch('/build/squarePersonalizations.json').then(response => response.json()),
+      fetch('/build/squareExtra.json').then(response => response.json()),
+      whenImageReady(boardImage),
+    ]).then(([loadedPersonalizations, loadedExtras]) => {
+      personalizations = loadedPersonalizations;
+      extras = loadedExtras;
+      renderSquare();
     });
 
     // Keyboard navigation (wasd / ,aoe) — no wrap
     document.addEventListener('keydown', (event) => {
       if (event.target.tagName === 'INPUT' || event.target.tagName === 'TEXTAREA') return;
-      const squareNumber = parseInt(window.location.hash.substring(1));
-      if (!squareNumber || squareNumber < 1 || squareNumber > 10000) return;
-      const row = Math.floor((squareNumber - 1) / 100); // 0-indexed
-      const col = (squareNumber - 1) % 100; // 0-indexed
+      const squareNumber = parseSquareNumber();
+      if (!squareNumber) return;
+      const row = Math.floor((squareNumber - 1) / GRID_DIMENSION);
+      const col = (squareNumber - 1) % GRID_DIMENSION;
       let newRow = row;
       let newCol = col;
       switch (event.key) {
@@ -227,10 +393,8 @@ title: "Su Squares, cute squares you own and personalize"
         default: return;
       }
       if (newRow < 0 || newRow > 99 || newCol < 0 || newCol > 99) return;
-      const newSquareNumber = newRow * 100 + newCol + 1;
-      // Replace hash and reload to re-run page initialization with the new square number
-      history.replaceState(null, '', location.pathname + location.search + '#' + newSquareNumber);
-      location.reload();
+      event.preventDefault();
+      location.hash = String(newRow * GRID_DIMENSION + newCol + 1);
     });
   </script>
 </body>

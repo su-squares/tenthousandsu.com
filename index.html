@@ -146,7 +146,7 @@ title: "Su Squares, cute squares you own and personalize"
       if (!squarePersonalizations[squareNumber - 1]) {
         document.getElementById("theImage").style.cursor = "pointer";
         tooltipDiv.textContent = "Square #" + squareNumber + " is available for sale, click to buy.";
-        whereToGoAnchor.href = "buy?square=" + squareNumber;
+        whereToGoAnchor.href = "/buy?square=" + squareNumber;
       } else if (!squarePersonalizations[squareNumber - 1][0] && !squarePersonalizations[squareNumber - 1][1]) {
         document.getElementById("theImage").style.cursor = "not-allowed";
         tooltipDiv.textContent = "Square #" + squareNumber + " WAS PURCHASED BUT NOT YET PERSONALIZED";

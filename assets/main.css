@@ -381,8 +381,41 @@ a:active {
   text-align: center;
 }
 
+.square-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-self: center;
+  margin-left: auto;
+  margin-right: auto;
+  gap: 0.6rem;
+}
+
 .square-page #image {
-  display: inline-block;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  justify-self: center;
+}
+
+.square-personalize-cta {
+  text-align: center;
+  max-width: 22rem;
+  margin: 0;
+}
+
+.square-personalize-cta[hidden] {
+  display: none;
+}
+
+.square-owner-disclaimer {
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.square-owner-disclaimer[hidden] {
+  display: none;
 }
 
 .square-metadata {
@@ -392,6 +425,15 @@ a:active {
   display: grid;
   grid-template-columns: auto 1fr;
   border: 1px solid #ffd700;
+}
+
+.square-metadata[hidden] {
+  display: none;
+}
+
+.square-metadata dt[hidden],
+.square-metadata dd[hidden] {
+  display: none;
 }
 
 .square-metadata dt,
@@ -423,6 +465,7 @@ a:active {
   margin: 0 auto;
   aspect-ratio: 1 / 1;
   overflow: hidden;
+  cursor: pointer;
 }
 
 .square-location-map__image {
@@ -434,20 +477,51 @@ a:active {
 
 .square-location-map__arrow {
   position: absolute;
+  pointer-events: none;
 }
 
 .square-emojified {
   display: inline-block;
   max-width: 100%;
-  overflow-x: auto;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
   text-align: center;
-  line-height: calc(1em + 0.25rem);
+  line-height: 1.2;
+  white-space: pre;
+  word-break: keep-all;
+  overflow-wrap: normal;
+}
+
+.square-emojified-unavailable {
+  text-align: center;
+  max-width: 28rem;
+  margin: 0 auto;
 }
 
 #copy-emojified {
   width: 150px;
   margin: 0 auto;
   font-size: 1rem;
+}
+
+#emojified-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+#emojified-section[hidden],
+.square-mint-cta[hidden] {
+  display: none;
+}
+
+.square-mint-cta {
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 #mint-selected-square,
@@ -489,8 +563,41 @@ a:active {
   text-align: center;
 }
 
+.square-preview {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-self: center;
+  margin-left: auto;
+  margin-right: auto;
+  gap: 0.6rem;
+}
+
 .square-page #image {
-  display: inline-block;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  justify-self: center;
+}
+
+.square-personalize-cta {
+  text-align: center;
+  max-width: 22rem;
+  margin: 0;
+}
+
+.square-personalize-cta[hidden] {
+  display: none;
+}
+
+.square-owner-disclaimer {
+  text-align: center;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.square-owner-disclaimer[hidden] {
+  display: none;
 }
 
 .square-metadata {
@@ -500,6 +607,15 @@ a:active {
   display: grid;
   grid-template-columns: auto 1fr;
   border: 1px solid #ffd700;
+}
+
+.square-metadata[hidden] {
+  display: none;
+}
+
+.square-metadata dt[hidden],
+.square-metadata dd[hidden] {
+  display: none;
 }
 
 .square-metadata dt,
@@ -531,6 +647,7 @@ a:active {
   margin: 0 auto;
   aspect-ratio: 1 / 1;
   overflow: hidden;
+  cursor: pointer;
 }
 
 .square-location-map__image {
@@ -542,20 +659,51 @@ a:active {
 
 .square-location-map__arrow {
   position: absolute;
+  pointer-events: none;
 }
 
 .square-emojified {
   display: inline-block;
   max-width: 100%;
-  overflow-x: auto;
+  margin: 0;
+  padding: 0;
+  overflow: visible;
   text-align: center;
-  line-height: calc(1em + 0.25rem);
+  line-height: 1.2;
+  white-space: pre;
+  word-break: keep-all;
+  overflow-wrap: normal;
+}
+
+.square-emojified-unavailable {
+  text-align: center;
+  max-width: 28rem;
+  margin: 0 auto;
 }
 
 #copy-emojified {
   width: 150px;
   margin: 0 auto;
   font-size: 1rem;
+}
+
+#emojified-section {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+#emojified-section[hidden],
+.square-mint-cta[hidden] {
+  display: none;
+}
+
+.square-mint-cta {
+  width: 100%;
+  display: flex;
+  justify-content: center;
 }
 
 .square-location-section {
@@ -622,6 +770,14 @@ a:active {
     overflow-x: auto;
     white-space: pre-wrap;
     word-break: break-word;
+  }
+
+  article pre.square-emojified {
+    white-space: pre;
+    word-break: keep-all;
+    overflow-wrap: normal;
+    overflow: visible;
+    margin: 0;
   }
 
   h1 {
