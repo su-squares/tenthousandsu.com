@@ -349,33 +349,48 @@ description: "Personalize multiple Su Squares at once."
       preflightOutputTextArea.dispatchEvent(new Event("input"));
     });
 
-    // Web3Modal setup /////////////////////////////////////////////////////////////////////////////////////////////////
-    // Using @web3modal/cdn which provides a bundled version for browser usage
-    // Hack from https://github.com/WalletConnect/web3modal-examples/issues/46
-    window.process = { env: { NODE_ENV: "development" } };
-    const { Web3modal, WagmiCore, Chains } = await import(
-      "https://cdn.jsdelivr.net/npm/@web3modal/cdn@5.1.11/dist/wagmi.js"
+    // Reown AppKit, loaded from their CDN build. Same role as the old Web3Modal bundle.
+    const { createAppKit, WagmiAdapter, WagmiCore, networks } = await import(
+      "https://cdn.jsdelivr.net/npm/@reown/appkit-cdn@1.8.24/dist/appkit.js"
     );
-    const { createWeb3Modal, defaultWagmiConfig } = Web3modal;
-    const { mainnet } = Chains;
-    const { reconnect, getAccount, watchAccount, writeContract, waitForTransactionReceipt } = WagmiCore;
+    const { mainnet } = networks;
+    const { reconnect, getAccount, watchAccount, watchConnectors, writeContract, waitForTransactionReceipt } = WagmiCore;
     const walletConnectProjectId = '2aca272d18deb10ff748260da5f78bfd';
     const chains = [mainnet];
-    const wagmiConfig = defaultWagmiConfig({
-      chains,
-      projectId: walletConnectProjectId,
-      metadata: {
-        name: 'Su Squares',
-        description: 'Own a piece of the Ethereum blockchain',
-        url: 'https://tenthousandsu.com',
-        icons: ['https://tenthousandsu.com/assets/images/branding/logo-su-squares.svg']
+    const metadata = {
+      name: 'Su Squares',
+      description: 'Own a piece of the Ethereum blockchain',
+      url: 'https://TenThousandSu.com',
+      icons: ['https://TenThousandSu.com/assets/images/branding/logo-su-squares.svg']
+    };
+    const wagmiAdapter = new WagmiAdapter({
+      networks: chains,
+      projectId: walletConnectProjectId
+    });
+    const wagmiConfig = wagmiAdapter.wagmiConfig;
+    // WalletConnect's connector shows up after the first paint. Reconnect again then,
+    // which is the pattern in Reown's HTML CDN example.
+    watchConnectors(wagmiConfig, {
+      onChange(connectors) {
+        if (connectors.length > 4) {
+          reconnect(wagmiConfig);
+        }
       }
     });
     reconnect(wagmiConfig);
-    const web3modal = createWeb3Modal({
-      wagmiConfig,
+    const web3modal = createAppKit({
+      adapters: [wagmiAdapter],
+      networks: chains,
       projectId: walletConnectProjectId,
-      chains
+      metadata,
+      themeMode: 'dark',
+      features: {
+        analytics: false,
+        email: false,
+        socials: false,
+        swaps: false,
+        onramp: false
+      }
     });
 
     // Handle connect wallet button and its animation //////////////////////////////////////////////////////////////////
