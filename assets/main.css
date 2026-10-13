@@ -79,6 +79,14 @@ p {
   line-height: 1.7;
 }
 
+.available-square-icon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+  image-rendering: pixelated;
+}
+
 ol,
 ul {
   margin: 0;
