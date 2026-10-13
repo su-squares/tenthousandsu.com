@@ -119,6 +119,11 @@ title: "Su Squares, cute squares you own and personalize"
           .map((extraData, index) => [index, extraData])
           .filter(([index, extraData]) => extraData !== null)
           .filter(([index, extraData]) => extraData[1] !== extraData[0])
+          // Clearing a personalization moves updatedBlock and leaves the title and href empty.
+          .filter(([index]) => {
+            const personalization = squarePersonalizations[index];
+            return personalization && (personalization[0] || personalization[1]);
+          })
           .sort((a, b) => b[1][1 /* updatedBlock */] - a[1][1])
           .slice(0, 5);
         mostRecentPersonalizedSquares.forEach(([index, extraData]) => {
