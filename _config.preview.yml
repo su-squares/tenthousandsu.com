@@ -1,0 +1,10 @@
+# Used only by the Cloudflare Pages preview workflow.
+# Direct upload, not a Git connection. Production stays on GitHub Pages.
+#
+# The Free plan allows 20,000 files per deployment. erc721/ is 20,000 files
+# by itself, and the pages under review use /build/wholeSquare.webp instead.
+exclude:
+  - erc721/
+  - CNAME
+
+incremental: false
