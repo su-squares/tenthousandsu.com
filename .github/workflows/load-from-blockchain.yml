@@ -50,29 +50,55 @@ jobs:
           cd update-script
           yarn install --immutable
 
+      # GitHub disables this schedule after 60 days with no commit on the default branch.
+      # A quiet chain still needs one checkpoint commit before that cutoff.
+      - name: Fast-forward the checkpoint after 42 days without a commit
+        run: |
+          last_commit=$(git log -1 --format=%ct)
+          now=$(date +%s)
+          age_days=$(( (now - last_commit) / 86400 ))
+          echo "Days since last commit: ${age_days}"
+          if [ "$age_days" -ge 42 ]; then
+            echo "FAST_FORWARD=1" >> "$GITHUB_ENV"
+          fi
+
+      # have-there-been-updates exit status:
+      #   0  no Square events (FAST_FORWARD=1 may still rewrite loadedTo.json)
+      #   1  events found; run load-blockchain
+      #   *  provider or script failure; do not treat that as an update
       - name: Run have-there-been-updates
-        timeout-minutes: 5
+        timeout-minutes: 20
         run: |
           cd update-script
-          yarn run have-there-been-updates || echo "LOAD=yes" >> $GITHUB_ENV
+          set +e
+          yarn run have-there-been-updates
+          status=$?
+          set -e
+          if [ "$status" -eq 1 ]; then
+            echo "LOAD=yes" >> "$GITHUB_ENV"
+          elif [ "$status" -ne 0 ]; then
+            exit "$status"
+          fi
 
       - name: Run load-blockchain
         if: env.LOAD == 'yes'
-        timeout-minutes: 5
+        timeout-minutes: 20
         run: |
           cd update-script
           yarn run load-blockchain
 
       - name: Export build from update-script
-        if: env.LOAD == 'yes'
         run: |
           mv update-script/build/metadata erc721
           mv update-script/build build
 
       - name: Commit back to this repository
-        if: env.LOAD == 'yes'
         run: |
           git add build erc721
+          if git diff --cached --quiet; then
+            echo "No checkpoint or Square changes to commit."
+            exit 0
+          fi
           git config user.name "update-script/load-blockchain.mjs"
           git config user.email "<>"
           git commit -m 'Load from blockchain'
