@@ -64,8 +64,9 @@ jobs:
 
       # have-there-been-updates exit status:
       #   0  no Square events (FAST_FORWARD=1 may still rewrite loadedTo.json)
-      #   1  events found; run load-blockchain
-      #   *  provider or script failure; do not treat that as an update
+      #   2  events found; run load-blockchain
+      #   1  failure, including Node's uncaught provider error
+      #   *  any other failure; do not treat that as an update
       - name: Run have-there-been-updates
         timeout-minutes: 20
         run: |
@@ -74,7 +75,7 @@ jobs:
           yarn run have-there-been-updates
           status=$?
           set -e
-          if [ "$status" -eq 1 ]; then
+          if [ "$status" -eq 2 ]; then
             echo "LOAD=yes" >> "$GITHUB_ENV"
           elif [ "$status" -ne 0 ]; then
             exit "$status"
