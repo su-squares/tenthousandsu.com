@@ -9,7 +9,7 @@ title: "Su Squares, cute squares you own and personalize"
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{ page.title }}</title>
   <link rel="icon" type="image/svg+xml" href="/assets/images/branding/logomark.svg">
-  <link rel="stylesheet" href="/assets/main.css?20261013">
+  <link rel="stylesheet" href="/assets/main.css?20261014">
   {% include foot.html %}
 </head>
 
@@ -158,8 +158,17 @@ title: "Su Squares, cute squares you own and personalize"
         whereToGoAnchor.removeAttribute("href");
       } else {
         document.getElementById("theImage").style.cursor = "pointer";
-        tooltipDiv.textContent = "Square #" + squareNumber + " " + squarePersonalizations[squareNumber - 1][0];
-        whereToGoAnchor.href = squarePersonalizations[squareNumber - 1][1];
+        const title = squarePersonalizations[squareNumber - 1][0];
+        const href = squarePersonalizations[squareNumber - 1][1];
+        const lines = [
+          "Square #" + squareNumber,
+          "",
+          "(Title and link from Square owner, not reviewed by us)",
+        ];
+        if (title) lines.push("", title);
+        if (href) lines.push("", href);
+        tooltipDiv.textContent = lines.join("\n");
+        whereToGoAnchor.href = href;
       }
 
       positionDiv.style.width = cellSize + "px";
