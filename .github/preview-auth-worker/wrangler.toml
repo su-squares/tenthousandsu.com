@@ -1,0 +1,11 @@
+name = "su-squares-preview-auth"
+main = "index.js"
+compatibility_date = "2026-10-14"
+
+[[durable_objects.bindings]]
+name = "AUTH"
+class_name = "PreviewAuth"
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["PreviewAuth"]

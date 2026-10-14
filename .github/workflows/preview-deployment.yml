@@ -45,39 +45,14 @@ jobs:
         with:
           node-version: 24
 
-      # The Pages project is direct upload. This exchanges the wrangler login
-      # stored in CLOUDFLARE_REFRESH_TOKEN for the access token wrangler reads.
+      # Cloudflare rotates the OAuth refresh token on every use. A Worker keeps
+      # that login and returns an access token. Reusing a token that is still
+      # valid means a second deploy does not rotate the login.
       - name: Refresh Cloudflare access token
         env:
-          CLOUDFLARE_REFRESH_TOKEN: ${{ secrets.CLOUDFLARE_REFRESH_TOKEN }}
-        run: |
-          node --input-type=module << 'JS'
-          import { appendFileSync } from "node:fs";
-          const body = new URLSearchParams({
-            grant_type: "refresh_token",
-            client_id: "54d11594-84e4-41aa-b438-e81b8fa78ee7",
-            refresh_token: process.env.CLOUDFLARE_REFRESH_TOKEN,
-          });
-          const resp = await fetch("https://dash.cloudflare.com/oauth2/token", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/x-www-form-urlencoded",
-              Accept: "application/json",
-              "User-Agent": "wrangler/4.149.0",
-            },
-            body,
-          });
-          const payload = await resp.json();
-          if (!resp.ok || !payload.access_token) {
-            const reason = payload.error_name || payload.error || payload.title || resp.status;
-            console.error("Cloudflare login refresh failed:", reason);
-            process.exit(1);
-          }
-          const token = payload.access_token;
-          console.log(`::add-mask::${token}`);
-          const delim = "CF_TOKEN_END";
-          appendFileSync(process.env.GITHUB_ENV, `CLOUDFLARE_API_TOKEN<<${delim}\n${token}\n${delim}\n`);
-          JS
+          PREVIEW_AUTH_URL: ${{ vars.PREVIEW_AUTH_URL }}
+          PREVIEW_AUTH_PASSWORD: ${{ secrets.PREVIEW_AUTH_PASSWORD }}
+        run: node .github/scripts/preview-cloudflare-auth.mjs
 
       - name: Install Wrangler CLI
         run: npm i wrangler@4
