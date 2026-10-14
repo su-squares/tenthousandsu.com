@@ -79,6 +79,14 @@ p {
   line-height: 1.7;
 }
 
+.available-square-icon {
+  display: inline-block;
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+  image-rendering: pixelated;
+}
+
 ol,
 ul {
   margin: 0;
@@ -237,11 +245,14 @@ hr {
 #tooltip,
 .map-tooltip {
   background: rgba(255, 255, 255, 0.8);
-  width: min(220px, calc(100% - 1rem));
+  width: max-content;
+  max-width: min(28rem, calc(100% - 1rem));
   min-width: min(150px, calc(100% - 1rem));
   position: absolute;
   pointer-events: none;
   display: none;
+  white-space: pre-line;
+  overflow-wrap: anywhere;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol";
   font-size: 12px;
   border-radius: 10px;
