@@ -377,6 +377,77 @@ a:active {
   min-height: 12rem;
 }
 
+.personalize-page section,
+.personalize-page details {
+  min-width: 0;
+}
+
+.personalize-page section > *,
+.personalize-page details > *:not(summary) {
+  margin-bottom: 0.6rem;
+}
+
+.personalize-page summary {
+  cursor: pointer;
+}
+
+.personalize-table-scroll {
+  overflow-x: auto;
+}
+
+.personalize-table {
+  width: 100%;
+  font-size: 1rem;
+}
+
+.personalize-table th,
+.personalize-table td {
+  padding: 0.5rem;
+  text-align: left;
+  vertical-align: top;
+  border-bottom: 1px solid #ffd700;
+}
+
+.personalize-table input[type="text"] {
+  min-width: 9rem;
+}
+
+.personalize-table input[type="file"] {
+  min-width: 12rem;
+}
+
+.personalize-thumbnail,
+.personalize-image-preview {
+  display: block;
+  width: 50px;
+  height: 50px;
+  max-width: none;
+  image-rendering: pixelated;
+}
+
+.personalize-thumbnail {
+  background-image: url("/build/wholeSquare.webp");
+  background-size: 5000px 5000px;
+  background-repeat: no-repeat;
+}
+
+.personalize-image-preview[hidden] {
+  display: none;
+}
+
+.batch-squares-list {
+  list-style: none;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem 1rem;
+}
+
+.personalize-page button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 #image-preview {
   max-width: 100%;
   height: auto;

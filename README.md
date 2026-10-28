@@ -18,6 +18,15 @@ For other files, please read the existing HTML. You will see that we try to keep
 
 This project is conservatively managed and the maintainer will accept few major changes, if any. The separate website https://tools.tenthousandsu.com/ is much more open for experimentation.
 
+## Personalization
+
+The personalize page enumerates the connected wallet's Squares on Ethereum mainnet, 20 at a time, and submits the
+selected titles, links and 10-by-10 images in one underlay batch transaction at 0.001 ETH per Square, plus gas.
+The batch page includes agent instructions and accepts tab-separated Square number, title, link and RGB hex data.
+It validates the format and live ownership before enabling confirmation, and checks ownership again before sending.
+
+Run the personalization regression tests with `node --test tests/personalization.test.mjs`.
+
 ## Maintenance
 
 The project administrator does these tasks each month. If they are 3 or more months late, send an issue or a pull request.
