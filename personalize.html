@@ -1,6 +1,6 @@
 ---
 title: "Su Squares, personalize"
-description: "Add your title and link to your Su Square. Make it yours."
+description: "Add your title, link and image to your Su Squares. Make them yours."
 ---
 <!doctype html>
 <html lang="en" class="personalize-page">
@@ -24,286 +24,49 @@ description: "Add your title and link to your Su Square. Make it yours."
     <h1>Personalize</h1>
     <p>
       <em>If you have any questions, please mail <a
-          href="mailto:Su@TenThousandSu.com?subject=Personalize+underlay+batch">Su@TenThousandSu.com</a>. The price to
-        personalize is 0.001 Ether.</em>
+          href="mailto:Su@TenThousandSu.com?subject=Personalize+underlay">Su@TenThousandSu.com</a>. The price to
+        personalize is 0.001 Ether per Square.</em>
     </p>
     <p>
-      Use this page to personalize a Su Square you own on TenThousandSu.com. To personalize many squares, try the <a
-        href="/personalize-batch">batch tool</a>. If your Square was previously personalized using the old, more
-      expensive method you will need to <a href="https://tools.tenthousandsu.com/unpersonalize.html">unpersonalize</a>
-      it first.
+      Use this page to personalize Su Squares you own on TenThousandSu.com. If your Square was previously personalized
+      using the old, more expensive method you will need to <a
+        href="https://tools.tenthousandsu.com/unpersonalize.html">unpersonalize</a> it first.
     </p>
 
-    <h2>Select a Square</h2>
-    <p>Which Square will you personalize?</p>
-    <p>
-      <input id="square-number" type=number min=1 max=10000 required style="width:7em">
-    </p>
+    <p id="wallet-status" role="status" aria-live="polite"></p>
+    <p id="no-squares" hidden>Your wallet does not own any Squares. Please connect a different wallet or mint a Square
+      from the <a href="/">homepage</a>.</p>
+    <section id="owned-squares" hidden>
+      <h2>Select Squares</h2>
+      <p>Select your Squares to personalize:</p>
+      <p>Each title must be 1&ndash;64 UTF-8 bytes and each link 1&ndash;96 UTF-8 bytes (typically starting with
+        <code>https://</code>). Upload a non-animated, opaque 10&times;10 pixel image for each selected Square.</p>
+      <div class="personalize-table-scroll">
+        <table class="personalize-table">
+          <thead>
+            <tr>
+              <th scope="col">Select</th>
+              <th scope="col">Square</th>
+              <th scope="col">Title</th>
+              <th scope="col">Link</th>
+              <th scope="col">Upload image</th>
+            </tr>
+          </thead>
+          <tbody id="squares-list"></tbody>
+        </table>
+      </div>
+      <p><button id="load-more" class="btn" hidden>Load more</button></p>
+      <p>For the agent skill and batch operation, <a href="/personalize-batch">click here</a>.</p>
 
-    <h2>Enter title</h2>
-    <p>Enter a title for your Square.</p>
-    <p>
-      <input id="title" type="text" maxlength="64">
-    </p>
-    <p><span id="title-count">0</span> of 64 bytes</p>
-
-    <h2>Enter URL</h2>
-    <p>Enter a URL for your Square. Typically this will start with <code>https://</code>.</p>
-    <p>
-      <input id="url" type="text" maxlength="96">
-    </p>
-    <p><span id="url-count">0</span> of 96 bytes</p>
-
-    <h2>Upload image</h2>
-    <p>Design your image carefully to be 10&times;10 pixels.</p>
-    <p>Do not use animation or transparency. PNG and some other formats can be used here.</p>
-    <p>
-      <input id="image" type="file" accept="image/png, image/jpeg, image/gif">
-    </p>
-    <p>
-      Image status: <span id="image-status">no image selected</span>
-    </p>
-    <p>
-      <canvas id="image-preview" style="width:0;height:0;image-rendering:pixelated;"></canvas>
-    </p>
-
-    <h2>Personalize</h2>
-    <p>Click this button to personalize your Square.</p>
-    <p>
-      <button id="personalize" class="btn btn-lg">Personalize</button>
-    </p>
-
-    <div id="receipts">
-    </div>
+      <h2>Confirm</h2>
+      <p id="confirmation">Click this button to personalize the 0 selected Squares.</p>
+      <p><button id="personalize" class="btn btn-lg" disabled>Personalize&mdash;0 ETH</button></p>
+    </section>
+    <div id="receipts" role="status" aria-live="polite"></div>
   </article>
 
   {% include footer.html show_homepage_image_notice=true %}
-
-  <script type="module">
-    // Elements and state //////////////////////////////////////////////////////////////////////////////////////////////
-    const connectWalletButton = document.getElementById("connect-wallet");
-    const squareNumberInput = document.getElementById("square-number");
-    const titleInput = document.getElementById("title");
-    const titleCountSpan = document.getElementById("title-count");
-    const urlInput = document.getElementById("url");
-    const urlCountSpan = document.getElementById("url-count");
-    const imageInput = document.getElementById("image");
-    const imageStatusSpan = document.getElementById("image-status");
-    const imagePreviewCanvas = document.getElementById("image-preview");
-    const personalizeButton = document.getElementById("personalize");
-    const receiptsDiv = document.getElementById("receipts");
-    const underlayContractAddress = "0x992bDEC05cD423B73085586f7DcbbDaB953E0DCd";
-    const underlayContractABI = [
-      {
-        "inputs": [
-          { "internalType": "uint256", "name": "squareId", "type": "uint256" },
-          { "internalType": "bytes", "name": "rgbData", "type": "bytes" },
-          { "internalType": "string", "name": "title", "type": "string" },
-          { "internalType": "string", "name": "href", "type": "string" }
-        ],
-        "name": "personalizeSquareUnderlay",
-        "outputs": [],
-        "stateMutability": "payable",
-        "type": "function"
-      }
-    ];
-    let squareNumber;
-    let title;
-    let url;
-    let imagePixelsHex; // 0xRRGGBB.. of top-left pixel, pixel to its right, ...
-
-    // Validate changes to #square-number //////////////////////////////////////////////////////////////////////////////
-    // todo: look up and show warnings if Square is personalized on main contract (which occludes)
-    squareNumberInput.addEventListener("input", (event) => {
-      squareNumber = null;
-      const value = parseInt(event.target.value);
-      if (isNaN(value) || value < 1 || value > 10000) {
-        return alert("Invalid Square number, please enter a number between 1 and 10000.");
-      }
-      squareNumber = value;
-    });
-
-    // Validate changes to #title //////////////////////////////////////////////////////////////////////////////////////
-    titleInput.addEventListener("input", (event) => {
-      title = null;
-      const length = new TextEncoder().encode(event.target.value).length; // UTF-8 byte length
-      titleCountSpan.innerText = length;
-      if (length > 64) {
-        return alert("Title is too long, please try again.");
-      }
-      if (length < 1) {
-        return alert("Title is too short, please try again.");
-      }
-      title = event.target.value;
-    });
-
-    // Validate changes to #url ////////////////////////////////////////////////////////////////////////////////////////
-    urlInput.addEventListener("input", (event) => {
-      url = null;
-      const length = new TextEncoder().encode(event.target.value).length; // UTF-8 byte length
-      urlCountSpan.innerText = length;
-      if (length > 96) {
-        return alert("URL is too long, please try again.");
-      }
-      if (length < 1) {
-        return alert("URL is too short, please try again.");
-      }
-      url = event.target.value;
-    });
-
-    // Validate changes to #image //////////////////////////////////////////////////////////////////////////////////////
-    imageInput.addEventListener("change", (event) => {
-      imagePixelsHex = null;
-      imageStatusSpan.innerText = "Loading image…";
-      imagePreviewCanvas.width = 0;
-      imagePreviewCanvas.height = 0;
-      if (!event.target.files || !event.target.files[0]) {
-        imageStatusSpan.innerText = "No image selected";
-        imageInput.value = "";
-        return alert("Unable to read file");
-      }
-      const image = new Image();
-      image.addEventListener("load", () => {
-        if (image.width !== 10 || image.height !== 10) {
-          imageStatusSpan.innerText = "No image selected";
-          imageInput.value = "";
-          return alert("IMAGE ERROR: Image must be 10×10 pixels. Please try again.");
-        }
-        if (image.naturalWidth !== image.width || image.naturalHeight !== image.height) {
-          imageStatusSpan.innerText = "No image selected";
-          imageInput.value = "";
-          return alert("IMAGE ERROR: Image must not be animated. Please try again.");
-        }
-        imagePreviewCanvas.width = 10;
-        imagePreviewCanvas.height = 10;
-        const context = imagePreviewCanvas.getContext("2d");
-        context.drawImage(image, 0, 0);
-        const contextImageData = context.getImageData(0, 0, 10, 10);
-        let alphaWarning = false;
-        imagePixelsHex = "0x";
-        for (let i = 0; i < contextImageData.data.length; i += 4) {
-          const [red, green, blue, alpha] = contextImageData.data.slice(i, i + 4);
-          // Mix color to a white background (255) if there is transparency
-          const mixedRed = Math.floor((red * alpha + 255 * (255 - alpha)) / 255);
-          const mixedGreen = Math.floor((green * alpha + 255 * (255 - alpha)) / 255);
-          const mixedBlue = Math.floor((blue * alpha + 255 * (255 - alpha)) / 255);
-          if (alpha != 255) alphaWarning = true;
-          imagePixelsHex += mixedRed.toString(16).padStart(2, "0");
-          imagePixelsHex += mixedGreen.toString(16).padStart(2, "0");
-          imagePixelsHex += mixedBlue.toString(16).padStart(2, "0");
-        }
-        if (alphaWarning) {
-          alert("WARNING: Your image included transparency. Since Su Squares does not support transparency, we have mixed down this color on top of a white background. Proceed at your own risk.");
-        }
-        imageStatusSpan.innerText = "Image loaded, shown here enlarged";
-        imagePreviewCanvas.style.width = "100px";
-        imagePreviewCanvas.style.height = "100px";
-      });
-      image.src = window.URL.createObjectURL(event.target.files[0]);
-    });
-
-    // Handle ?square= query parameter /////////////////////////////////////////////////////////////////////////////////
-    const urlParams = new URLSearchParams(window.location.search);
-    if (urlParams.has("square")) {
-      squareNumberInput.value = urlParams.get("square");
-      squareNumberInput.dispatchEvent(new Event("input"));
-    }
-
-    // Web3Modal setup /////////////////////////////////////////////////////////////////////////////////////////////////
-    // Using @web3modal/cdn which provides a bundled version for browser usage
-    // Hack from https://github.com/WalletConnect/web3modal-examples/issues/46
-    window.process = { env: { NODE_ENV: "development" } };
-    const { Web3modal, WagmiCore, Chains } = await import(
-      "https://cdn.jsdelivr.net/npm/@web3modal/cdn@5.1.11/dist/wagmi.js"
-    );
-    const { createWeb3Modal, defaultWagmiConfig } = Web3modal;
-    const { mainnet } = Chains;
-    const { reconnect, getAccount, watchAccount, writeContract, waitForTransactionReceipt } = WagmiCore;
-    const walletConnectProjectId = '2aca272d18deb10ff748260da5f78bfd';
-    const chains = [mainnet];
-    const wagmiConfig = defaultWagmiConfig({
-      chains,
-      projectId: walletConnectProjectId,
-      metadata: {
-        name: 'Su Squares',
-        description: 'Own a piece of the Ethereum blockchain',
-        url: 'https://tenthousandsu.com',
-        icons: ['https://tenthousandsu.com/assets/images/branding/logo-su-squares.svg']
-      }
-    });
-    reconnect(wagmiConfig);
-    const web3modal = createWeb3Modal({
-      wagmiConfig,
-      projectId: walletConnectProjectId,
-      chains
-    });
-
-    // Handle connect wallet button and its animation //////////////////////////////////////////////////////////////////
-    watchAccount(wagmiConfig, {
-      onChange: (account) => {
-        connectWalletButton.innerText = account.isConnected
-          ? "Connected: " + account.address.slice(0, 6) + "\u2026" + account.address.slice(-4)
-          : "Connect wallet";
-      }
-    });
-    document.getElementById('connect-wallet').addEventListener('click', () => {
-      web3modal.open();
-    });
-
-    // Handle personalize button ///////////////////////////////////////////////////////////////////////////////////////
-    personalizeButton.addEventListener("click", async () => {
-      if (!squareNumber) {
-        return alert("Please enter a Square number.");
-      }
-      if (!title) {
-        return alert("Please enter a title.");
-      }
-      if (!url) {
-        return alert("Please enter a URL.");
-      }
-      if (!imagePixelsHex) {
-        return alert("Please select an image.");
-      }
-      const doSendTransaction = async () => {
-        receiptsDiv.innerHTML = "<p>Sending transaction, waiting for confirmation&hellip;</p>";
-        let hash;
-        try {
-          hash = await writeContract(wagmiConfig, {
-            address: underlayContractAddress,
-            abi: underlayContractABI,
-            functionName: "personalizeSquareUnderlay",
-            args: [BigInt(squareNumber), imagePixelsHex, title, url],
-            value: BigInt("1000000000000000"), // 0.001 Ether
-          });
-          console.log('hash', hash);
-          const receipt = await waitForTransactionReceipt(wagmiConfig, { hash });
-          console.log('receipt', receipt);
-          receiptsDiv.innerHTML = `<h3>Transaction confirmed</h3><p>Transaction ID: <a target="_blank" href="https://etherscan.io/tx/${receipt.transactionHash}">${receipt.transactionHash}</a>. Your image will show on the Su Squares homepage, which <a target="_blank" href="https://github.com/su-squares/tenthousandsu.com/actions/workflows/load-from-blockchain.yml">refreshes hourly</a>.`;
-        } catch (error) {
-          console.log(error);
-          return alert(error.message);
-        }
-      };
-      // If the wallet is not connected, connect it
-      const account = getAccount(wagmiConfig);
-      if (!account.isConnected) {
-        // Arm on connecting wallet, if connected then fire the transaction
-        const unwatch = watchAccount(wagmiConfig, {
-          onChange: (newAccount) => {
-            if (newAccount.isConnected) {
-              unwatch();
-              doSendTransaction();
-            }
-          }
-        });
-        // Open modal to connect
-        web3modal.open();
-      } else {
-        // The wallet is connected, fire the transaction
-        doSendTransaction();
-      }
-    });
-  </script>
+  <script type="module" src="/assets/personalize.mjs"></script>
 </body>
 
 </html>
